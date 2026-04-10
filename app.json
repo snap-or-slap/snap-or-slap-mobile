@@ -24,6 +24,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "898aea53-faa2-43f0-b5dd-7b8b1d589f3a"
+      }
+    },
+    "owner": "thienphan2411",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/898aea53-faa2-43f0-b5dd-7b8b1d589f3a"
     }
   }
 }
