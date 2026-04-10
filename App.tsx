@@ -10,7 +10,7 @@ const PRIMARY_LIGHT = '#FFF0E8';
 const CREAM = '#FDF6F2';
 
 // ─── SPLASH ────────────────────────────────────────────────────
-function SplashScreen({ onFinish }) {
+function SplashScreen({ onFinish }: { onFinish: () => void }) {
   useEffect(() => {
     const t = setTimeout(onFinish, 2000);
     return () => clearTimeout(t);
@@ -35,7 +35,7 @@ const ss = StyleSheet.create({
 });
 
 // ─── SHARED COMPONENTS ─────────────────────────────────────────
-function Dots({ total, active }) {
+function Dots({ total, active }: { total: number; active: number }) {
   return (
     <View style={{ flexDirection: 'row', gap: 6 }}>
       {Array.from({ length: total }).map((_, i) => (
@@ -51,7 +51,7 @@ function Dots({ total, active }) {
   );
 }
 
-function Btn({ label, onPress, outline }) {
+function Btn({ label, onPress, outline }: { label: string; onPress: () => void; outline?: boolean }) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -69,7 +69,7 @@ function Btn({ label, onPress, outline }) {
 }
 
 // ─── AVATAR CIRCLE ─────────────────────────────────────────────
-function Avatar({ size = 44, border, style }) {
+function Avatar({ size = 44, border, style }: { size?: number; border?: 'red' | 'green'; style?: object }) {
   return (
     <View style={[{
       width: size, height: size, borderRadius: size / 2,
@@ -119,7 +119,7 @@ function S2() {
 }
 
 // ─── TEAM CARD (shared by S3 & S4) ─────────────────────────────
-function TeamCard({ showSlap }) {
+function TeamCard({ showSlap }: { showSlap: boolean }) {
   return (
     <View style={sc.teamCard}>
       <View style={{ flexDirection: 'row', gap: 4, marginBottom: 6 }}>
