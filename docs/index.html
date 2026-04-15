@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>Snap or Slap — Swipe-Based Product Reviews</title>
+  <meta name="description" content="Snap or Slap is a mobile app that turns product reviews into fast, fun swipe gestures. Explore the design case study, prototype, and project wiki.">
+  <meta name="author" content="Snap or Slap Team">
+
+  <!-- Open Graph (FUTURE: update og:image with a real preview) -->
+  <meta property="og:title" content="Snap or Slap — Swipe-Based Product Reviews">
+  <meta property="og:description" content="Rate any product with a single swipe. Snap to love it, Slap to pass.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/images/og-preview.png">
+
+  <!-- Favicon (FUTURE: place a real favicon in assets/icons/) -->
+  <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon">
+
+  <!-- Google Fonts — Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- =================================================================
+       STYLESHEETS — loaded in dependency order.
+       tokens  → base  → layout  → components  → sections  → utilities
+       ================================================================= -->
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/sections.css">
+  <link rel="stylesheet" href="styles/utilities.css">
+</head>
+<body>
+
+  <!-- ===================================================================
+       NAVIGATION
+       ─────────────────────────────────────────────────────────────────── -->
+  <nav class="nav" aria-label="Primary navigation">
+    <div class="nav__inner">
+      <a href="#hero" class="nav__logo" aria-label="Snap or Slap Home">
+        🔥 Snap or Slap
+      </a>
+
+      <!-- Mobile hamburger -->
+      <button class="nav__toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav__links">
+        <a href="#problem"      class="nav__link">Problem</a>
+        <a href="#why-sos"      class="nav__link">Why SoS</a>
+        <a href="#mvp"          class="nav__link">Features</a>
+        <a href="#how-it-works" class="nav__link">How It Works</a>
+        <a href="#screens"      class="nav__link">Screens</a>
+        <a href="#difference"   class="nav__link">Difference</a>
+        <!-- FUTURE: Replace "#" with real Wiki URL -->
+        <a href="#" class="btn btn--primary btn--sm nav__cta" id="nav-wiki">Wiki</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================================================================
+       PAGE SECTIONS
+       ───────────────────────────────────────────────────────────────────
+       All section content is inlined below.  The corresponding partials
+       in sections/*.html are kept as reference / source-of-truth files.
+       To edit a section:
+         1. Edit the partial in sections/<name>.html
+         2. Copy the updated markup here (or automate with a build step).
+       =================================================================== -->
+
+  <!-- ▸ HERO ──────────────────────────────────────────────────────────── -->
+  <section id="hero" class="section hero">
+    <div class="container split">
+      <div class="hero__text reveal">
+        <span class="badge section-header__badge">🚀 Mobile App Case Study</span>
+        <h1 class="hero__title">
+          Rate products with a<br>
+          <span>Snap or Slap</span>
+        </h1>
+        <p class="hero__subtitle">
+          A fun, swipe-based mobile app that lets users quickly review
+          everyday products — snap to love it, slap to pass. Built with
+          React Native &amp; Firebase.
+        </p>
+        <div class="hero__actions">
+          <!-- FUTURE: Replace "#" with real URLs -->
+          <a href="#" class="btn btn--primary btn--lg" id="btn-figma">View Figma Prototype</a>
+          <a href="#" class="btn btn--secondary btn--lg" id="btn-behance">Read Behance Case Study</a>
+        </div>
+      </div>
+      <div class="hero__visual reveal">
+        <!-- FUTURE: Replace placeholder with real phone mockup from assets/mockups/ -->
+        <div class="phone-frame" aria-label="App screenshot placeholder">
+          <div style="width:244px;height:488px;
+                      background:linear-gradient(160deg,var(--color-primary-100),var(--color-primary-300));
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:var(--text-3xl);color:var(--color-primary-600);">
+            📱
+          </div>
+        </div>
+        <div class="hero__glow" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ PROBLEM ───────────────────────────────────────────────────────── -->
+  <section id="problem" class="section problem">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge section-header__badge">The Problem</span>
+        <h2 class="section-header__title">Product reviews are broken</h2>
+        <p class="section-header__subtitle">
+          Long-form reviews are hard to write and harder to trust. Young consumers
+          want fast, visual, peer-driven ratings — not walls of text.
+        </p>
+      </div>
+      <div class="grid-3 reveal">
+        <div class="card card--tinted">
+          <div class="card__icon">😩</div>
+          <h4 class="card__title">Review fatigue</h4>
+          <p class="card__body">Only 5–10 % of buyers leave reviews. Writing paragraphs feels like homework.</p>
+        </div>
+        <div class="card card--tinted">
+          <div class="card__icon">🤷</div>
+          <h4 class="card__title">Low trust</h4>
+          <p class="card__body">Fake reviews and sponsored posts make it hard to know what's genuine.</p>
+        </div>
+        <div class="card card--tinted">
+          <div class="card__icon">📵</div>
+          <h4 class="card__title">No mobile-first flow</h4>
+          <p class="card__body">Most review platforms are desktop-first forms — clunky on a phone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ VALUE PROPOSITION ─────────────────────────────────────────────── -->
+  <section id="why-sos" class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge section-header__badge">Why Snap or Slap?</span>
+        <h2 class="section-header__title">One gesture. One honest opinion.</h2>
+        <p class="section-header__subtitle">
+          Snap or Slap distils product reviews into a single, satisfying swipe.
+          No typing, no star-math — just your gut reaction.
+        </p>
+      </div>
+      <div class="grid-3 reveal">
+        <div class="card">
+          <div class="card__icon">⚡</div>
+          <h4 class="card__title">Instant reviews</h4>
+          <p class="card__body">Swipe right to Snap (love it) or left to Slap (pass). A review in under two seconds.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">🎯</div>
+          <h4 class="card__title">Honest signal</h4>
+          <p class="card__body">Binary feedback removes rating inflation — no more guessing whether 3.7 stars is good.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">🤳</div>
+          <h4 class="card__title">Built for mobile</h4>
+          <p class="card__body">Native swipe gestures, camera-first scanning, and buttery-smooth animations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ MVP FEATURES ──────────────────────────────────────────────────── -->
+  <section id="mvp" class="section mvp">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge section-header__badge">MVP Scope</span>
+        <h2 class="section-header__title">Core features, zero bloat</h2>
+        <p class="section-header__subtitle">
+          The minimum-viable product ships with just enough features to validate
+          the core interaction — swipe reviews + social sharing.
+        </p>
+      </div>
+      <div class="grid-4 reveal">
+        <div class="card">
+          <div class="card__icon">👆</div>
+          <h4 class="card__title">Swipe to review</h4>
+          <p class="card__body">Snap or Slap any product in seconds.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">📸</div>
+          <h4 class="card__title">Barcode scan</h4>
+          <p class="card__body">Point your camera to identify a product instantly.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">📊</div>
+          <h4 class="card__title">Snap ratio</h4>
+          <p class="card__body">See a live community ratio — no fake stars.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">🔗</div>
+          <h4 class="card__title">Share cards</h4>
+          <p class="card__body">Auto-generated visual cards for social media.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ HOW IT WORKS ──────────────────────────────────────────────────── -->
+  <section id="how-it-works" class="section">
+    <div class="container split">
+      <div class="how-it-works__steps reveal">
+        <div class="section-header" style="text-align:left;margin-bottom:var(--space-8);">
+          <span class="badge section-header__badge">How It Works</span>
+          <h2 class="section-header__title">Three taps, one review</h2>
+        </div>
+        <div class="step">
+          <div class="step__number">1</div>
+          <div class="step__content">
+            <h4>Open &amp; scan</h4>
+            <p>Launch the app and scan a product barcode — or search by name.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step__number">2</div>
+          <div class="step__content">
+            <h4>Snap or Slap</h4>
+            <p>Swipe right to Snap (recommend) or left to Slap (pass). Done!</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step__number">3</div>
+          <div class="step__content">
+            <h4>Share &amp; explore</h4>
+            <p>See the live community ratio and share a visual card on social media.</p>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" style="display:flex;justify-content:center;">
+        <!-- FUTURE: Replace with real screenshot from assets/mockups/ -->
+        <div class="phone-frame" aria-label="How-it-works screenshot placeholder">
+          <div style="width:244px;height:488px;
+                      background:linear-gradient(160deg,var(--color-support-100),var(--color-support-300));
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:var(--text-3xl);color:var(--color-support-600);">
+            🔄
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ SELECTED SCREENS ──────────────────────────────────────────────── -->
+  <section id="screens" class="section screens">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge section-header__badge">Selected Screens</span>
+        <h2 class="section-header__title" style="color:var(--text-inverse);">A peek inside the app</h2>
+        <p class="section-header__subtitle">Hand-crafted UI designed for speed, clarity, and delight.</p>
+      </div>
+      <div class="screenshot-gallery reveal">
+        <div class="screenshot-gallery__item">
+          <div class="phone-frame">
+            <div style="width:244px;height:488px;background:linear-gradient(160deg,#fde68a,#f97316);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Home</div>
+          </div>
+        </div>
+        <div class="screenshot-gallery__item">
+          <div class="phone-frame">
+            <div style="width:244px;height:488px;background:linear-gradient(160deg,#a5f3fc,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Scan</div>
+          </div>
+        </div>
+        <div class="screenshot-gallery__item">
+          <div class="phone-frame">
+            <div style="width:244px;height:488px;background:linear-gradient(160deg,#c4b5fd,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Swipe</div>
+          </div>
+        </div>
+        <div class="screenshot-gallery__item">
+          <div class="phone-frame">
+            <div style="width:244px;height:488px;background:linear-gradient(160deg,#bbf7d0,#22c55e);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Profile</div>
+          </div>
+        </div>
+        <div class="screenshot-gallery__item">
+          <div class="phone-frame">
+            <div style="width:244px;height:488px;background:linear-gradient(160deg,#fecaca,#ef4444);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Share</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ DIFFERENTIATORS ───────────────────────────────────────────────── -->
+  <section id="difference" class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge section-header__badge">What Makes Us Different</span>
+        <h2 class="section-header__title">Not another review app</h2>
+        <p class="section-header__subtitle">
+          Snap or Slap is designed around a single insight: people express
+          opinions faster with gestures than with words.
+        </p>
+      </div>
+      <div class="grid-3 reveal">
+        <div class="card">
+          <div class="card__icon">🃏</div>
+          <h4 class="card__title">Swipe, not type</h4>
+          <p class="card__body">Binary gestures remove friction. No stars, no paragraph boxes.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">📈</div>
+          <h4 class="card__title">Community ratio</h4>
+          <p class="card__body">A live Snap-to-Slap ratio replaces inflated star averages.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">🎨</div>
+          <h4 class="card__title">Visual-first sharing</h4>
+          <p class="card__body">Auto-generated branded cards make every review shareable on socials.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ FINAL CTA ─────────────────────────────────────────────────────── -->
+  <section id="cta" class="section cta">
+    <div class="container reveal" style="max-width:var(--container-md);">
+      <h2 style="margin-bottom:var(--space-4);">Ready to explore the project?</h2>
+      <p style="margin-bottom:var(--space-8);font-size:var(--text-lg);">
+        Dive into the design process, browse high-fidelity prototypes, or read
+        the full case-study write-up.
+      </p>
+      <div class="flex--center gap-4" style="flex-wrap:wrap;">
+        <!-- FUTURE: Replace "#" with real URLs -->
+        <a href="#" class="btn btn--primary btn--lg" id="cta-figma">View Figma Prototype</a>
+        <a href="#" class="btn btn--secondary btn--lg" id="cta-behance">Read Behance Case Study</a>
+        <a href="#" class="btn btn--secondary btn--lg" id="cta-wiki">Browse Project Wiki</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ FOOTER ────────────────────────────────────────────────────────── -->
+  <footer id="footer" class="section--compact footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__col">
+          <h4>Project</h4>
+          <ul>
+            <li><a href="#">Figma Prototype</a></li>
+            <li><a href="#">Behance Case Study</a></li>
+            <li><a href="#">Project Wiki</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">GitHub Repository</a></li>
+            <li><a href="#">Design Tokens</a></li>
+            <li><a href="#">Component Library</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h4>Team</h4>
+          <ul>
+            <!-- FUTURE: Replace with real team member names -->
+            <li><a href="#">Member 1</a></li>
+            <li><a href="#">Member 2</a></li>
+            <li><a href="#">Member 3</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; 2026 Snap or Slap — Mobile App Development Course Project</p>
+        <p>Made with 🧡 for learning</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================
+       SCRIPTS — loaded at end of body for fast first paint.
+       =================================================================== -->
+  <script src="scripts/nav.js"></script>
+  <script src="scripts/interactions.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+</html>

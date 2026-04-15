@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found — Snap or Slap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/utilities.css">
+  <style>
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-8);
+    }
+    .error-page__code {
+      font-size: 8rem;
+      font-weight: var(--weight-extrabold);
+      background: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-600));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: var(--space-4);
+    }
+    .error-page__message {
+      font-size: var(--text-xl);
+      color: var(--text-muted);
+      margin-bottom: var(--space-8);
+    }
+    .error-page__link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      font-weight: var(--weight-semibold);
+      background-color: var(--color-primary-500);
+      color: var(--text-inverse);
+      border-radius: var(--radius-lg);
+      transition: background-color var(--duration-fast) var(--ease-default);
+    }
+    .error-page__link:hover {
+      background-color: var(--color-primary-600);
+      text-decoration: none;
+      color: var(--text-inverse);
+    }
+  </style>
+</head>
+<body>
+  <main class="error-page">
+    <div class="error-page__code">404</div>
+    <h1>Page not found</h1>
+    <p class="error-page__message">
+      The page you're looking for doesn't exist or has been moved.
+    </p>
+    <a href="/" class="error-page__link">← Back to Home</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* ==========================================================================
+   BASE — base.css
+   --------------------------------------------------------------------------
+   Resets, global element defaults, and base typography.
+   This file should NOT contain component-specific styles.
+   ========================================================================== */
+
+/* ── Modern Reset ──────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;                        /* 1 rem = 16 px                  */
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background-color: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+h1 { font-size: var(--text-5xl); }
+h2 { font-size: var(--text-4xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl);  }
+
+p {
+  max-width: 68ch;                        /* comfortable reading width      */
+}
+
+a {
+  color: var(--color-primary-500);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+a:hover,
+a:focus-visible {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+/* ── Media ─────────────────────────────────────────────────────────────── */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Lists ─────────────────────────────────────────────────────────────── */
+ul, ol {
+  list-style: none;
+}
+
+/* ── Focus Accessibility ───────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ── Selection ─────────────────────────────────────────────────────────── */
+::selection {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+}

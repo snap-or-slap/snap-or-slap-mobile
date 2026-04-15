@@ -1,0 +1,114 @@
+/* ==========================================================================
+   LAYOUT — layout.css
+   --------------------------------------------------------------------------
+   Container, grid helpers, and section spacing primitives.
+   ========================================================================== */
+
+/* ── Container ─────────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+.container--narrow {
+  max-width: var(--container-md);
+}
+
+/* ── Section ───────────────────────────────────────────────────────────── */
+.section {
+  padding-block: var(--space-20);
+}
+
+.section--compact {
+  padding-block: var(--space-12);
+}
+
+.section--flush {
+  padding: 0;
+}
+
+/* ── Two-Column Split ──────────────────────────────────────────────────── */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+/* ── Three-Column Grid ─────────────────────────────────────────────────── */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+}
+
+/* ── Four-Column Grid ──────────────────────────────────────────────────── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+/* ── Flex Helpers ──────────────────────────────────────────────────────── */
+.flex {
+  display: flex;
+}
+.flex--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex--between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex--col {
+  display: flex;
+  flex-direction: column;
+}
+.flex--wrap {
+  flex-wrap: wrap;
+}
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+/* Tablet (≤ 1024 px) */
+@media (max-width: 1024px) {
+  .split {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+  .grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .section {
+    padding-block: var(--space-16);
+  }
+}
+
+/* Mobile (≤ 640 px) */
+@media (max-width: 640px) {
+  .container {
+    padding-inline: var(--space-4);
+  }
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .section {
+    padding-block: var(--space-12);
+  }
+}
