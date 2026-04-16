@@ -1,51 +1,64 @@
-<!-- =======================================================================
-     SECTION: Selected Screens
-     -----------------------------------------------------------------------
-     FUTURE EDITS:
-       • Replace placeholder mockups with real screenshots.
-       • Place images in assets/mockups/ and update src attributes.
-       • Add or remove gallery items as needed.
-     ======================================================================= -->
-
 <section id="screens" class="section screens">
   <div class="container">
+
     <div class="section-header reveal">
-      <span class="badge section-header__badge">Selected Screens</span>
-      <h2 class="section-header__title" style="color:var(--text-inverse);">
-        A peek inside the app
-      </h2>
+      <span class="badge section-header__badge">Màn hình</span>
+      <h2 class="section-header__title">Nhìn câu chuyện bằng chính từng nhịp giao diện</h2>
       <p class="section-header__subtitle">
-        Hand-crafted UI designed for speed, clarity, and delight.
+        Không trình bày theo kiểu gallery. Mỗi cụm màn hình là một beat nhỏ trong hành trình trải nghiệm của SOS.
       </p>
     </div>
 
-    <div class="screenshot-gallery reveal">
-      <!-- FUTURE: Replace each placeholder with <img src="assets/mockups/screen-N.png" alt="…"> -->
-      <div class="screenshot-gallery__item">
-        <div class="phone-frame">
-          <div style="width:244px;height:488px;background:linear-gradient(160deg,#fde68a,#f97316);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Home</div>
+    <div class="screen-story">
+      <article class="screen-beat screen-beat--right reveal">
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">01 / ONBOARDING</p>
+          <h3 class="screen-beat__title">Bắt đầu bằng một lời mời gọi rất rõ ràng</h3>
+          <p class="screen-beat__body">Onboarding của SOS không nói dài. Nó dẫn người dùng đi thẳng vào cảm giác: đây không chỉ là một app theo dõi, mà là một hệ thống cam kết có người cùng nhìn thấy.</p>
         </div>
-      </div>
-      <div class="screenshot-gallery__item">
-        <div class="phone-frame">
-          <div style="width:244px;height:488px;background:linear-gradient(160deg,#a5f3fc,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Scan</div>
+        <div class="screen-beat__visual screen-beat__visual--stack-right">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/Onboarding/Onboarding-1.png" alt="Onboarding screen 1" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/Onboarding/Onboarding-3.png" alt="Onboarding screen 3" loading="lazy" data-parallax-speed="0.035" data-base-transform="rotate(5deg)">
         </div>
-      </div>
-      <div class="screenshot-gallery__item">
-        <div class="phone-frame">
-          <div style="width:244px;height:488px;background:linear-gradient(160deg,#c4b5fd,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Swipe</div>
+      </article>
+
+      <article class="screen-beat screen-beat--left reveal">
+        <div class="screen-beat__visual screen-beat__visual--stack-left">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/Authentication/Login.png" alt="Login screen" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/Authentication/Register.png" alt="Register screen" loading="lazy" data-parallax-speed="-0.03" data-base-transform="rotate(-6deg)">
         </div>
-      </div>
-      <div class="screenshot-gallery__item">
-        <div class="phone-frame">
-          <div style="width:244px;height:488px;background:linear-gradient(160deg,#bbf7d0,#22c55e);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Profile</div>
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">02 / AUTHENTICATION</p>
+          <h3 class="screen-beat__title">Mọi thứ bắt đầu nhẹ, nhưng không hời hợt</h3>
+          <p class="screen-beat__body">Luồng đăng nhập và đăng ký được giữ cực gọn để người dùng bước vào challenge nhanh nhất, nhưng vẫn đủ sạch và tin cậy cho một sản phẩm có tính kỷ luật theo nhóm.</p>
         </div>
-      </div>
-      <div class="screenshot-gallery__item">
-        <div class="phone-frame">
-          <div style="width:244px;height:488px;background:linear-gradient(160deg,#fecaca,#ef4444);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Share</div>
+      </article>
+
+      <article class="screen-beat screen-beat--right reveal">
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">03 / FRIENDS HUB</p>
+          <h3 class="screen-beat__title">Bắt đầu từ những mối quan hệ thật</h3>
+          <p class="screen-beat__body">Friends Hub là nơi hệ thống social pressure của SOS có nền móng. Từ incoming, outgoing đến profile preview, mọi thứ được thiết kế để lời mời tham gia challenge có trọng lượng hơn.</p>
         </div>
-      </div>
+        <div class="screen-beat__visual screen-beat__visual--triptych">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/FriendHub/Friends-Hub-List-of-friends.png" alt="Friends list" loading="lazy">
+          <img class="screen-shot screen-shot--side" src="assets/mockups/FriendHub/Friends-Hub-Incoming-Request.png" alt="Incoming requests" loading="lazy" data-parallax-speed="0.028" data-base-transform="rotate(4deg)">
+          <img class="screen-shot screen-shot--side" src="assets/mockups/FriendHub/Friends-Hub-Outcoming-Request.png" alt="Outgoing requests" loading="lazy" data-parallax-speed="-0.024" data-base-transform="rotate(-4deg)">
+        </div>
+      </article>
+
+      <article class="screen-beat screen-beat--left reveal">
+        <div class="screen-beat__visual screen-beat__visual--stack-left">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/ChallengeHub/Challenges-Hub-Formation.png" alt="Formation list" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/ChallengeHub/Challenges-Hub-Active.png" alt="Active list" loading="lazy" data-parallax-speed="0.03" data-base-transform="rotate(-5deg)">
+        </div>
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">04 / CHALLENGE HUB</p>
+          <h3 class="screen-beat__title">Từ formation đến active, mọi thứ đều có nhịp riêng</h3>
+          <p class="screen-beat__body">Challenge Hub thể hiện rõ logic trạng thái của SOS. Đây là nơi người dùng đọc được tình hình hiện tại của cả nhóm, thay vì chỉ nhìn vào một danh sách nhiệm vụ vô cảm.</p>
+        </div>
+      </article>
     </div>
+
   </div>
 </section>

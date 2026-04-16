@@ -1,48 +1,39 @@
-<!-- =======================================================================
-     SECTION: Hero
-     -----------------------------------------------------------------------
-     FUTURE EDITS:
-       • Replace the headline, subtitle, and CTA button labels.
-       • Swap the placeholder phone mockup with a real screenshot.
-       • Update the badge text and href values for the buttons.
-     ======================================================================= -->
+<section id="hero" class="hero">
+  <div class="hero__scroll-spacer">
+    <div class="hero__sticky">
+      <div class="hero__canvas-container" id="hero-canvas" aria-hidden="true"></div>
+      <img class="hero__fallback"
+           src="assets/images/fall-back-image.png"
+           alt="SnapOrSlap app preview"
+           width="420" height="560">
 
-<section id="hero" class="section hero">
-  <div class="container split">
+      <div class="hero__glow hero__glow--warm" data-parallax-speed="0.035" aria-hidden="true"></div>
+      <div class="hero__glow hero__glow--cool" data-parallax-speed="-0.025" aria-hidden="true"></div>
+      <div class="hero__backdrop hero__backdrop--proof" data-parallax-speed="0.012" aria-hidden="true">PROOF</div>
+      <div class="hero__backdrop hero__backdrop--hearts" data-parallax-speed="-0.01" aria-hidden="true">HEARTS</div>
 
-    <!-- Text column -->
-    <div class="hero__text reveal">
-      <span class="badge section-header__badge">🚀 Mobile App Case Study</span>
-      <h1 class="hero__title">
-        Rate products with a<br>
-        <span>Snap or Slap</span>
-      </h1>
-      <p class="hero__subtitle">
-        A fun, swipe-based mobile app that lets users quickly review
-        everyday products — snap to love it, slap to pass. Built with
-        React Native &amp; Firebase.
-      </p>
-      <div class="hero__actions">
-        <!-- FUTURE: Replace "#" with real URLs -->
-        <a href="#" class="btn btn--primary btn--lg" id="btn-figma">View Figma Prototype</a>
-        <a href="#" class="btn btn--secondary btn--lg" id="btn-behance">Read Behance Case Study</a>
-      </div>
-    </div>
-
-    <!-- Visual column -->
-    <div class="hero__visual reveal">
-      <!-- FUTURE: Replace this placeholder with a real phone mockup image.
-           Place the image in assets/mockups/ and update the src. -->
-      <div class="phone-frame" aria-label="App screenshot placeholder">
-        <div style="width:244px;height:488px;
-                    background:linear-gradient(160deg,var(--color-primary-100),var(--color-primary-300));
-                    display:flex;align-items:center;justify-content:center;
-                    font-size:var(--text-3xl);color:var(--color-primary-600);">
-          📱
+      <article class="hero__stage hero__stage--left hero__stage--1 is-active" data-stage="1">
+        <span class="badge">Proof over promises</span>
+        <p class="hero__eyebrow">A mobile app for social challenge-based interaction</p>
+        <h1 class="hero__title">Kỷ luật mạnh hơn<br>khi nó được <span>chứng minh</span></h1>
+        <p class="hero__subtitle">Một nhiệm vụ chỉ thật sự hoàn thành khi có ảnh thật, thời điểm thật, và người thật cùng nhìn thấy.</p>
+        <div class="hero__actions">
+          <a href="https://www.figma.com/design/m0U0raXlIDOen0NE9AZZvS/SOS-App?t=gn6b0CzlxZMW7yDE-0" class="btn btn--primary btn--lg" target="_blank" rel="noopener">View Figma Prototype</a>
+          <a href="https://www.behance.net/gallery/247641667/Snap-Or-Slap-A-Mobile-App-for-Social-Habit-Tracker" class="btn btn--secondary btn--lg" target="_blank" rel="noopener">Read Behance Case Study</a>
         </div>
-      </div>
-      <div class="hero__glow" aria-hidden="true"></div>
-    </div>
+      </article>
 
+      <article class="hero__stage hero__stage--right hero__stage--2" data-stage="2">
+        <p class="hero__eyebrow hero__eyebrow--support">SHARED CONSEQUENCE</p>
+        <h2 class="hero__stage-title">Chỉ một người chậm,<br>cả squad đều <span>cảm nhận</span></h2>
+        <p class="hero__stage-body">Shared Hearts biến lời hứa cá nhân thành rủi ro chung. Áp lực không nặng nề, nhưng đủ thật để khiến mọi người xuất hiện đúng lúc.</p>
+      </article>
+
+      <article class="hero__stage hero__stage--right hero__stage--3" data-stage="3">
+        <p class="hero__eyebrow hero__eyebrow--support">VISIBLE TEAM STATUS</p>
+        <h2 class="hero__stage-title">Trạng thái của team<br><span>luôn hiện ra trước mắt</span></h2>
+        <p class="hero__stage-body">Widget, step state và tín hiệu nguy cơ giữ tiến độ ở ngay ngoài màn hình app — đủ gần để không thể giả vờ không thấy.</p>
+      </article>
+    </div>
   </div>
 </section>

@@ -1,32 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO -->
-  <title>Snap or Slap — Swipe-Based Product Reviews</title>
-  <meta name="description" content="Snap or Slap is a mobile app that turns product reviews into fast, fun swipe gestures. Explore the design case study, prototype, and project wiki.">
-  <meta name="author" content="Snap or Slap Team">
+  <title>SnapOrSlap — Kỷ luật nhóm, bằng chứng thực</title>
+  <meta name="description"
+        content="SnapOrSlap biến thói quen hàng ngày thành thử thách nhóm có bằng chứng ảnh, áp lực tích cực, và hậu quả chung. Snap to prove — Slap to move.">
+  <meta name="theme-color" content="#F8F6F2">
 
-  <!-- Open Graph (FUTURE: update og:image with a real preview) -->
-  <meta property="og:title" content="Snap or Slap — Swipe-Based Product Reviews">
-  <meta property="og:description" content="Rate any product with a single swipe. Snap to love it, Slap to pass.">
+  <!-- Open Graph -->
+  <meta property="og:title" content="SnapOrSlap — Kỷ luật nhóm, bằng chứng thực">
+  <meta property="og:description" content="Chụp ảnh chứng minh. Cùng chịu hậu quả. Không lời hứa suông.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="assets/images/og-preview.png">
+  <meta property="og:image" content="assets/images/fall-back-image.png">
 
-  <!-- Favicon (FUTURE: place a real favicon in assets/icons/) -->
-  <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon">
-
-  <!-- Google Fonts — Inter -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- =================================================================
-       STYLESHEETS — loaded in dependency order.
-       tokens  → base  → layout  → components  → sections  → utilities
-       ================================================================= -->
+  <!-- Import map for Three.js (required so GLTFLoader can resolve bare "three" specifier) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- Stylesheets (order matters: tokens → base → layout → components → sections → utilities) -->
   <link rel="stylesheet" href="styles/tokens.css">
   <link rel="stylesheet" href="styles/base.css">
   <link rel="stylesheet" href="styles/layout.css">
@@ -36,348 +41,446 @@
 </head>
 <body>
 
-  <!-- ===================================================================
-       NAVIGATION
-       ─────────────────────────────────────────────────────────────────── -->
-  <nav class="nav" aria-label="Primary navigation">
-    <div class="nav__inner">
-      <a href="#hero" class="nav__logo" aria-label="Snap or Slap Home">
-        🔥 Snap or Slap
-      </a>
+<!-- =======================================================================
+     NAV
+     ======================================================================= -->
+<nav class="nav" id="nav" aria-label="Main navigation">
+  <div class="nav__inner">
+    <a href="#hero" class="nav__logo" id="nav-logo">SnapOrSlap</a>
 
-      <!-- Mobile hamburger -->
-      <button class="nav__toggle" aria-label="Toggle navigation menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+    <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
 
-      <div class="nav__links">
-        <a href="#problem"      class="nav__link">Problem</a>
-        <a href="#why-sos"      class="nav__link">Why SoS</a>
-        <a href="#mvp"          class="nav__link">Features</a>
-        <a href="#how-it-works" class="nav__link">How It Works</a>
-        <a href="#screens"      class="nav__link">Screens</a>
-        <a href="#difference"   class="nav__link">Difference</a>
-        <!-- FUTURE: Replace "#" with real Wiki URL -->
-        <a href="#" class="btn btn--primary btn--sm nav__cta" id="nav-wiki">Wiki</a>
-      </div>
+    <div class="nav__links" id="nav-links">
+      <a href="#problem"   class="nav__link">Vấn đề</a>
+      <a href="#why-sos"   class="nav__link">Tại sao SOS</a>
+      <a href="#mvp"       class="nav__link">Tính năng</a>
+      <a href="#screens"   class="nav__link">Màn hình</a>
+      <a href="#difference" class="nav__link">Khác biệt</a>
+      <a href="https://github.com/snap-or-slap/" target="_blank" rel="noopener"
+         class="btn btn--primary btn--sm" id="nav-cta">GitHub</a>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- ===================================================================
-       PAGE SECTIONS
-       ───────────────────────────────────────────────────────────────────
-       All section content is inlined below.  The corresponding partials
-       in sections/*.html are kept as reference / source-of-truth files.
-       To edit a section:
-         1. Edit the partial in sections/<name>.html
-         2. Copy the updated markup here (or automate with a build step).
-       =================================================================== -->
+<!-- =======================================================================
+     HERO — 3D immersive hero with scroll-driven interaction
+     ======================================================================= -->
+<section id="hero" class="hero">
+  <div class="hero__scroll-spacer">
+    <div class="hero__sticky">
+      <div class="hero__canvas-container" id="hero-canvas" aria-hidden="true"></div>
+      <img class="hero__fallback"
+           src="assets/images/fall-back-image.png"
+           alt="SnapOrSlap app preview"
+           width="420" height="560">
 
-  <!-- ▸ HERO ──────────────────────────────────────────────────────────── -->
-  <section id="hero" class="section hero">
-    <div class="container split">
-      <div class="hero__text reveal">
-        <span class="badge section-header__badge">🚀 Mobile App Case Study</span>
-        <h1 class="hero__title">
-          Rate products with a<br>
-          <span>Snap or Slap</span>
-        </h1>
-        <p class="hero__subtitle">
-          A fun, swipe-based mobile app that lets users quickly review
-          everyday products — snap to love it, slap to pass. Built with
-          React Native &amp; Firebase.
-        </p>
+      <div class="hero__glow hero__glow--warm" data-parallax-speed="0.035" aria-hidden="true"></div>
+      <div class="hero__glow hero__glow--cool" data-parallax-speed="-0.025" aria-hidden="true"></div>
+      <div class="hero__backdrop hero__backdrop--proof" data-parallax-speed="0.012" aria-hidden="true">PROOF</div>
+      <div class="hero__backdrop hero__backdrop--hearts" data-parallax-speed="-0.01" aria-hidden="true">HEARTS</div>
+
+      <article class="hero__stage hero__stage--left hero__stage--1 is-active" data-stage="1">
+        <span class="badge">Proof over promises</span>
+        <p class="hero__eyebrow">A mobile app for social challenge-based interaction</p>
+        <h1 class="hero__title">Kỷ luật mạnh hơn<br>khi nó được <span>chứng minh</span></h1>
+        <p class="hero__subtitle">Một nhiệm vụ chỉ thật sự hoàn thành khi có ảnh thật, thời điểm thật, và người thật cùng nhìn thấy.</p>
         <div class="hero__actions">
-          <!-- FUTURE: Replace "#" with real URLs -->
-          <a href="#" class="btn btn--primary btn--lg" id="btn-figma">View Figma Prototype</a>
-          <a href="#" class="btn btn--secondary btn--lg" id="btn-behance">Read Behance Case Study</a>
+          <a href="https://www.figma.com/design/m0U0raXlIDOen0NE9AZZvS/SOS-App?t=gn6b0CzlxZMW7yDE-0" class="btn btn--primary btn--lg" target="_blank" rel="noopener">View Figma Prototype</a>
+          <a href="https://www.behance.net/gallery/247641667/Snap-Or-Slap-A-Mobile-App-for-Social-Habit-Tracker" class="btn btn--secondary btn--lg" target="_blank" rel="noopener">Read Behance Case Study</a>
         </div>
-      </div>
-      <div class="hero__visual reveal">
-        <!-- FUTURE: Replace placeholder with real phone mockup from assets/mockups/ -->
-        <div class="phone-frame" aria-label="App screenshot placeholder">
-          <div style="width:244px;height:488px;
-                      background:linear-gradient(160deg,var(--color-primary-100),var(--color-primary-300));
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:var(--text-3xl);color:var(--color-primary-600);">
-            📱
-          </div>
-        </div>
-        <div class="hero__glow" aria-hidden="true"></div>
-      </div>
-    </div>
-  </section>
+      </article>
 
-  <!-- ▸ PROBLEM ───────────────────────────────────────────────────────── -->
-  <section id="problem" class="section problem">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="badge section-header__badge">The Problem</span>
-        <h2 class="section-header__title">Product reviews are broken</h2>
-        <p class="section-header__subtitle">
-          Long-form reviews are hard to write and harder to trust. Young consumers
-          want fast, visual, peer-driven ratings — not walls of text.
-        </p>
-      </div>
-      <div class="grid-3 reveal">
-        <div class="card card--tinted">
-          <div class="card__icon">😩</div>
-          <h4 class="card__title">Review fatigue</h4>
-          <p class="card__body">Only 5–10 % of buyers leave reviews. Writing paragraphs feels like homework.</p>
-        </div>
-        <div class="card card--tinted">
-          <div class="card__icon">🤷</div>
-          <h4 class="card__title">Low trust</h4>
-          <p class="card__body">Fake reviews and sponsored posts make it hard to know what's genuine.</p>
-        </div>
-        <div class="card card--tinted">
-          <div class="card__icon">📵</div>
-          <h4 class="card__title">No mobile-first flow</h4>
-          <p class="card__body">Most review platforms are desktop-first forms — clunky on a phone.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+      <article class="hero__stage hero__stage--right hero__stage--2" data-stage="2">
+        <p class="hero__eyebrow hero__eyebrow--support">SHARED CONSEQUENCE</p>
+        <h2 class="hero__stage-title">Chỉ một người chậm,<br>cả squad đều <span>cảm nhận</span></h2>
+        <p class="hero__stage-body">Shared Hearts biến lời hứa cá nhân thành rủi ro chung. Áp lực không nặng nề, nhưng đủ thật để khiến mọi người xuất hiện đúng lúc.</p>
+      </article>
 
-  <!-- ▸ VALUE PROPOSITION ─────────────────────────────────────────────── -->
-  <section id="why-sos" class="section">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="badge section-header__badge">Why Snap or Slap?</span>
-        <h2 class="section-header__title">One gesture. One honest opinion.</h2>
-        <p class="section-header__subtitle">
-          Snap or Slap distils product reviews into a single, satisfying swipe.
-          No typing, no star-math — just your gut reaction.
-        </p>
-      </div>
-      <div class="grid-3 reveal">
-        <div class="card">
-          <div class="card__icon">⚡</div>
-          <h4 class="card__title">Instant reviews</h4>
-          <p class="card__body">Swipe right to Snap (love it) or left to Slap (pass). A review in under two seconds.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">🎯</div>
-          <h4 class="card__title">Honest signal</h4>
-          <p class="card__body">Binary feedback removes rating inflation — no more guessing whether 3.7 stars is good.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">🤳</div>
-          <h4 class="card__title">Built for mobile</h4>
-          <p class="card__body">Native swipe gestures, camera-first scanning, and buttery-smooth animations.</p>
-        </div>
-      </div>
+      <article class="hero__stage hero__stage--right hero__stage--3" data-stage="3">
+        <p class="hero__eyebrow hero__eyebrow--support">VISIBLE TEAM STATUS</p>
+        <h2 class="hero__stage-title">Trạng thái của team<br><span>luôn hiện ra trước mắt</span></h2>
+        <p class="hero__stage-body">Widget, step state và tín hiệu nguy cơ giữ tiến độ ở ngay ngoài màn hình app — đủ gần để không thể giả vờ không thấy.</p>
+      </article>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ▸ MVP FEATURES ──────────────────────────────────────────────────── -->
-  <section id="mvp" class="section mvp">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="badge section-header__badge">MVP Scope</span>
-        <h2 class="section-header__title">Core features, zero bloat</h2>
-        <p class="section-header__subtitle">
-          The minimum-viable product ships with just enough features to validate
-          the core interaction — swipe reviews + social sharing.
-        </p>
-      </div>
-      <div class="grid-4 reveal">
-        <div class="card">
-          <div class="card__icon">👆</div>
-          <h4 class="card__title">Swipe to review</h4>
-          <p class="card__body">Snap or Slap any product in seconds.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">📸</div>
-          <h4 class="card__title">Barcode scan</h4>
-          <p class="card__body">Point your camera to identify a product instantly.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">📊</div>
-          <h4 class="card__title">Snap ratio</h4>
-          <p class="card__body">See a live community ratio — no fake stars.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">🔗</div>
-          <h4 class="card__title">Share cards</h4>
-          <p class="card__body">Auto-generated visual cards for social media.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- =======================================================================
+     PROBLEM — Pain points the audience feels
+     ======================================================================= -->
+<section id="problem" class="section problem">
+  <div class="container">
 
-  <!-- ▸ HOW IT WORKS ──────────────────────────────────────────────────── -->
-  <section id="how-it-works" class="section">
-    <div class="container split">
-      <div class="how-it-works__steps reveal">
-        <div class="section-header" style="text-align:left;margin-bottom:var(--space-8);">
-          <span class="badge section-header__badge">How It Works</span>
-          <h2 class="section-header__title">Three taps, one review</h2>
-        </div>
-        <div class="step">
-          <div class="step__number">1</div>
-          <div class="step__content">
-            <h4>Open &amp; scan</h4>
-            <p>Launch the app and scan a product barcode — or search by name.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step__number">2</div>
-          <div class="step__content">
-            <h4>Snap or Slap</h4>
-            <p>Swipe right to Snap (recommend) or left to Slap (pass). Done!</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step__number">3</div>
-          <div class="step__content">
-            <h4>Share &amp; explore</h4>
-            <p>See the live community ratio and share a visual card on social media.</p>
-          </div>
-        </div>
-      </div>
-      <div class="reveal" style="display:flex;justify-content:center;">
-        <!-- FUTURE: Replace with real screenshot from assets/mockups/ -->
-        <div class="phone-frame" aria-label="How-it-works screenshot placeholder">
-          <div style="width:244px;height:488px;
-                      background:linear-gradient(160deg,var(--color-support-100),var(--color-support-300));
-                      display:flex;align-items:center;justify-content:center;
-                      font-size:var(--text-3xl);color:var(--color-support-600);">
-            🔄
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ▸ SELECTED SCREENS ──────────────────────────────────────────────── -->
-  <section id="screens" class="section screens">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="badge section-header__badge">Selected Screens</span>
-        <h2 class="section-header__title" style="color:var(--text-inverse);">A peek inside the app</h2>
-        <p class="section-header__subtitle">Hand-crafted UI designed for speed, clarity, and delight.</p>
-      </div>
-      <div class="screenshot-gallery reveal">
-        <div class="screenshot-gallery__item">
-          <div class="phone-frame">
-            <div style="width:244px;height:488px;background:linear-gradient(160deg,#fde68a,#f97316);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Home</div>
-          </div>
-        </div>
-        <div class="screenshot-gallery__item">
-          <div class="phone-frame">
-            <div style="width:244px;height:488px;background:linear-gradient(160deg,#a5f3fc,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Scan</div>
-          </div>
-        </div>
-        <div class="screenshot-gallery__item">
-          <div class="phone-frame">
-            <div style="width:244px;height:488px;background:linear-gradient(160deg,#c4b5fd,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Swipe</div>
-          </div>
-        </div>
-        <div class="screenshot-gallery__item">
-          <div class="phone-frame">
-            <div style="width:244px;height:488px;background:linear-gradient(160deg,#bbf7d0,#22c55e);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Profile</div>
-          </div>
-        </div>
-        <div class="screenshot-gallery__item">
-          <div class="phone-frame">
-            <div style="width:244px;height:488px;background:linear-gradient(160deg,#fecaca,#ef4444);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Share</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ▸ DIFFERENTIATORS ───────────────────────────────────────────────── -->
-  <section id="difference" class="section">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="badge section-header__badge">What Makes Us Different</span>
-        <h2 class="section-header__title">Not another review app</h2>
-        <p class="section-header__subtitle">
-          Snap or Slap is designed around a single insight: people express
-          opinions faster with gestures than with words.
-        </p>
-      </div>
-      <div class="grid-3 reveal">
-        <div class="card">
-          <div class="card__icon">🃏</div>
-          <h4 class="card__title">Swipe, not type</h4>
-          <p class="card__body">Binary gestures remove friction. No stars, no paragraph boxes.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">📈</div>
-          <h4 class="card__title">Community ratio</h4>
-          <p class="card__body">A live Snap-to-Slap ratio replaces inflated star averages.</p>
-        </div>
-        <div class="card">
-          <div class="card__icon">🎨</div>
-          <h4 class="card__title">Visual-first sharing</h4>
-          <p class="card__body">Auto-generated branded cards make every review shareable on socials.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ▸ FINAL CTA ─────────────────────────────────────────────────────── -->
-  <section id="cta" class="section cta">
-    <div class="container reveal" style="max-width:var(--container-md);">
-      <h2 style="margin-bottom:var(--space-4);">Ready to explore the project?</h2>
-      <p style="margin-bottom:var(--space-8);font-size:var(--text-lg);">
-        Dive into the design process, browse high-fidelity prototypes, or read
-        the full case-study write-up.
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Vấn đề</span>
+      <h2 class="section-header__title">Tự kỷ luật một mình? Khó lắm.</h2>
+      <p class="section-header__subtitle">
+        Hầu hết mọi người bỏ cuộc vì không ai biết, không ai thấy, và không có hậu quả thật.
       </p>
-      <div class="flex--center gap-4" style="flex-wrap:wrap;">
+    </div>
+
+    <div class="grid-3 reveal-stagger">
+      <!-- Pain Card 1 -->
+      <div class="card card--pain reveal">
+        <!-- <div class="card__icon">🔒</div> -->
+        <h4 class="card__title">Kỷ luật "một mình" dễ bỏ</h4>
+        <p class="card__body">
+          Không ai thấy thì không ai biết bạn bỏ lỡ. Dễ "thôi mai tính" lắm. Động lực tắt nhanh khi chỉ có mình bạn biết.
+        </p>
+      </div>
+
+      <!-- Pain Card 2 -->
+      <div class="card card--pain reveal">
+        <!-- <div class="card__icon">✅</div> -->
+        <h4 class="card__title">Tự tick "done" thì ai tin?</h4>
+        <p class="card__body">
+          Không có bằng chứng, hoàn thành chỉ là tự nói với mình. Dễ tự lừa bản thân lắm — app nào cũng cho tick mà chẳng check.
+        </p>
+      </div>
+
+      <!-- Pain Card 3 -->
+      <div class="card card--pain reveal">
+        <!-- <div class="card__icon">👻</div> -->
+        <h4 class="card__title">Nỗ lực mà không ai thấy</h4>
+        <p class="card__body">
+          Cố gắng mỗi ngày nhưng team không biết. Cảm giác vô hình. Nỗ lực sẽ mạnh hơn khi được nhìn thấy.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     WHY SOS — Core value propositions
+     ======================================================================= -->
+<section id="why-sos" class="section">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Giải pháp</span>
+      <h2 class="section-header__title">SnapOrSlap làm khác gì?</h2>
+      <p class="section-header__subtitle">
+        Không hứa suông. Không tự tick. Mọi thứ phải chứng minh — và cả team cùng chịu.
+      </p>
+    </div>
+
+    <div class="grid-3 reveal-stagger">
+      <!-- Value 1 -->
+      <div class="card reveal">
+        <!-- <div class="card__icon">📸</div> -->
+        <h4 class="card__title">Phải chứng minh thật</h4>
+        <p class="card__body">
+          Mỗi check-in cần ảnh thật. Không ảnh = không tính. Đơn giản vậy thôi. Peer review từ đồng đội đảm bảo không ai fake.
+        </p>
+      </div>
+
+      <!-- Value 2 -->
+      <div class="card reveal">
+        <!-- <div class="card__icon">💔</div> -->
+        <h4 class="card__title">Fail là cả team chịu</h4>
+        <p class="card__body">
+          Shared Hearts giảm khi có người bỏ lỡ. Áp lực nhẹ nhưng đủ hiệu quả — kiểu "mình không muốn làm team mất hearts".
+        </p>
+      </div>
+
+      <!-- Value 3 -->
+      <div class="card reveal">
+        <!-- <div class="card__icon">👁️</div> -->
+        <h4 class="card__title">Ai cũng thấy trạng thái nhau</h4>
+        <p class="card__body">
+          Widget hiện rõ ai on track, ai đang "nguy". Không trốn được. Transparency tạo động lực mạnh hơn mọi reminder.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     MVP FEATURES — 5 core features
+     ======================================================================= -->
+<section id="mvp" class="section mvp">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Tính năng MVP</span>
+      <h2 class="section-header__title">5 tính năng cốt lõi</h2>
+      <p class="section-header__subtitle">
+        Mỗi tính năng được thiết kế để tăng trách nhiệm nhóm và giảm khả năng bỏ cuộc.
+      </p>
+    </div>
+
+    <div class="grid-5 reveal-stagger">
+      <!-- Feature 1 -->
+      <div class="card card--feature reveal">
+        <!-- <div class="card__icon">📷</div> -->
+        <p class="card__accent">Photo Check-in</p>
+        <h4 class="card__title">Check-in bằng ảnh</h4>
+        <p class="card__body">Chụp ảnh + peer review. Không có bằng chứng, không được tính hoàn thành.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="card card--feature reveal">
+        <!-- <div class="card__icon">👥</div> -->
+        <p class="card__accent">Group Creation</p>
+        <h4 class="card__title">Tạo nhóm & mời bạn</h4>
+        <p class="card__body">Tạo squad, thêm bạn bè, cùng cam kết một thử thách chung.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="card card--feature reveal">
+        <!-- <div class="card__icon">📊</div> -->
+        <p class="card__accent">Live Widget</p>
+        <h4 class="card__title">Widget trạng thái</h4>
+        <p class="card__body">Xem real-time ai on track, ai chưa check-in. Mọi lúc, ngay trên Home Screen.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="card card--feature reveal">
+        <!-- <div class="card__icon">👋</div> -->
+        <p class="card__accent">The Slap</p>
+        <h4 class="card__title">Hình phạt "Slap"</h4>
+        <p class="card__body">Fail check-in? Team vote ảnh bạn bị "slap" lên bảng. Áp lực đủ vui để không muốn tái phạm.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="card card--feature reveal">
+        <!-- <div class="card__icon">❤️</div> -->
+        <p class="card__accent">Shared Hearts</p>
+        <h4 class="card__title">Hearts chung</h4>
+        <p class="card__body">Cả team chia sẻ mạng sống. Một người fail, cả nhóm mất heart. Team accountability thật sự.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     HOW IT WORKS — 5-step flow
+     ======================================================================= -->
+<section id="how-it-works" class="section">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Cách hoạt động</span>
+      <h2 class="section-header__title">5 bước — từ cam kết đến hành động</h2>
+    </div>
+
+    <div class="how-it-works__strip reveal">
+      <div class="how-it-works__step">
+        <div class="how-it-works__step-number">1</div>
+        <h4>Tạo challenge</h4>
+        <p>Chọn thói quen, đặt deadline, set số bước.</p>
+      </div>
+      <div class="how-it-works__step">
+        <div class="how-it-works__step-number">2</div>
+        <h4>Mời squad</h4>
+        <p>Thêm bạn bè vào nhóm thử thách. Cùng cam kết.</p>
+      </div>
+      <div class="how-it-works__step">
+        <div class="how-it-works__step-number">3</div>
+        <h4>Check-in bằng ảnh</h4>
+        <p>Chụp ảnh chứng minh đã hoàn thành. Hàng ngày.</p>
+      </div>
+      <div class="how-it-works__step">
+        <div class="how-it-works__step-number">4</div>
+        <h4>Review & react</h4>
+        <p>Team xem ảnh, approve hoặc reject. Peer pressure đúng mức.</p>
+      </div>
+      <div class="how-it-works__step">
+        <div class="how-it-works__step-number">5</div>
+        <h4>Bảo vệ Hearts</h4>
+        <p>Giữ Shared Hearts sống sót. Fail = mất hearts, cả team ảnh hưởng.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     SELECTED SCREENS — Grouped mockup gallery
+     ======================================================================= -->
+<section id="screens" class="section screens">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Màn hình</span>
+      <h2 class="section-header__title">Nhìn câu chuyện bằng chính từng nhịp giao diện</h2>
+      <p class="section-header__subtitle">
+        Không trình bày theo kiểu gallery. Mỗi cụm màn hình là một beat nhỏ trong hành trình trải nghiệm của SOS.
+      </p>
+    </div>
+
+    <div class="screen-story">
+      <article class="screen-beat screen-beat--right reveal">
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">01 / ONBOARDING</p>
+          <h3 class="screen-beat__title">Bắt đầu bằng một lời mời gọi rất rõ ràng</h3>
+          <p class="screen-beat__body">Onboarding của SOS không nói dài. Nó dẫn người dùng đi thẳng vào cảm giác: đây không chỉ là một app theo dõi, mà là một hệ thống cam kết có người cùng nhìn thấy.</p>
+        </div>
+        <div class="screen-beat__visual screen-beat__visual--stack-right">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/Onboarding/Onboarding-1.png" alt="Onboarding screen 1" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/Onboarding/Onboarding-3.png" alt="Onboarding screen 3" loading="lazy" data-parallax-speed="0.035" data-base-transform="rotate(5deg)">
+        </div>
+      </article>
+
+      <article class="screen-beat screen-beat--left reveal">
+        <div class="screen-beat__visual screen-beat__visual--stack-left">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/Authentication/Login.png" alt="Login screen" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/Authentication/Register.png" alt="Register screen" loading="lazy" data-parallax-speed="-0.03" data-base-transform="rotate(-6deg)">
+        </div>
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">02 / AUTHENTICATION</p>
+          <h3 class="screen-beat__title">Mọi thứ bắt đầu nhẹ, nhưng không hời hợt</h3>
+          <p class="screen-beat__body">Luồng đăng nhập và đăng ký được giữ cực gọn để người dùng bước vào challenge nhanh nhất, nhưng vẫn đủ sạch và tin cậy cho một sản phẩm có tính kỷ luật theo nhóm.</p>
+        </div>
+      </article>
+
+      <article class="screen-beat screen-beat--right reveal">
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">03 / FRIENDS HUB</p>
+          <h3 class="screen-beat__title">Bắt đầu từ những mối quan hệ thật</h3>
+          <p class="screen-beat__body">Friends Hub là nơi hệ thống social pressure của SOS có nền móng. Từ incoming, outgoing đến profile preview, mọi thứ được thiết kế để lời mời tham gia challenge có trọng lượng hơn.</p>
+        </div>
+        <div class="screen-beat__visual screen-beat__visual--triptych">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/FriendHub/Friends-Hub-List-of-friends.png" alt="Friends list" loading="lazy">
+          <img class="screen-shot screen-shot--side" src="assets/mockups/FriendHub/Friends-Hub-Incoming-Request.png" alt="Incoming requests" loading="lazy" data-parallax-speed="0.028" data-base-transform="rotate(4deg)">
+          <img class="screen-shot screen-shot--side" src="assets/mockups/FriendHub/Friends-Hub-Outcoming-Request.png" alt="Outgoing requests" loading="lazy" data-parallax-speed="-0.024" data-base-transform="rotate(-4deg)">
+        </div>
+      </article>
+
+      <article class="screen-beat screen-beat--left reveal">
+        <div class="screen-beat__visual screen-beat__visual--stack-left">
+          <img class="screen-shot screen-shot--main" src="assets/mockups/ChallengeHub/Challenges-Hub-Formation.png" alt="Formation list" loading="lazy">
+          <img class="screen-shot screen-shot--offset" src="assets/mockups/ChallengeHub/Challenges-Hub-Active.png" alt="Active list" loading="lazy" data-parallax-speed="0.03" data-base-transform="rotate(-5deg)">
+        </div>
+        <div class="screen-beat__copy">
+          <p class="screen-beat__eyebrow">04 / CHALLENGE HUB</p>
+          <h3 class="screen-beat__title">Từ formation đến active, mọi thứ đều có nhịp riêng</h3>
+          <p class="screen-beat__body">Challenge Hub thể hiện rõ logic trạng thái của SOS. Đây là nơi người dùng đọc được tình hình hiện tại của cả nhóm, thay vì chỉ nhìn vào một danh sách nhiệm vụ vô cảm.</p>
+        </div>
+      </article>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     DIFFERENCE — Why it feels different
+     ======================================================================= -->
+<section id="difference" class="section">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <span class="badge section-header__badge">Khác biệt</span>
+      <h2 class="section-header__title">Tại sao SOS khác biệt?</h2>
+    </div>
+
+    <div class="grid-3 reveal-stagger">
+      <!-- Contrast 1 -->
+      <div class="card card--contrast reveal">
+        <h4 class="card__title">Không chỉ là habit tracker</h4>
+        <p class="card__body">
+          Habit tracker cho bạn tick xong quên. SOS bắt bạn phải chứng minh — và team sẽ review.
+        </p>
+      </div>
+
+      <!-- Contrast 2 -->
+      <div class="card card--contrast reveal">
+        <h4 class="card__title">Không chỉ là social app</h4>
+        <p class="card__body">
+          Social app khác focus vào content. SOS focus vào hành động — photo proof, shared consequences, real accountability.
+        </p>
+      </div>
+
+      <!-- Contrast 3 -->
+      <div class="card card--contrast reveal">
+        <h4 class="card__title">Không chỉ là gamification</h4>
+        <p class="card__body">
+          Gamification bình thường cho điểm rồi quên. SOS tạo áp lực thật — hearts chung, slap penalty, team transparency.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================================================================
+     CTA — Final call to action
+     ======================================================================= -->
+<section id="cta" class="section cta">
+  <div class="container">
+    <div class="reveal">
+      <p class="cta__closing">Snap to prove — Slap to move</p>
+      <h2>Kỷ luật thực. Bằng chứng thực.<br>Đội nhóm thực.</h2>
+      <p class="section-header__subtitle mx-auto">
+        Xem thiết kế chi tiết trên Figma, đọc case study đầy đủ trên Behance, hoặc xem source code trên GitHub.
+      </p>
+      <div class="hero__actions mt-8" style="justify-content:center;">
         <!-- FUTURE: Replace "#" with real URLs -->
-        <a href="#" class="btn btn--primary btn--lg" id="cta-figma">View Figma Prototype</a>
-        <a href="#" class="btn btn--secondary btn--lg" id="cta-behance">Read Behance Case Study</a>
-        <a href="#" class="btn btn--secondary btn--lg" id="cta-wiki">Browse Project Wiki</a>
+        <a href="https://www.figma.com/design/m0U0raXlIDOen0NE9AZZvS/SOS-App?t=gn6b0CzlxZMW7yDE-0" target="_blank" rel="noopener" class="btn btn--primary btn--lg" id="cta-figma">View Figma Prototype</a>
+        <a href="https://www.behance.net/gallery/247641667/Snap-Or-Slap-A-Mobile-App-for-Social-Habit-Tracker" target="_blank" rel="noopener" class="btn btn--secondary btn--lg" id="cta-behance">Read Behance Case Study</a>
+        <a href="https://github.com/snap-or-slap/" target="_blank" rel="noopener"
+           class="btn btn--ghost btn--lg" id="cta-github">View Source on GitHub →</a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ▸ FOOTER ────────────────────────────────────────────────────────── -->
-  <footer id="footer" class="section--compact footer">
-    <div class="container">
-      <div class="footer__top">
-        <div class="footer__col">
-          <h4>Project</h4>
-          <ul>
-            <li><a href="#">Figma Prototype</a></li>
-            <li><a href="#">Behance Case Study</a></li>
-            <li><a href="#">Project Wiki</a></li>
-          </ul>
-        </div>
-        <div class="footer__col">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="#">GitHub Repository</a></li>
-            <li><a href="#">Design Tokens</a></li>
-            <li><a href="#">Component Library</a></li>
-          </ul>
-        </div>
-        <div class="footer__col">
-          <h4>Team</h4>
-          <ul>
-            <!-- FUTURE: Replace with real team member names -->
-            <li><a href="#">Member 1</a></li>
-            <li><a href="#">Member 2</a></li>
-            <li><a href="#">Member 3</a></li>
-          </ul>
-        </div>
+<!-- =======================================================================
+     FOOTER
+     ======================================================================= -->
+<footer class="section section--compact footer" id="footer">
+  <div class="container">
+
+    <div class="footer__top">
+      <div class="footer__col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://www.figma.com/design/m0U0raXlIDOen0NE9AZZvS/SOS-App?t=gn6b0CzlxZMW7yDE-0" target="_blank" rel="noopener" id="footer-figma">Figma Prototype</a></li>
+          <li><a href="https://www.behance.net/gallery/247641667/Snap-Or-Slap-A-Mobile-App-for-Social-Habit-Tracker" target="_blank" rel="noopener" id="footer-behance">Behance Case Study</a></li>
+          <li><a href="https://github.com/snap-or-slap/" target="_blank" rel="noopener" id="footer-github">GitHub Repository</a></li>
+        </ul>
       </div>
-      <div class="footer__bottom">
-        <p>&copy; 2026 Snap or Slap — Mobile App Development Course Project</p>
-        <p>Made with 🧡 for learning</p>
+      <div class="footer__col">
+        <h4>Documentation</h4>
+        <ul>
+          <li><a href="https://github.com/snap-or-slap/snap-or-slap-mobile/wiki" target="_blank" rel="noopener" id="footer-wiki">Project Wiki</a></li>
+          <li><a href="#mvp" id="footer-features">Features</a></li>
+          <li><a href="#screens" id="footer-screens">Screen Gallery</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="#hero">Home</a></li>
+          <li><a href="#problem">Vấn đề</a></li>
+          <li><a href="#why-sos">Giải pháp</a></li>
+          <li><a href="#difference">Khác biệt</a></li>
+        </ul>
       </div>
     </div>
-  </footer>
 
-  <!-- ===================================================================
-       SCRIPTS — loaded at end of body for fast first paint.
-       =================================================================== -->
-  <script src="scripts/nav.js"></script>
-  <script src="scripts/interactions.js"></script>
-  <script src="scripts/main.js"></script>
+    <div class="footer__bottom">
+      <span class="footer__brand">SnapOrSlap</span>
+      <span>Mobile App Development — 2025</span>
+    </div>
+
+  </div>
+</footer>
+
+<!-- =======================================================================
+     SCRIPTS
+     Load order: hero-3d (module, async) → nav → interactions → parallax → main
+     ======================================================================= -->
+<script type="module" src="scripts/hero-3d.js"></script>
+<script src="scripts/nav.js" defer></script>
+<script src="scripts/interactions.js" defer></script>
+<script src="scripts/parallax.js" defer></script>
+<script src="scripts/main.js" defer></script>
+
 </body>
 </html>

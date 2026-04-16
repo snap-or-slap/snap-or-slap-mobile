@@ -16,9 +16,14 @@
   max-width: var(--container-md);
 }
 
+.container--hero {
+  max-width: var(--container-2xl);
+}
+
 /* ── Section ───────────────────────────────────────────────────────────── */
 .section {
-  padding-block: var(--space-20);
+  padding-block: var(--space-24);
+  position: relative;
 }
 
 .section--compact {
@@ -27,6 +32,18 @@
 
 .section--flush {
   padding: 0;
+}
+
+.section--no-top {
+  padding-top: 0;
+}
+
+/* ── Hero Sticky Wrapper ──────────────────────────────────────────────── */
+/* Creates the scroll-locked zone where the 3D hero plays its animation.
+   Height = viewport + extra scroll distance for the 3D effect.           */
+.hero__scroll-spacer {
+  height: 240vh;      /* adjustable: controls how long the 3D sticks      */
+  position: relative;
 }
 
 /* ── Two-Column Split ──────────────────────────────────────────────────── */
@@ -48,6 +65,13 @@
 .grid-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+/* ── Five-Column Grid (MVP Features) ───────────────────────────────────── */
+.grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--space-6);
 }
 
@@ -92,8 +116,11 @@
   .grid-4 {
     grid-template-columns: 1fr 1fr;
   }
+  .grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
   .section {
-    padding-block: var(--space-16);
+    padding-block: var(--space-20);
   }
 }
 
@@ -108,7 +135,10 @@
   .grid-4 {
     grid-template-columns: 1fr;
   }
+  .grid-5 {
+    grid-template-columns: 1fr 1fr;
+  }
   .section {
-    padding-block: var(--space-12);
+    padding-block: var(--space-16);
   }
 }

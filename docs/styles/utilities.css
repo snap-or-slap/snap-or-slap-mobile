@@ -64,3 +64,18 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Staggered reveals: children animate sequentially */
+.reveal-stagger > .reveal {
+  transition-delay: calc(var(--reveal-index, 0) * 80ms);
+}
+
+/* ── Lazy-loaded images ────────────────────────────────────────────────── */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-default);
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+}
