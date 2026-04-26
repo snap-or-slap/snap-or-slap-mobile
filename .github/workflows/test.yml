@@ -1,0 +1,54 @@
+name: Test and SonarCloud
+
+on:
+  push:
+    branches:
+      - main
+      - test/screen-coverage
+      - ci/quality-pipeline
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run tests, coverage, and SonarCloud scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run tests with coverage
+        run: npm run test:ci
+
+      - name: Verify coverage output
+        run: |
+          ls -la coverage
+          test -f coverage/lcov.info
+          test -f coverage/lcov-report/index.html
+
+      - name: Upload test report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: coverage/lcov-report
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
