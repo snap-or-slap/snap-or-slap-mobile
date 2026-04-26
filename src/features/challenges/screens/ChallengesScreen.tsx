@@ -1,91 +1,135 @@
-
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Screen, AppText, Card, Badge } from '@ds/components';
-import { useTheme } from '@ds/theme';
-import { ChallengesHeader, ChallengeSegmentTabs, ChallengeSectionIntro } from '../components';
-import { activeChallengesMock, formationChallengesMock, historyChallengesMock } from '../data/challenges.mock';
-import { ChallengeSegment } from '../types';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Screen } from '@ds/components';
+
+import {
+  ActiveChallengeCard,
+  ChallengeSectionIntro,
+  ChallengeSegmentTabs,
+  ChallengesHeader,
+  FormationChallengeCard,
+  HistoryChallengeCard,
+} from '../components';
+
+import {
+  activeChallengesMock,
+  formationChallengesMock,
+  historyChallengesMock,
+} from '../data/challenges.mock';
+
+import type { ChallengeSegment } from '../types';
+
+const SEGMENT_CONTENT: Record<
+  ChallengeSegment,
+  {
+    title: string;
+    description: string;
+  }
+> = {
+  formation: {
+    title: 'Challenges in Formation',
+    description:
+      'Review upcoming challenges, check member readiness, and wait for them to start.',
+  },
+  active: {
+    title: 'Active Challenges',
+    description:
+      'Track ongoing challenges, monitor risk, and stay on top of each step.',
+  },
+  history: {
+    title: 'Challenge History',
+    description:
+      'Look back at completed, failed, and cancelled challenges.',
+  },
+};
 
 export function ChallengesScreen() {
-  const theme = useTheme();
   const [segment, setSegment] = useState<ChallengeSegment>('active');
 
-  const renderIntro = () => {
+  const segmentContent = SEGMENT_CONTENT[segment];
+
+  const renderChallengeList = () => {
     switch (segment) {
-      case 'active':
-        return (
-          <ChallengeSectionIntro
-            title="Active Challenges"
-            description="Track ongoing challenges, monitor risk, and stay on top of each step."
-          />
-        );
       case 'formation':
         return (
-          <ChallengeSectionIntro
-            title="Challenges in Formation"
-            description="Review upcoming challenges, check member readiness, and wait for them to start."
-          />
+          <View style={styles.list} testID="challenges-list">
+            {formationChallengesMock.map((challenge) => (
+              <FormationChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                testID={`formation-challenge-card-${challenge.id}`}
+              />
+            ))}
+          </View>
         );
+
+      case 'active':
+        return (
+          <View style={styles.list} testID="challenges-list">
+            {activeChallengesMock.map((challenge) => (
+              <ActiveChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                testID={`active-challenge-card-${challenge.id}`}
+              />
+            ))}
+          </View>
+        );
+
       case 'history':
         return (
-          <ChallengeSectionIntro
-            title="Challenge History"
-            description="Look back at completed, failed, and cancelled challenges."
-          />
+          <View style={styles.list} testID="challenges-list">
+            {historyChallengesMock.map((challenge) => (
+              <HistoryChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                testID={`history-challenge-card-${challenge.id}`}
+              />
+            ))}
+          </View>
         );
+
+      default:
+        return null;
     }
   };
 
-  const renderList = () => {
-    let data: any[] = [];
-    if (segment === 'active') data = activeChallengesMock;
-    if (segment === 'formation') data = formationChallengesMock;
-    if (segment === 'history') data = historyChallengesMock;
-
-    return (
-      <View style={styles.list} testID="challenges-list">
-        {data.map((item, index) => (
-          <Card key={item.id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Badge tone={item.riskStatus === 'danger' ? 'danger' : 'neutral'}>{item.riskStatus || item.status || 'formation'}</Badge>
-            </View>
-            <AppText variant="titleMedium" style={{ color: theme.colors.text.primary, marginTop: 8 }}>
-              {item.title}
-            </AppText>
-            <AppText variant="bodySmall" style={{ color: theme.colors.text.secondary, marginTop: 4 }}>
-              {item.totalHeartsText || item.heartsText || item.description || ''}
-            </AppText>
-          </Card>
-        ))}
-      </View>
-    );
-  };
-
   return (
-    <Screen testID="challenges-screen" >
-      <ChallengesHeader />
-      <ChallengeSegmentTabs activeSegment={segment} onSegmentChange={setSegment} />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {renderIntro()}
-        {renderList()}
-      </ScrollView>
+    <Screen testID="challenges-screen">
+      <View style={styles.root}>
+        <ChallengesHeader />
+
+        <ChallengeSegmentTabs
+          activeSegment={segment}
+          onSegmentChange={setSegment}
+        />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <ChallengeSectionIntro
+            title={segmentContent.title}
+            description={segmentContent.description}
+          />
+
+          {renderChallengeList()}
+        </ScrollView>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingBottom: 24,
+    paddingTop: 24,
+    paddingBottom: 120,
   },
   list: {
     paddingHorizontal: 24,
-  },
-  card: {
-    padding: 16,
-    marginBottom: 16,
-  },
-  cardHeader: {
-    alignItems: 'flex-start',
+    gap: 16,
   },
 });

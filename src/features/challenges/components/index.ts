@@ -1,4 +1,9 @@
-
+export * from './ActiveChallengeCard';
+export * from './FormationChallengeCard';
+export * from './HistoryChallengeCard';
+export * from './ChallengeStatusPill';
+export * from './HeartCountBadge';
+export * from './JoinedMembersBar';
 export * from './ChallengesHeader';
 export * from './ChallengeSegmentTabs';
 export * from './ChallengeSectionIntro';

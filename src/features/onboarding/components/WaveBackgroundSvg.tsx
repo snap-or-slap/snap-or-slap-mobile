@@ -13,7 +13,7 @@ type WaveBackgroundSvgProps = {
 export function WaveBackgroundSvg({
   width,
   height,
-  color = '#FFEDE7',
+  color, // will be passed from AnimatedWaveBackground
   secondaryColor,
   testID,
 }: WaveBackgroundSvgProps) {
