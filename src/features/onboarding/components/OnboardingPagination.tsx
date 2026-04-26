@@ -14,8 +14,8 @@ export function OnboardingPagination({
   testID = 'onboarding-pagination',
 }: OnboardingPaginationProps) {
   const theme = useTheme();
-  const activeBg = theme.colors?.bg?.brand ?? '#A83900';
-  const inactiveBg = theme.colors?.border?.subtle ?? '#D8C2BB';
+  const activeBg = theme.colors.bg.brand;
+  const inactiveBg = theme.colors.border.subtle;
 
   return (
     <View style={styles.container} testID={testID}>

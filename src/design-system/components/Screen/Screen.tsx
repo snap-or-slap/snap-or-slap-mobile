@@ -1,32 +1,93 @@
 import React from 'react';
-import { View, ScrollView, SafeAreaView } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  ViewStyle,
+  ScrollViewProps,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme';
-import { ScreenProps } from './Screen.types';
-import { createScreenStyles } from './Screen.styles';
 
-export const Screen: React.FC<ScreenProps> = ({
+type ScreenProps = {
+  children: React.ReactNode;
+  padded?: boolean;
+  scroll?: boolean;
+  testID?: string;
+  style?: ViewStyle;
+  contentStyle?: ViewStyle;
+  ignoreTopSafeArea?: boolean;
+  ignoreBottomSafeArea?: boolean;
+} & Pick<ScrollViewProps, 'keyboardShouldPersistTaps'>;
+
+export function Screen({
   children,
-  scroll = false,
   padded = false,
-  background,
+  scroll = false,
+  testID,
   style,
   contentStyle,
-  testID,
-}) => {
+  ignoreTopSafeArea = false,
+  ignoreBottomSafeArea = false,
+  keyboardShouldPersistTaps = 'handled',
+}: ScreenProps) {
   const theme = useTheme();
-  const styles = createScreenStyles(theme, padded, background);
+  const insets = useSafeAreaInsets();
 
-  const Inner = () => <View style={[styles.content, contentStyle]}>{children}</View>;
+  const backgroundColor = theme.colors.bg.page;
 
-  return (
-    <SafeAreaView style={[styles.screen, style]} testID={testID}>
-      {scroll ? (
-        <ScrollView contentContainerStyle={styles.content} style={{ flex: 1 }}>
+  const horizontalPadding = padded ? 24 : 0;
+
+  const rootStyle = [
+    styles.root,
+    {
+      backgroundColor,
+      paddingTop: ignoreTopSafeArea ? 0 : insets.top,
+      paddingBottom: !scroll && !ignoreBottomSafeArea ? insets.bottom : 0,
+    },
+    style,
+  ];
+
+  if (scroll) {
+    return (
+      <View testID={testID} style={rootStyle}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingHorizontal: horizontalPadding,
+              paddingBottom: ignoreBottomSafeArea ? 24 : insets.bottom + 24,
+            },
+            contentStyle,
+          ]}
+        >
           {children}
         </ScrollView>
-      ) : (
-        <Inner />
-      )}
-    </SafeAreaView>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      testID={testID}
+      style={[
+        rootStyle,
+        padded && { paddingHorizontal: horizontalPadding },
+        contentStyle,
+      ]}
+    >
+      {children}
+    </View>
   );
-};
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+});

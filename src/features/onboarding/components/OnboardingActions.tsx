@@ -20,7 +20,7 @@ export function OnboardingActions({
   onSecondaryPress,
 }: OnboardingActionsProps) {
   const theme = useTheme();
-  const brandColor = theme.colors?.text?.brand ?? '#A83900';
+  const brandColor = theme.colors.text.brand;
 
   return (
     <View style={styles.container}>
@@ -32,7 +32,7 @@ export function OnboardingActions({
         title={primaryLabel}
         rightIcon={
           showRightArrow ? (
-            <ArrowCircleRightIcon variant="bold" size={20} color="#FFFFFF" />
+            <ArrowCircleRightIcon variant="bold" size={20} color={theme.colors.text['on-brand']} />
           ) : undefined
         }
         onPress={onPrimaryPress}

@@ -5,11 +5,10 @@ import {
   StatusBar,
   Animated,
   Pressable,
-  SafeAreaView,
   useWindowDimensions,
 } from 'react-native';
 import { useTheme } from '@ds/theme';
-import { AppText } from '@ds/components';
+import { AppText, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon } from '@ds/icons';
 import { useOnboarding } from '../hooks/useOnboarding';
 import {
@@ -68,18 +67,15 @@ export function OnboardingScreen({
     }
   }, [currentIndex]);
 
-  const pageBg = theme.colors?.bg?.page ?? '#FFFBFF';
-  const brandColor = theme.colors?.text?.brand ?? '#A83900';
-  const borderSubtle = theme.colors?.border?.subtle ?? '#D8C2BB';
+  const pageBg = theme.colors.bg.page;
+  const brandColor = theme.colors.text.brand;
+  const borderSubtle = theme.colors.border.subtle;
 
   // Determine if the "Next" button should show an arrow icon
   const showRightArrow = !isFirstSlide && !isLastSlide;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: pageBg }]}
-      testID="onboarding-screen"
-    >
+    <Screen testID="onboarding-screen">
       <StatusBar barStyle="dark-content" />
 
       {/* Animated wave background */}
@@ -165,7 +161,7 @@ export function OnboardingScreen({
           }
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 

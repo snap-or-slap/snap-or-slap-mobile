@@ -51,7 +51,7 @@ export function AnimatedWaveBackground({
     }).start();
   }, [safeIndex, shiftPerSlide, translateX]);
 
-  const waveColor = theme.colors?.bg?.['brand-subtle'] ?? '#FFEDE7';
+  const waveColor = theme.colors.bg['brand-subtle'];
 
   const secondaryWaveColor = theme.colors?.bg?.['brand-subtle-hover'];
 

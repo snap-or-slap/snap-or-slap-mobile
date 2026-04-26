@@ -1,1 +1,4 @@
-export * from './screens/HomeScreen';
+
+export * from './screens';
+export * from './components';
+export * from './types';
