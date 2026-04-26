@@ -1,0 +1,1 @@
+export const useChallengeStore = () => ({ challenges: [] });
