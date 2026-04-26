@@ -17,7 +17,7 @@ function normalizeVariant(variant?: IconVariant): ArrowCircleLeftIconVariant {
 function renderBold({ color, secondaryColor, strokeWidth }: { color: any; secondaryColor?: any; strokeWidth: number }) {
   return (
     <>
-      <Path d="M12 2C6.49 2 2 6.49 2 12C2 17.51 6.49 22 12 22C17.51 22 22 17.51 22 12C22 6.49 17.51 2 12 2ZM16.06 13.79C15.91 13.94 15.72 14.01 15.53 14.01C15.34 14.01 15.15 13.94 15 13.79L12 10.79L9 13.79C8.71 14.08 8.23 14.08 7.94 13.79C7.65 13.5 7.65 13.02 7.94 12.73L11.47 9.2C11.76 8.91 12.24 8.91 12.53 9.2L16.06 12.73C16.35 13.03 16.35 13.5 16.06 13.79Z" fill={color}/>
+      <Path d="M12 2C6.49 2 2 6.49 2 12C2 17.51 6.49 22 12 22C17.51 22 22 17.51 22 12C22 6.49 17.51 2 12 2ZM13.79 15C14.08 15.29 14.08 15.77 13.79 16.06C13.64 16.21 13.45 16.28 13.26 16.28C13.07 16.28 12.88 16.21 12.73 16.06L9.2 12.53C8.91 12.24 8.91 11.76 9.2 11.47L12.73 7.94C13.02 7.65 13.5 7.65 13.79 7.94C14.08 8.23 14.08 8.71 13.79 9L10.79 12L13.79 15Z" fill={color}/>
     </>
   );
 }
@@ -26,7 +26,7 @@ function renderBroken({ color, secondaryColor, strokeWidth }: { color: any; seco
   return (
     <>
       <Path d="M4.87 4.99C3.09 6.79 2 9.27 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2C11.31 2 10.64 2.07 9.98 2.2" stroke={color} strokeWidth={strokeWidth} strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-<Path d="M8.47021 13.26L12.0002 9.74L15.5302 13.26" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+<Path d="M13.26 15.53L9.73999 12L10.7 11.03L12.9 8.83L13.26 8.47" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
     </>
   );
 }
@@ -35,7 +35,7 @@ function renderBulk({ color, secondaryColor, strokeWidth }: { color: any; second
   return (
     <>
       <Path opacity="0.4" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill={secondaryColor ?? color}/>
-<Path d="M15.5302 14.01C15.3402 14.01 15.1502 13.94 15.0002 13.79L12.0002 10.79L9.00016 13.79C8.71016 14.08 8.23016 14.08 7.94016 13.79C7.65016 13.5 7.65016 13.02 7.94016 12.73L11.4702 9.2C11.7602 8.91 12.2402 8.91 12.5302 9.2L16.0602 12.73C16.3502 13.02 16.3502 13.5 16.0602 13.79C15.9102 13.94 15.7202 14.01 15.5302 14.01Z" fill={color}/>
+<Path d="M13.2599 16.28C13.0699 16.28 12.8799 16.21 12.7299 16.06L9.19992 12.53C8.90992 12.24 8.90992 11.76 9.19992 11.47L12.7299 7.94C13.0199 7.65 13.4999 7.65 13.7899 7.94C14.0799 8.23 14.0799 8.71 13.7899 9L10.7899 12L13.7899 15C14.0799 15.29 14.0799 15.77 13.7899 16.06C13.6499 16.21 13.4599 16.28 13.2599 16.28Z" fill={color}/>
     </>
   );
 }
@@ -44,7 +44,7 @@ function renderLinear({ color, secondaryColor, strokeWidth }: { color: any; seco
   return (
     <>
       <Path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke={color} strokeWidth={strokeWidth} strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-<Path d="M8.47021 13.26L12.0002 9.73999L15.5302 13.26" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+<Path d="M13.26 15.53L9.73999 12L13.26 8.47" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
     </>
   );
 }
@@ -53,7 +53,7 @@ function renderOutline({ color, secondaryColor, strokeWidth }: { color: any; sec
   return (
     <>
       <Path d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z" fill={color}/>
-<Path d="M15.5302 14.01C15.3402 14.01 15.1502 13.94 15.0002 13.79L12.0002 10.79L9.00016 13.79C8.71016 14.08 8.23016 14.08 7.94016 13.79C7.65016 13.5 7.65016 13.02 7.94016 12.73L11.4702 9.2C11.7602 8.91 12.2402 8.91 12.5302 9.2L16.0602 12.73C16.3502 13.02 16.3502 13.5 16.0602 13.79C15.9102 13.94 15.7202 14.01 15.5302 14.01Z" fill={color}/>
+<Path d="M13.2599 16.28C13.0699 16.28 12.8799 16.21 12.7299 16.06L9.19992 12.53C8.90992 12.24 8.90992 11.76 9.19992 11.47L12.7299 7.94C13.0199 7.65 13.4999 7.65 13.7899 7.94C14.0799 8.23 14.0799 8.71 13.7899 9L10.7899 12L13.7899 15C14.0799 15.29 14.0799 15.77 13.7899 16.06C13.6499 16.21 13.4599 16.28 13.2599 16.28Z" fill={color}/>
     </>
   );
 }
@@ -62,7 +62,7 @@ function renderTwoTone({ color, secondaryColor, strokeWidth }: { color: any; sec
   return (
     <>
       <Path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke={color} strokeWidth={strokeWidth} strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-<Path opacity="0.4" d="M8.47021 13.26L12.0002 9.74001L15.5302 13.26" stroke={secondaryColor ?? color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+<Path opacity="0.4" d="M13.26 15.53L9.73999 12L13.26 8.47" stroke={secondaryColor ?? color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
     </>
   );
 }
