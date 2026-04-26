@@ -22,7 +22,7 @@ const getButtonSizeStyle = (theme: AppTheme, size: ButtonSize, iconOnly: boolean
 
 const getButtonRadius = (theme: AppTheme, size: ButtonSize, variant: ButtonVariant): number => {
   if (variant === 'link') return 0;
-  const map: Record<ButtonSize, number> = { xs: 4, sm: 6, md: 8, lg: 12 };
+  const map: Record<ButtonSize, number> = { xs: 999, sm: 999, md: 999, lg: 999 };
   return map[size];
 };
 

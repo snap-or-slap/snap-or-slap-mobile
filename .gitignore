@@ -45,3 +45,7 @@ backend/.next/
 backend/node_modules/
 backend/.env
 backend/.env.local
+
+
+# scripts
+scripts/*.js
