@@ -49,3 +49,6 @@ backend/.env.local
 
 # scripts
 scripts/*.js
+
+# coverage
+/coverage
