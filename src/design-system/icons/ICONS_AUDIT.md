@@ -51,6 +51,29 @@ outline > linear > bold > solid > filled > broken > bulk > twoTone > duotone > f
 - `Google Icon.svg`: Does not match naming pattern
 - `Property 1=linier.svg`: Does not match naming pattern
 
+## Arrow circle direction fix
+
+**The issue:**
+Raw Figma exports had incorrect direction names.
+
+**The correction:**
+- `down` files were renamed to `right`
+- `left` files were renamed to `up`
+- `right` files were renamed to `down`
+- `up` files were renamed to `left`
+
+**Confirmed public API:**
+- `ArrowCircleDownIcon` renders down
+- `ArrowCircleLeftIcon` renders left
+- `ArrowCircleRightIcon` renders right
+- `ArrowCircleUpIcon` renders up
+
+**Available variants for each arrow icon:**
+- `bold`, `broken`, `bulk`, `linear`, `outline`, `twoTone`
+
+**Skipped variants:**
+- `solid`, `filled`, `duotone` (missing from raw files)
+
 ## Usage Examples
 ```tsx
 import { CameraIcon, HeartIcon } from '@ds/icons';

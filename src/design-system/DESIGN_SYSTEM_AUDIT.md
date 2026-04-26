@@ -114,3 +114,4 @@ function Example() {
 - Generated components are exported via `@ds/icons`.
 - Seamlessly integrates with the existing `Button` component (which supports `leftIcon`, `rightIcon`, and `iconOnly` props).
 - See `src/design-system/icons/ICONS_AUDIT.md` for the full generation report and default variant hierarchy.
+- Arrow circle filenames were corrected and icon components were regenerated to fix directional bugs.
