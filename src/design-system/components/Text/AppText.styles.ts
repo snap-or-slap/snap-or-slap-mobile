@@ -12,10 +12,15 @@ export const getTextColor = (theme: AppTheme, colorKey: AppTextColor | string): 
     inverse: c.inverse,
     disabled: c.disabled,
     brand: c.brand,
+    'on-brand': c['on-brand'],
     danger: c.error,
+    'on-error': c['on-error'],
     success: c.success,
+    'on-success': c['on-success'],
     warning: c.warning,
+    'on-warning': c['on-warning'],
     info: c.info,
+    'on-info': c['on-info'],
   };
 
   return map[colorKey] || colorKey;

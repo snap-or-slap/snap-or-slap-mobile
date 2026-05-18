@@ -6,7 +6,9 @@ export type AppTextVariant =
 
 export type AppTextColor = 
   | 'primary' | 'secondary' | 'tertiary' | 'inverse' 
-  | 'disabled' | 'brand' | 'danger' | 'success' | 'warning' | 'info';
+  | 'disabled' | 'brand' | 'on-brand' | 'danger' | 'on-error'
+  | 'success' | 'on-success' | 'warning' | 'on-warning'
+  | 'info' | 'on-info';
 
 export interface AppTextProps extends TextProps {
   variant?: AppTextVariant;

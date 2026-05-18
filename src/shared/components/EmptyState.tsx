@@ -1,3 +1,10 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-export const EmptyState = () => <View><Text>Empty</Text></View>;
+import { Card, AppText } from '@ds/components';
+
+export const EmptyState = () => (
+  <Card variant="subtle">
+    <AppText variant="body" color="secondary">
+      Empty
+    </AppText>
+  </Card>
+);

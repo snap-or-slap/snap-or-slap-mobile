@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { Screen, AppText, Card, Button } from '@ds/components';
+import { Screen, AppText, Badge, Card, Button } from '@ds/components';
+import { UserAddIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { Avatar } from '@shared/components';
@@ -74,6 +75,7 @@ export function FriendsScreen() {
         <Button
           title="Send request"
           variant="primary"
+          leftIcon={<UserAddIcon size={18} color={theme.colors.text['on-brand']} variant="outline" />}
           onPress={() => undefined}
         />
       </Card>
@@ -83,9 +85,9 @@ export function FriendsScreen() {
           <AppText variant="subtitle" style={styles.sectionTitle}>
             Pending requests
           </AppText>
-          <AppText variant="caption" style={styles.countText}>
+          <Badge variant="neutral" size="sm" textStyle={styles.countText}>
             {pendingRequests.length}
-          </AppText>
+          </Badge>
         </View>
         <View style={styles.list}>
           {pendingRequests.map((request) => (
@@ -123,9 +125,9 @@ export function FriendsScreen() {
           <AppText variant="subtitle" style={styles.sectionTitle}>
             Your friends
           </AppText>
-          <AppText variant="caption" style={styles.countText}>
+          <Badge variant="neutral" size="sm" textStyle={styles.countText}>
             {friends.length}
-          </AppText>
+          </Badge>
         </View>
         <View style={styles.list}>
           {friends.map((friend) => (

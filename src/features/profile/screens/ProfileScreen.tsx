@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Screen, AppText, Card, Badge } from '@ds/components';
+import { MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { Avatar } from '@shared/components';
@@ -72,12 +73,14 @@ export function ProfileScreen() {
         <View style={styles.badgeGrid}>
           {badges.map((badge) => (
             <View key={badge} style={styles.trophyCard}>
-              <AppText variant="subtitle" style={styles.trophyIcon}>
-                *
-              </AppText>
-              <AppText variant="caption" style={styles.trophyLabel}>
+              <MedalStarIcon
+                size={26}
+                color={theme.colors.text.brand}
+                variant="bold"
+              />
+              <Badge variant="neutral" size="sm" textStyle={styles.trophyLabel}>
                 {badge}
-              </AppText>
+              </Badge>
             </View>
           ))}
         </View>
@@ -167,12 +170,6 @@ function createStyles(theme: AppTheme) {
       borderWidth: 1,
       borderColor: theme.colors.border.subtle,
       gap: 6,
-    },
-    trophyIcon: {
-      color: theme.colors.text.brand,
-      fontWeight: '800',
-      fontSize: 26,
-      lineHeight: 30,
     },
     trophyLabel: {
       color: theme.colors.text.primary,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { AppText, Button, Card, Screen } from '@ds/components';
+import { AppText, Badge, Button, Card, Screen } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 
@@ -235,14 +235,16 @@ export function CreateChallengeScreen({
                 key={friend.id}
                 accessibilityRole="button"
                 onPress={() => toggleFriend(friend.id)}
-                style={[styles.friendChip, selected && styles.friendChipSelected]}
+                style={styles.friendChipPressable}
               >
-                <AppText
-                  variant="label"
-                  style={[styles.friendChipText, selected && styles.friendChipTextSelected]}
+                <Badge
+                  variant={selected ? 'brand' : 'neutral'}
+                  size="md"
+                  style={styles.friendChip}
+                  textStyle={selected ? styles.friendChipTextSelected : styles.friendChipText}
                 >
                   @{friend.username}
-                </AppText>
+                </Badge>
               </Pressable>
             );
           })}
@@ -380,17 +382,12 @@ function createStyles(theme: AppTheme) {
       flexWrap: 'wrap',
       gap: 10,
     },
+    friendChipPressable: {
+      alignSelf: 'flex-start',
+    },
     friendChip: {
       paddingHorizontal: 14,
       paddingVertical: 10,
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: theme.colors.border.subtle,
-      backgroundColor: theme.colors.bg.surface,
-    },
-    friendChipSelected: {
-      borderColor: theme.colors.bg.brand,
-      backgroundColor: theme.colors.bg.brand,
     },
     friendChipText: {
       color: theme.colors.text.brand,

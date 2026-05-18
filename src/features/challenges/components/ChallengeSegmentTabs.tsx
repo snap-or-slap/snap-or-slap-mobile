@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@ds/components';
+import { useTheme } from '@ds/theme';
+import type { AppTheme } from '@ds/theme';
 import type { ChallengeSegment } from '../types';
 
 type ChallengeSegmentTabsProps = {
@@ -21,6 +23,9 @@ export function ChallengeSegmentTabs({
   activeSegment,
   onSegmentChange,
 }: ChallengeSegmentTabsProps) {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.container} testID="challenge-segment-tabs">
@@ -48,10 +53,11 @@ export function ChallengeSegmentTabs({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(theme: AppTheme) {
+  return StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingHorizontal: theme.spacing[24],
+    marginBottom: theme.spacing[24],
   },
 
   container: {
@@ -62,36 +68,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
 
     padding: 6,
-    borderRadius: 999,
+    borderRadius: theme.radius.full,
 
-    backgroundColor: '#FFF0EA',
+    backgroundColor: theme.colors.bg['brand-subtle'],
     borderWidth: 1.5,
-    borderColor: '#E2C8BE',
+    borderColor: theme.colors.border.subtle,
   },
 
   tab: {
     flex: 1,
     minHeight: 44,
-    borderRadius: 999,
+    borderRadius: theme.radius.full,
 
     alignItems: 'center',
     justifyContent: 'center',
 
-    paddingHorizontal: 12,
+    paddingHorizontal: theme.spacing[12],
   },
 
   activeTab: {
-    backgroundColor: '#FFD7C8',
+    backgroundColor: theme.colors.bg['brand-subtle-hover'],
   },
 
   tabText: {
     fontSize: 16,
     lineHeight: 22,
     fontWeight: '700',
-    color: '#5F504B',
+    color: theme.colors.text.secondary,
   },
 
   activeTabText: {
-    color: '#B53A00',
+    color: theme.colors.text.brand,
   },
-});
+  });
+}

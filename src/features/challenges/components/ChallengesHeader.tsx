@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
-import { AppText } from '@ds/components';
+import { View, StyleSheet } from 'react-native';
+import { AppText, Button } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import { Setting2Icon, NotificationBingIcon } from '@ds/icons';
 
@@ -10,16 +10,26 @@ export function ChallengesHeader() {
 
   return (
     <View style={styles.container} testID="challenges-header">
-      <Pressable style={styles.iconButton}>
-        <Setting2Icon size={24} color={theme.colors.text.primary} variant="outline" />
-      </Pressable>
+      <Button
+        variant="ghost"
+        size="sm"
+        iconOnly
+        leftIcon={<Setting2Icon size={24} color={theme.colors.text.primary} variant="outline" />}
+        accessibilityLabel="Challenge settings"
+      />
       <AppText variant="title" style={{ color: theme.colors.text.primary }}>
         Challenges
       </AppText>
-      <Pressable style={styles.iconButton}>
-        <NotificationBingIcon size={24} color={theme.colors.text.primary} variant="outline" />
+      <View style={styles.iconButton}>
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          leftIcon={<NotificationBingIcon size={24} color={theme.colors.text.primary} variant="outline" />}
+          accessibilityLabel="Challenge notifications"
+        />
         <View style={[styles.dot, { backgroundColor: theme.colors.bg.error }]} />
-      </Pressable>
+      </View>
     </View>
   );
 }

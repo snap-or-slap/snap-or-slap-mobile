@@ -60,12 +60,12 @@ export function HomeScreen() {
   };
 
   return (
-    <View style={styles.container} testID="home-screen">
+    <Screen style={styles.container} safeArea="none" testID="home-screen">
       <View style={styles.content}>
         {renderContent()}
       </View>
       <HomeBottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
-    </View>
+    </Screen>
   );
 }
 

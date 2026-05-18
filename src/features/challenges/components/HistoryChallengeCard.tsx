@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppText } from '@ds/components';
+import { AppText, Card } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import type {
@@ -39,7 +39,7 @@ export function HistoryChallengeCard({
     const styles = createStyles(theme);
 
     return (
-        <View testID={testID} style={styles.card}>
+        <Card testID={testID} variant="elevated" padding="none" style={styles.card}>
             <View style={styles.topRow}>
                 <ChallengeStatusPill tone={STATUS_TONE_MAP[challenge.status]} />
 
@@ -59,7 +59,7 @@ export function HistoryChallengeCard({
             <AppText variant="body" style={styles.description}>
                 {challenge.description}
             </AppText>
-        </View>
+        </Card>
     );
 }
 
@@ -68,19 +68,9 @@ function createStyles(theme: AppTheme) {
         card: {
             width: '100%',
             minHeight: 120,
-            borderRadius: 24,
             paddingHorizontal: 18,
             paddingTop: 16,
             paddingBottom: 18,
-            backgroundColor: theme.colors.bg['surface-elevated'],
-            shadowColor: theme.colors.overlay.scrim,
-            shadowOffset: {
-                width: 0,
-                height: 10,
-            },
-            shadowOpacity: 0.08,
-            shadowRadius: 24,
-            elevation: 4,
         },
         topRow: {
             minHeight: 34,

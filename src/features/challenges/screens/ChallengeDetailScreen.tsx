@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { AppText, Button, Card, Screen } from '@ds/components';
+import { AppText, Badge, Button, Card, Screen } from '@ds/components';
 import { ClockIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
@@ -38,7 +38,7 @@ export function ChallengeDetailScreen({
         />
       </View>
 
-      <View style={styles.heroCard}>
+      <Card padding="none" style={styles.heroCard}>
         <View style={styles.heroTopRow}>
           <ChallengeStatusPill tone={challenge.status} label={challenge.statusLabel} />
           <HeartCountBadge label={challenge.heartsText} tone="brand" variant="filled" />
@@ -58,7 +58,7 @@ export function ChallengeDetailScreen({
         <AppText variant="caption" style={styles.heroMeta}>
           Host @{challenge.hostUsername} | {challenge.dateRangeText}
         </AppText>
-      </View>
+      </Card>
 
       <Card style={styles.card}>
         <AppText variant="subtitle" style={styles.sectionTitle}>
@@ -91,9 +91,13 @@ export function ChallengeDetailScreen({
               <AppText variant="subtitle" style={styles.activityName}>
                 {activity.name}
               </AppText>
-              <AppText variant="caption" style={styles.activityStatus}>
+              <Badge
+                variant="brand"
+                size="sm"
+                style={styles.activityStatus}
+              >
                 {activity.statusLabel}
-              </AppText>
+              </Badge>
             </View>
             <AppText variant="caption" style={styles.activityWindow}>
               {activity.windowLabel}
@@ -203,8 +207,7 @@ function createStyles(theme: AppTheme) {
       fontWeight: '800',
     },
     activityStatus: {
-      color: theme.colors.text.brand,
-      fontWeight: '700',
+      alignSelf: 'flex-start',
     },
     activityWindow: {
       color: theme.colors.text.secondary,

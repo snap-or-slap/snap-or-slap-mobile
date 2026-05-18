@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { AppText } from '@ds/components';
 import { useTheme } from '@ds/theme';
+import type { AppTheme } from '@ds/theme';
 import { EmojiHappyIcon, CupIcon, ProfileCircleIcon } from '@ds/icons';
 import { HomeTabKey } from '../types';
 
@@ -13,6 +14,7 @@ interface HomeBottomTabBarProps {
 
 export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProps) {
   const theme = useTheme();
+  const styles = createStyles(theme);
 
   const getIcon = (key: HomeTabKey, isActive: boolean) => {
     const variant = isActive ? 'bold' : 'outline';
@@ -68,18 +70,19 @@ export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProp
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(theme: AppTheme) {
+  return StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    paddingBottom: 24,
-    paddingTop: 8,
+    paddingBottom: theme.spacing[24],
+    paddingTop: theme.spacing[8],
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: theme.spacing[8],
     position: 'relative',
   },
   indicator: {
@@ -87,6 +90,7 @@ const styles = StyleSheet.create({
     bottom: -8,
     width: 24,
     height: 4,
-    borderRadius: 2,
+    borderRadius: theme.radius.xs,
   },
-});
+  });
+}

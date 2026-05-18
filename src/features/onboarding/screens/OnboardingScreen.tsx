@@ -5,7 +5,6 @@ import {
   StatusBar,
   Animated,
   Pressable,
-  useWindowDimensions, TouchableOpacity, Text
 } from 'react-native';
 import { useTheme } from '@ds/theme';
 import { AppText, Screen } from '@ds/components';
@@ -18,6 +17,7 @@ import {
   OnboardingActions,
   OnboardingIllustration,
 } from '../components';
+import { AnimatedIllustration } from '../components/AnimatedIllustration';
 
 interface OnboardingScreenProps {
   onComplete?: () => void;
@@ -31,7 +31,6 @@ export function OnboardingScreen({
   onCreateAccount,
 }: OnboardingScreenProps) {
   const theme = useTheme();
-  const { height: screenHeight } = useWindowDimensions();
 
   const {
     currentIndex,
@@ -45,7 +44,7 @@ export function OnboardingScreen({
     handleSecondaryAction,
   } = useOnboarding({ onComplete, onLogin, onCreateAccount });
 
-  // Fade animation for content transitions
+  // Fade animation for text-content transitions
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const prevIndex = useRef(currentIndex);
 
@@ -54,7 +53,7 @@ export function OnboardingScreen({
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 120,
+          duration: 100,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
@@ -67,11 +66,9 @@ export function OnboardingScreen({
     }
   }, [currentIndex]);
 
-  const pageBg = theme.colors.bg.page;
   const brandColor = theme.colors.text.brand;
-  const borderSubtle = theme.colors.border.subtle;
 
-  // Determine if the "Next" button should show an arrow icon
+  // Show an arrow icon on intermediate slides (not first, not last)
   const showRightArrow = !isFirstSlide && !isLastSlide;
 
   return (
@@ -89,11 +86,8 @@ export function OnboardingScreen({
             style={styles.backButton}
             testID="onboarding-back-button"
           >
-            <ArrowCircleLeftIcon variant="outline" size={16} color={brandColor} />
-            <AppText
-              variant="label"
-              style={{ color: brandColor, marginLeft: 4 }}
-            >
+            <ArrowCircleLeftIcon variant="outline" size={18} color={brandColor} />
+            <AppText variant="label" style={{ color: brandColor, marginLeft: 4 }}>
               Back
             </AppText>
           </Pressable>
@@ -107,10 +101,7 @@ export function OnboardingScreen({
             style={[styles.skipButton, { borderColor: brandColor }]}
             testID="onboarding-skip-button"
           >
-            <AppText
-              variant="label"
-              style={{ color: brandColor }}
-            >
+            <AppText variant="label" style={{ color: brandColor }}>
               Skip
             </AppText>
           </Pressable>
@@ -119,21 +110,14 @@ export function OnboardingScreen({
         )}
       </View>
 
-      {/* Illustration */}
-      <Animated.View
-        style={[
-          styles.illustrationArea,
-          {
-            opacity: fadeAnim,
-            // Use proportional height based on whether we're on the last slide
-            flex: currentSlide.illustrationType === 'none' ? 0.3 : 1,
-          },
-        ]}
-      >
-        <OnboardingIllustration type={currentSlide.illustrationType} />
-      </Animated.View>
+      {/* Illustration area with AnimatedIllustration for entry motion */}
+      <View style={[styles.illustrationArea, currentSlide.illustrationType === 'none' && styles.illustrationAreaCompact]}>
+        <AnimatedIllustration animKey={currentIndex}>
+          <OnboardingIllustration type={currentSlide.illustrationType} />
+        </AnimatedIllustration>
+      </View>
 
-      {/* Text content */}
+      {/* Text content with slide fade */}
       <Animated.View style={[styles.textArea, { opacity: fadeAnim }]}>
         <OnboardingSlide
           title={currentSlide.title}
@@ -141,8 +125,8 @@ export function OnboardingScreen({
         />
       </Animated.View>
 
-      {/* Spacer to push pagination + buttons to bottom */}
-      <View style={{ flex: currentSlide.illustrationType === 'none' ? 1 : 0.3 }} />
+      {/* Flexible spacer */}
+      <View style={{ flex: 1 }} />
 
       {/* Pagination */}
       <View style={styles.paginationContainer}>
@@ -165,46 +149,52 @@ export function OnboardingScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  navRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    zIndex: 10,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-  },
-  skipButton: {
-    borderWidth: 1.5,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
-  navSpacer: {
-    width: 60,
-  },
-  illustrationArea: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-  },
-  textArea: {
-    paddingTop: 8,
-  },
-  paginationContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  actionsContainer: {
-    paddingBottom: 16,
-  },
-});
+const styles = StyleSheet.create(
+  {
+    navRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      zIndex: 10,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 6,
+      paddingHorizontal: 4,
+    },
+    skipButton: {
+      borderWidth: 1.5,
+      borderRadius: 20,
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+    },
+    navSpacer: {
+      width: 64,
+    },
+    illustrationArea: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 100,
+      minHeight: 200,
+      marginTop: 30,
+    },
+    illustrationAreaCompact: {
+      minHeight: 200,
+      maxHeight: 300,
+    },
+    textArea: {
+      paddingTop: 60,
+    },
+    paginationContainer: {
+      alignItems: 'center',
+      paddingVertical: 20,
+    },
+    actionsContainer: {
+      paddingBottom: 20,
+    },
+  }
+);

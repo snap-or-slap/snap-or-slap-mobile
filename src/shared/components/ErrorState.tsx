@@ -1,3 +1,10 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-export const ErrorState = () => <View><Text>Error</Text></View>;
+import { Card, AppText } from '@ds/components';
+
+export const ErrorState = () => (
+  <Card variant="subtle">
+    <AppText variant="body" color="danger">
+      Error
+    </AppText>
+  </Card>
+);

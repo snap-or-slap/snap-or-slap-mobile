@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppText } from '@ds/components';
+import { AppText, Badge } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import type { ChallengeStatusTone } from '../types/challenge.types';
@@ -81,8 +81,9 @@ export function ChallengeStatusPill({
     const shouldShowDot = showDot ?? (tone === 'on-track' || tone === 'danger');
     
     return (
-        <View
+        <Badge
             testID={testID}
+            size="md"
             style={[
                 styles.root,
                 {
@@ -96,7 +97,7 @@ export function ChallengeStatusPill({
             ) : null}
 
             <AppText
-                variant="body"
+                variant="caption"
                 style={[
                     styles.label,
                     {
@@ -106,7 +107,7 @@ export function ChallengeStatusPill({
             >
                 {label ?? config.label}
             </AppText>
-        </View>
+        </Badge>
     );
 }
 

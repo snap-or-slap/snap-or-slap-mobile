@@ -1,99 +1,145 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { AppText, Card, Badge } from '@ds/components';
-import { CameraIcon, HeartIcon } from '@ds/icons';
+import {
+  HeartIcon,
+  ProfileCircleIcon,
+  FlashIcon,
+  ClockIcon,
+  TickCircleIcon,
+  SmileysIcon,
+} from '@ds/icons';
 import type { IllustrationType } from '../data/onboardingSlides';
+
+// ─── Asset ──────────────────────────────────────────────────────────────────
+const photoProofImage = require('../../../../assets/images/onboarding/photo-proof-onboarding.png');
 
 interface OnboardingIllustrationProps {
   type: IllustrationType;
   testID?: string;
 }
 
-// ─── Avatar placeholder ─────────────────────────────────────────
+// ─── Avatar ─────────────────────────────────────────────────────────────────
 function Avatar({
   size = 44,
   border,
-  styles,
   theme,
+  done,
 }: {
   size?: number;
-  border?: 'green' | 'red';
-  styles: ReturnType<typeof createStyles>;
+  border?: 'success' | 'error';
   theme: AppTheme;
+  done?: boolean;
 }) {
+  const borderColor =
+    border === 'success'
+      ? theme.colors.border.success
+      : border === 'error'
+      ? theme.colors.border.error
+      : 'transparent';
+
   return (
     <View
-      style={[
-        styles.avatar,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: border ? 2.5 : 0,
-          borderColor:
-            border === 'red' ? theme.colors.border.error : border === 'green' ? theme.colors.border.success : 'transparent',
-        },
-      ]}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        borderWidth: border ? 2.5 : 0,
+        borderColor,
+        backgroundColor: theme.colors.bg['brand-subtle'],
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+      }}
     >
-      <Text style={{ fontSize: size * 0.4 }}>🧑</Text>
+      <ProfileCircleIcon
+        size={size * 0.65}
+        color={theme.colors.icon.brand}
+        variant="bulk"
+      />
+      {done && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: -1,
+            right: -1,
+            backgroundColor: theme.colors.bg.success,
+            borderRadius: 8,
+            width: 14,
+            height: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1.5,
+            borderColor: theme.colors.bg.surface,
+          }}
+        >
+          <TickCircleIcon size={10} color={theme.colors.text['on-brand']} variant="bold" />
+        </View>
+      )}
     </View>
   );
 }
 
-// ─── Status dot ─────────────────────────────────────────────────
-function StatusDot({ color, styles }: { color: string; styles: ReturnType<typeof createStyles> }) {
-  return (
-    <View
-      style={[styles.statusDot, { backgroundColor: color }]}
-    />
-  );
-}
-
-// ─── Slide 1: Team Challenge ────────────────────────────────────
-function TeamChallengeIllustration({ styles, theme }: { styles: ReturnType<typeof createStyles>; theme: AppTheme }) {
+// ─── Slide 1: Team Challenge ─────────────────────────────────────────────────
+function TeamChallengeIllustration({ theme }: { theme: AppTheme }) {
   const brandBg = theme.colors.bg['brand-subtle'];
   const brandColor = theme.colors.text.brand;
+  const surfaceColor = theme.colors.bg.surface;
 
   return (
     <View style={styles.illustrationContainer}>
-      {/* Floating avatars */}
+      {/* Floating avatar row */}
       <View style={styles.floatingAvatars}>
-        <Avatar size={36} styles={styles} theme={theme} />
-        <Avatar size={50} styles={styles} theme={theme} />
-        <Avatar size={36} styles={styles} theme={theme} />
+        <Avatar size={36} theme={theme} />
+        <Avatar size={52} border="success" done theme={theme} />
+        <Avatar size={36} theme={theme} />
       </View>
 
-      {/* Stacked cards behind */}
+      {/* Stacked cards composition */}
       <View style={styles.stackedCardsContainer}>
-        <View
+        {/* Back card – left tilt */}
+        <Card
+          variant="elevated"
           style={[
             styles.stackedCard,
-            { backgroundColor: brandBg, transform: [{ rotate: '-8deg' }] },
+            styles.backCardLeft,
+            { backgroundColor: surfaceColor, borderColor: theme.colors.border.subtle },
           ]}
-        />
-        <View
+        >
+          <View />
+        </Card>
+
+        {/* Back card – right tilt */}
+        <Card
+          variant="elevated"
           style={[
             styles.stackedCard,
-            { backgroundColor: theme.colors.border.subtle, transform: [{ rotate: '6deg' }] },
+            styles.backCardRight,
+            { backgroundColor: brandBg, borderColor: theme.colors.border.subtle },
           ]}
-        />
+        >
+          <View />
+        </Card>
+
         {/* Main card */}
         <Card variant="elevated" style={styles.mainCard}>
           <View style={styles.mainCardContent}>
-            <View style={[styles.iconCircle, { backgroundColor: brandBg }]}>
-              <Text style={{ fontSize: 24 }}>🤩</Text>
+            <SmileysIcon
+              size={72}
+              color={theme.colors.icon.brand}
+              secondaryColor={theme.colors.bg.brand}
+              variant="bulk"
+            />
+            <View style={styles.mainCardTextGroup}>
+              <AppText variant="label" style={{ color: brandColor }}>
+                Challenge
+              </AppText>
+              <AppText variant="caption" color="secondary" style={styles.centeredText}>
+                Wake up at 5AM
+              </AppText>
             </View>
-            <AppText
-              variant="label"
-              style={{ color: brandColor, marginTop: 4 }}
-            >
-              Challage
-            </AppText>
-            <AppText variant="caption" color="secondary">
-              Wake up at 5AM
-            </AppText>
           </View>
         </Card>
       </View>
@@ -101,241 +147,262 @@ function TeamChallengeIllustration({ styles, theme }: { styles: ReturnType<typeo
   );
 }
 
-// ─── Slide 2: Photo Proof ───────────────────────────────────────
-function PhotoProofIllustration({ styles, theme }: { styles: ReturnType<typeof createStyles>; theme: AppTheme }) {
-  const brandColor = theme.colors.bg.brand;
-
+// ─── Slide 2: Photo Proof ────────────────────────────────────────────────────
+function PhotoProofIllustration({ theme }: { theme: AppTheme }) {
   return (
-    <View style={styles.illustrationContainer}>
-      {/* Photo card */}
-      <View style={styles.photoCard}>
-        <Text style={{ fontSize: 64 }}>🤳</Text>
-        {/* Proof badge */}
-        <Badge variant="success" size="sm" style={styles.proofBadge}>
-          ✓ Proof submitted
-        </Badge>
-      </View>
-
-      {/* Camera button */}
-      <View style={[styles.cameraButton, { backgroundColor: brandColor }]}>
-        <CameraIcon variant="bold" size={22} color={theme.colors.text['on-brand']} />
-      </View>
+    <View style={styles.photoProofContainer}>
+      <Image
+        source={photoProofImage}
+        resizeMode="contain"
+        style={styles.photoProofImage}
+        testID="photo-proof-image"
+      />
     </View>
   );
 }
 
-// ─── Team card (shared by Slides 3 & 4) ─────────────────────────
-function TeamStatusCard({ showSlap, styles, theme }: { showSlap: boolean; styles: ReturnType<typeof createStyles>; theme: AppTheme }) {
-  const brandColor = theme.colors.bg.brand;
-
+// ─── Slide 3: Shared Consequences ────────────────────────────────────────────
+function SharedConsequencesIllustration({ theme }: { theme: AppTheme }) {
   return (
     <View style={styles.illustrationContainer}>
       <Card variant="elevated" style={styles.teamCard}>
         <View style={styles.teamCardContent}>
           {/* Hearts row */}
           <View style={styles.heartsRow}>
-            <HeartIcon variant="bold" size={20} color={theme.colors.text.error} />
-            <HeartIcon variant="bold" size={20} color={theme.colors.text.error} />
-            <HeartIcon variant="bold" size={20} color={theme.colors.text.error} />
-            <HeartIcon variant="outline" size={20} color={theme.colors.text.disabled} />
+            <HeartIcon variant="bold" size={22} color={theme.colors.text.error} />
+            <HeartIcon variant="bold" size={22} color={theme.colors.text.error} />
+            <HeartIcon variant="bold" size={22} color={theme.colors.text.error} />
+            <HeartIcon variant="outline" size={22} color={theme.colors.text.disabled} />
+            <HeartIcon variant="outline" size={22} color={theme.colors.text.disabled} />
           </View>
 
-          <AppText
-            variant="caption"
-            color="secondary"
-            style={{ marginBottom: 12 }}
-          >
+          <AppText variant="caption" color="secondary" style={[styles.centeredText, { marginBottom: 16 }]}>
             Wake up at 5AM
           </AppText>
 
-          {/* Avatars grid */}
+          {/* Avatar grid – all green (team doing well) */}
           <View style={styles.avatarGrid}>
-            <View style={styles.avatarWithStatus}>
-              <Avatar size={52} border="green" styles={styles} theme={theme} />
-              <StatusDot color={theme.colors.bg.success} styles={styles} />
-            </View>
-            <View style={styles.avatarWithStatus}>
-              <Avatar size={52} border="green" styles={styles} theme={theme} />
-              <StatusDot color={theme.colors.bg.success} styles={styles} />
-            </View>
-            <View style={styles.avatarWithStatus}>
-              <Avatar size={52} border="green" styles={styles} theme={theme} />
-              <StatusDot color={theme.colors.bg.success} styles={styles} />
-            </View>
-            <View style={styles.avatarWithStatus}>
-              <Avatar size={52} border="red" styles={styles} theme={theme} />
-              <StatusDot color={theme.colors.bg.success} styles={styles} />
-            </View>
+            <Avatar size={48} border="success" done theme={theme} />
+            <Avatar size={48} border="success" done theme={theme} />
+            <Avatar size={48} border="success" done theme={theme} />
+            <Avatar size={48} border="error" theme={theme} />
           </View>
         </View>
       </Card>
-
-      {/* Slap reminder below card */}
-      {showSlap && (
-        <View style={styles.slapRow}>
-          <View style={styles.avatarWithStatus}>
-            <Avatar size={40} border="red" styles={styles} theme={theme} />
-            <StatusDot color={theme.colors.bg.success} styles={styles} />
-          </View>
-          <View style={[styles.slapPill, { backgroundColor: brandColor }]}>
-            <Text style={styles.slapText}>⏱ Slap</Text>
-          </View>
-        </View>
-      )}
     </View>
   );
 }
 
-// ─── Slide 5: Empty ─────────────────────────────────────────────
-function EmptyIllustration() {
-  return <View style={{ height: 40 }} />;
+// ─── Slide 4: Slap Reminder ───────────────────────────────────────────────────
+function SlapReminderIllustration({ theme }: { theme: AppTheme }) {
+  const brandColor = theme.colors.bg.brand;
+
+  return (
+    <View style={styles.illustrationContainer}>
+      <Card variant="elevated" style={styles.teamCard}>
+        <View style={styles.teamCardContent}>
+          {/* Hearts – one missing */}
+          <View style={styles.heartsRow}>
+            <HeartIcon variant="bold" size={22} color={theme.colors.text.error} />
+            <HeartIcon variant="bold" size={22} color={theme.colors.text.error} />
+            <HeartIcon variant="outline" size={22} color={theme.colors.text.disabled} />
+            <HeartIcon variant="outline" size={22} color={theme.colors.text.disabled} />
+            <HeartIcon variant="outline" size={22} color={theme.colors.text.disabled} />
+          </View>
+
+          <AppText variant="caption" color="secondary" style={[styles.centeredText, { marginBottom: 16 }]}>
+            Wake up at 5AM
+          </AppText>
+
+          {/* Avatars – one late (red border) */}
+          <View style={styles.avatarGrid}>
+            <Avatar size={48} border="success" done theme={theme} />
+            <Avatar size={48} border="success" done theme={theme} />
+            <Avatar size={48} border="error" theme={theme} />
+            <Avatar size={48} border="error" theme={theme} />
+          </View>
+        </View>
+      </Card>
+
+      {/* Slap reminder pill */}
+      <View style={styles.slapRow}>
+        <Avatar size={38} border="error" theme={theme} />
+        <View style={[styles.slapPill, { backgroundColor: brandColor }]}>
+          <ClockIcon size={14} color={theme.colors.text['on-brand']} variant="bold" />
+          <AppText
+            variant="label"
+            style={{ color: theme.colors.text['on-brand'], marginLeft: 6 }}
+          >
+            Slap reminder
+          </AppText>
+        </View>
+      </View>
+    </View>
+  );
 }
 
-// ─── Main export ────────────────────────────────────────────────
+// ─── Slide 5: Empty / CTA ────────────────────────────────────────────────────
+function CTAIllustration({ theme }: { theme: AppTheme }) {
+  return (
+    <View style={styles.ctaIllustration}>
+      <View
+        style={[
+          styles.ctaIconCircle,
+          { backgroundColor: theme.colors.bg['brand-subtle'] },
+        ]}
+      >
+        <FlashIcon
+          size={52}
+          color={theme.colors.icon.brand}
+          variant="bulk"
+        />
+      </View>
+    </View>
+  );
+}
+
+// ─── Main export ─────────────────────────────────────────────────────────────
 export function OnboardingIllustration({
   type,
   testID = 'onboarding-illustration',
 }: OnboardingIllustrationProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
 
   const renderIllustration = () => {
     switch (type) {
       case 'teamChallenge':
-        return <TeamChallengeIllustration styles={styles} theme={theme} />;
+        return <TeamChallengeIllustration theme={theme} />;
       case 'photoProof':
-        return <PhotoProofIllustration styles={styles} theme={theme} />;
+        return <PhotoProofIllustration theme={theme} />;
       case 'sharedConsequences':
-        return <TeamStatusCard showSlap={false} styles={styles} theme={theme} />;
+        return <SharedConsequencesIllustration theme={theme} />;
       case 'slapReminder':
-        return <TeamStatusCard showSlap styles={styles} theme={theme} />;
+        return <SlapReminderIllustration theme={theme} />;
       case 'none':
       default:
-        return <EmptyIllustration />;
+        return <CTAIllustration theme={theme} />;
     }
   };
 
   return <View testID={testID}>{renderIllustration()}</View>;
 }
 
-function createStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    illustrationContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 260,
-      width: '100%',
-    },
-    avatar: {
-      backgroundColor: theme.colors.border.default,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    statusDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      borderWidth: 1.5,
-      borderColor: theme.colors.bg.surface,
-    },
-    floatingAvatars: {
-      flexDirection: 'row',
-      gap: 16,
-      marginBottom: 8,
-      alignItems: 'flex-end',
-    },
-    stackedCardsContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: 160,
-      width: 220,
-    },
-    stackedCard: {
-      position: 'absolute',
-      width: 180,
-      height: 130,
-      borderRadius: 20,
-    },
-    mainCard: {
-      width: 180,
-      borderRadius: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-    },
-    mainCardContent: {
-      alignItems: 'center',
-    },
-    iconCircle: {
-      width: 48,
-      height: 48,
-      borderRadius: 14,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    photoCard: {
-      width: 220,
-      height: 180,
-      borderRadius: 20,
-      backgroundColor: theme.colors.border.subtle,
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-    },
-    proofBadge: {
-      position: 'absolute',
-      top: 10,
-      left: 10,
-    },
-    cameraButton: {
-      width: 52,
-      height: 52,
-      borderRadius: 26,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 12,
-    },
-    teamCard: {
-      borderRadius: 20,
-      padding: 20,
-      width: 230,
-    },
-    teamCardContent: {
-      alignItems: 'center',
-    },
-    heartsRow: {
-      flexDirection: 'row',
-      gap: 4,
-      marginBottom: 8,
-    },
-    avatarGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 12,
-      justifyContent: 'center',
-    },
-    avatarWithStatus: {
-      position: 'relative',
-    },
-    slapRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      marginTop: 14,
-    },
-    slapPill: {
-      borderRadius: 20,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
-    slapText: {
-      color: theme.colors.text['on-brand'],
-      fontWeight: '700',
-      fontSize: 14,
-    },
-  });
-}
+// ─── Styles ──────────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  illustrationContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 300,
+    width: '100%',
+  },
+  floatingAvatars: {
+    flexDirection: 'row',
+    gap: 14,
+    marginBottom: 10,
+    alignItems: 'flex-end',
+  },
+  stackedCardsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 190,
+    width: 240,
+  },
+  stackedCard: {
+    position: 'absolute',
+    width: 180,
+    height: 152,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  backCardLeft: {
+    transform: [{ rotate: '-10deg' }, { translateX: -22 }, { translateY: 14 }],
+    opacity: 0.65,
+  },
+  backCardRight: {
+    transform: [{ rotate: '10deg' }, { translateX: 22 }, { translateY: 10 }],
+    opacity: 0.75,
+  },
+  mainCard: {
+    width: 188,
+    minHeight: 172,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  mainCardContent: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  mainCardTextGroup: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  centeredText: {
+    textAlign: 'center',
+  },
 
+  // Photo proof
+  photoProofContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 280,
+  },
+  photoProofImage: {
+    width: '85%',
+    height: 280,
+  },
+
+  // Team / hearts / avatars shared
+  teamCard: {
+    borderRadius: 20,
+    padding: 20,
+    width: 240,
+  },
+  teamCardContent: {
+    alignItems: 'center',
+  },
+  heartsRow: {
+    flexDirection: 'row',
+    gap: 5,
+    marginBottom: 10,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+  },
+
+  // Slap pill
+  slapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 16,
+  },
+  slapPill: {
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // CTA slide
+  ctaIllustration: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 200,
+    width: '100%',
+  },
+  ctaIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
