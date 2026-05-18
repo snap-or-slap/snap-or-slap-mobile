@@ -31,6 +31,9 @@
       ],
       "@mocks/*": [
         "src/mocks/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
       ]
     }
   },

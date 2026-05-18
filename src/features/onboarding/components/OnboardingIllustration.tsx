@@ -14,7 +14,7 @@ import {
 import type { IllustrationType } from '../data/onboardingSlides';
 
 // ─── Asset ──────────────────────────────────────────────────────────────────
-const photoProofImage = require('../../../../assets/images/onboarding/photo-proof-onboarding.png');
+const photoProofImage = require('@assets/images/onboarding/photo-proof-onboarding.png');
 
 interface OnboardingIllustrationProps {
   type: IllustrationType;

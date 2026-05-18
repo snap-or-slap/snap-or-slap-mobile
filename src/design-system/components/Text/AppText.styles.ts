@@ -30,8 +30,8 @@ export const getTypographyStyle = (theme: AppTheme, variant: AppTextVariant): Te
   const t = theme.typography as any;
 
   const map: Record<AppTextVariant, TextStyle> = {
-    display: t.display.medium,
-    heading: t.headline.medium,
+    display: { ...t.display.medium, fontWeight: '1000'},
+    heading: { ...t.headline.medium, fontWeight: '800'},
     title: t.title.large,
     subtitle: t.title.medium,
     body: t.body.large,
