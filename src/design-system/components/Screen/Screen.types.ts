@@ -3,10 +3,13 @@ import { ReactNode } from 'react';
 
 export interface ScreenProps {
   children: ReactNode;
-  scroll?: boolean;
-  padded?: boolean;
+  scrollable?: boolean;
+  safeArea?: 'top' | 'bottom' | 'both' | 'none';
+  padding?: 'none' | 'md' | 'lg';
   background?: string;
-  style?: StyleProp<ViewStyle>;
+  keyboardAvoiding?: boolean;
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled';
   contentStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }

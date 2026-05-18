@@ -32,7 +32,7 @@ export function FormationChallengeCard({
                 />
             </View>
 
-            <AppText variant="titleMedium" style={styles.title}>
+            <AppText variant="subtitle" style={styles.title}>
                 {challenge.title}
             </AppText>
 
@@ -54,11 +54,11 @@ export function FormationChallengeCard({
 function InfoBlock({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
     return (
         <View style={styles.infoBlock}>
-            <AppText variant="bodyLarge" style={styles.infoLabel}>
+            <AppText variant="body" style={styles.infoLabel}>
                 {label}
             </AppText>
 
-            <AppText variant="bodyLarge" style={styles.infoValue}>
+            <AppText variant="body" style={styles.infoValue}>
                 {value}
             </AppText>
         </View>

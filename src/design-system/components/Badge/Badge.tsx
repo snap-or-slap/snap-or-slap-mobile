@@ -6,21 +6,24 @@ import { BadgeProps } from './Badge.types';
 import { createBadgeStyles, getBadgeTextColor, getBadgeTextVariant } from './Badge.styles';
 
 export const Badge: React.FC<BadgeProps> = ({
-  tone = 'neutral',
+  variant = 'neutral',
   size = 'md',
+  leftIcon,
   children,
   style,
+  textStyle,
   testID,
 }) => {
   const theme = useTheme();
-  const styles = createBadgeStyles(theme, tone, size);
-  const textColor = getBadgeTextColor(tone);
+  const styles = createBadgeStyles(theme, variant, size);
+  const textColor = getBadgeTextColor(variant);
   const textVariant = getBadgeTextVariant(size);
 
   return (
     <View style={[styles.badge, style]} testID={testID}>
+      {leftIcon && <View>{leftIcon}</View>}
       {typeof children === 'string' ? (
-        <AppText variant={textVariant} color={textColor}>{children}</AppText>
+        <AppText variant={textVariant} color={textColor} style={textStyle}>{children}</AppText>
       ) : children}
     </View>
   );

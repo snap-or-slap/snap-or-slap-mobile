@@ -35,7 +35,7 @@ export function ChallengeSegmentTabs({
               style={[styles.tab, isActive && styles.activeTab]}
             >
               <AppText
-                variant="bodyLarge"
+                variant="body"
                 style={[styles.tabText, isActive && styles.activeTabText]}
               >
                 {tab.label}

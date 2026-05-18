@@ -86,12 +86,12 @@ function TeamChallengeIllustration({ styles, theme }: { styles: ReturnType<typeo
               <Text style={{ fontSize: 24 }}>🤩</Text>
             </View>
             <AppText
-              variant="labelMedium"
+              variant="label"
               style={{ color: brandColor, marginTop: 4 }}
             >
               Challage
             </AppText>
-            <AppText variant="bodySmall" color="secondary">
+            <AppText variant="caption" color="secondary">
               Wake up at 5AM
             </AppText>
           </View>
@@ -111,7 +111,7 @@ function PhotoProofIllustration({ styles, theme }: { styles: ReturnType<typeof c
       <View style={styles.photoCard}>
         <Text style={{ fontSize: 64 }}>🤳</Text>
         {/* Proof badge */}
-        <Badge tone="success" size="sm" style={styles.proofBadge}>
+        <Badge variant="success" size="sm" style={styles.proofBadge}>
           ✓ Proof submitted
         </Badge>
       </View>
@@ -141,7 +141,7 @@ function TeamStatusCard({ showSlap, styles, theme }: { showSlap: boolean; styles
           </View>
 
           <AppText
-            variant="bodySmall"
+            variant="caption"
             color="secondary"
             style={{ marginBottom: 12 }}
           >

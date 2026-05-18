@@ -16,14 +16,14 @@ export function OnboardingSlide({
   return (
     <View style={styles.container} testID={testID}>
       <AppText
-        variant="headlineMedium"
+        variant="heading"
         testID="onboarding-title"
         style={styles.title}
       >
         {title}
       </AppText>
       <AppText
-        variant="bodyLarge"
+        variant="body"
         color="secondary"
         testID="onboarding-description"
         style={styles.description}

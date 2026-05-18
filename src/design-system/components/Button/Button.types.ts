@@ -1,12 +1,10 @@
 import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import React from 'react';
 
-export type ButtonIntent = 'primary' | 'secondary' | 'positive' | 'negative' | 'subtle';
-export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link';
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle';
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export type ButtonProps = {
-  intent?: ButtonIntent;
   variant?: ButtonVariant;
   size?: ButtonSize;
 

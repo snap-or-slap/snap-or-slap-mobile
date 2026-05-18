@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Screen } from '@ds/components';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Screen } from '@ds/components';
 
 import {
   ActiveChallengeCard,
@@ -18,6 +18,11 @@ import {
 } from '../data/challenges.mock';
 
 import type { ChallengeSegment } from '../types';
+
+type ChallengesScreenProps = {
+  onCreateChallenge?: () => void;
+  onOpenChallenge?: (challengeId: string) => void;
+};
 
 const SEGMENT_CONTENT: Record<
   ChallengeSegment,
@@ -43,7 +48,10 @@ const SEGMENT_CONTENT: Record<
   },
 };
 
-export function ChallengesScreen() {
+export function ChallengesScreen({
+  onCreateChallenge,
+  onOpenChallenge,
+}: ChallengesScreenProps) {
   const [segment, setSegment] = useState<ChallengeSegment>('active');
 
   const segmentContent = SEGMENT_CONTENT[segment];
@@ -54,11 +62,15 @@ export function ChallengesScreen() {
         return (
           <View style={styles.list} testID="challenges-list">
             {formationChallengesMock.map((challenge) => (
-              <FormationChallengeCard
+              <Pressable
                 key={challenge.id}
-                challenge={challenge}
                 testID={`formation-challenge-card-${challenge.id}`}
-              />
+                onPress={() => onOpenChallenge?.(challenge.id)}
+              >
+                <FormationChallengeCard
+                  challenge={challenge}
+                />
+              </Pressable>
             ))}
           </View>
         );
@@ -67,11 +79,15 @@ export function ChallengesScreen() {
         return (
           <View style={styles.list} testID="challenges-list">
             {activeChallengesMock.map((challenge) => (
-              <ActiveChallengeCard
+              <Pressable
                 key={challenge.id}
-                challenge={challenge}
                 testID={`active-challenge-card-${challenge.id}`}
-              />
+                onPress={() => onOpenChallenge?.(challenge.id)}
+              >
+                <ActiveChallengeCard
+                  challenge={challenge}
+                />
+              </Pressable>
             ))}
           </View>
         );
@@ -108,6 +124,15 @@ export function ChallengesScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          <View style={styles.createAction}>
+            <Button
+              title="Create challenge"
+              variant="primary"
+              onPress={onCreateChallenge}
+              testID="open-create-challenge-button"
+            />
+          </View>
+
           <ChallengeSectionIntro
             title={segmentContent.title}
             description={segmentContent.description}
@@ -127,6 +152,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 24,
     paddingBottom: 120,
+  },
+  createAction: {
+    paddingHorizontal: 24,
+    marginBottom: 18,
   },
   list: {
     paddingHorizontal: 24,

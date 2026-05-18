@@ -55,3 +55,33 @@ export type ChallengeItem =
   | ActiveChallengeItem
   | FormationChallengeItem
   | HistoryChallengeItem;
+
+export type ChallengeMemberRole = 'host' | 'member';
+
+export interface ChallengeMember {
+  id: string;
+  displayName: string;
+  username: string;
+  role: ChallengeMemberRole;
+  avatarUrl?: string;
+}
+
+export interface ChallengeActivity {
+  id: string;
+  name: string;
+  windowLabel: string;
+  statusLabel: string;
+}
+
+export interface ChallengeDetail {
+  id: string;
+  title: string;
+  status: ChallengeStatusTone;
+  statusLabel: string;
+  heartsText: string;
+  resetTimeText: string;
+  dateRangeText: string;
+  hostUsername: string;
+  members: ChallengeMember[];
+  activities: ChallengeActivity[];
+}

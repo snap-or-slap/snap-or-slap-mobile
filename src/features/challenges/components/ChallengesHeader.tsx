@@ -13,7 +13,7 @@ export function ChallengesHeader() {
       <Pressable style={styles.iconButton}>
         <Setting2Icon size={24} color={theme.colors.text.primary} variant="outline" />
       </Pressable>
-      <AppText variant="titleLarge" style={{ color: theme.colors.text.primary }}>
+      <AppText variant="title" style={{ color: theme.colors.text.primary }}>
         Challenges
       </AppText>
       <Pressable style={styles.iconButton}>

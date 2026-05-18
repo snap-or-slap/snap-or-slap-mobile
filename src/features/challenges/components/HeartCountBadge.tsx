@@ -54,7 +54,7 @@ export function HeartCountBadge({
             />
 
             <AppText
-                variant="bodyLarge"
+                variant="body"
                 style={[
                     styles.label,
                     {

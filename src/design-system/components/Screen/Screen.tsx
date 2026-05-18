@@ -3,82 +3,88 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  ViewStyle,
-  ScrollViewProps,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme';
-
-type ScreenProps = {
-  children: React.ReactNode;
-  padded?: boolean;
-  scroll?: boolean;
-  testID?: string;
-  style?: ViewStyle;
-  contentStyle?: ViewStyle;
-  ignoreTopSafeArea?: boolean;
-  ignoreBottomSafeArea?: boolean;
-} & Pick<ScrollViewProps, 'keyboardShouldPersistTaps'>;
+import { ScreenProps } from './Screen.types';
 
 export function Screen({
   children,
-  padded = false,
-  scroll = false,
-  testID,
-  style,
-  contentStyle,
-  ignoreTopSafeArea = false,
-  ignoreBottomSafeArea = false,
+  scrollable = false,
+  safeArea = 'both',
+  padding = 'none',
+  background,
+  keyboardAvoiding = false,
   keyboardShouldPersistTaps = 'handled',
+  contentStyle,
+  style,
+  testID,
 }: ScreenProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const backgroundColor = theme.colors.bg.page;
+  const backgroundColor = background 
+    ? ((theme.colors.bg as any)[background] || background) 
+    : theme.colors.bg.page;
 
-  const horizontalPadding = padded ? 24 : 0;
+  const padMap = { none: 0, md: 16, lg: 24 };
+  const horizontalPadding = padMap[padding] || 0;
+
+  const paddingTop = safeArea === 'both' || safeArea === 'top' ? insets.top : 0;
+  const paddingBottom = (!scrollable && (safeArea === 'both' || safeArea === 'bottom')) ? insets.bottom : 0;
 
   const rootStyle = [
     styles.root,
     {
       backgroundColor,
-      paddingTop: ignoreTopSafeArea ? 0 : insets.top,
-      paddingBottom: !scroll && !ignoreBottomSafeArea ? insets.bottom : 0,
+      paddingTop,
+      paddingBottom,
     },
     style,
   ];
 
-  if (scroll) {
+  let content = (
+    <View style={[styles.root, padding !== 'none' && { paddingHorizontal: horizontalPadding }, contentStyle]}>
+      {children}
+    </View>
+  );
+
+  if (scrollable) {
+    content = (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingHorizontal: horizontalPadding,
+            paddingBottom: (safeArea === 'both' || safeArea === 'bottom') ? insets.bottom + 24 : 24,
+          },
+          contentStyle,
+        ]}
+      >
+        {children}
+      </ScrollView>
+    );
+  }
+
+  if (keyboardAvoiding) {
     return (
-      <View testID={testID} style={rootStyle}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingHorizontal: horizontalPadding,
-              paddingBottom: ignoreBottomSafeArea ? 24 : insets.bottom + 24,
-            },
-            contentStyle,
-          ]}
-        >
-          {children}
-        </ScrollView>
-      </View>
+      <KeyboardAvoidingView
+        style={rootStyle}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        testID={testID}
+      >
+        {content}
+      </KeyboardAvoidingView>
     );
   }
 
   return (
-    <View
-      testID={testID}
-      style={[
-        rootStyle,
-        padded && { paddingHorizontal: horizontalPadding },
-        contentStyle,
-      ]}
-    >
-      {children}
+    <View style={rootStyle} testID={testID}>
+      {content}
     </View>
   );
 }

@@ -96,7 +96,7 @@ export function ChallengeStatusPill({
             ) : null}
 
             <AppText
-                variant="bodyLarge"
+                variant="body"
                 style={[
                     styles.label,
                     {

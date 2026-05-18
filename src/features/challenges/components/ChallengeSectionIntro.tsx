@@ -14,10 +14,10 @@ export function ChallengeSectionIntro({ title, description }: ChallengeSectionIn
 
   return (
     <View style={styles.container} testID="challenge-section-intro">
-      <AppText variant="titleMedium" style={{ color: theme.colors.text.primary, marginBottom: 4 }}>
+      <AppText variant="subtitle" style={{ color: theme.colors.text.primary, marginBottom: 4 }}>
         {title}
       </AppText>
-      <AppText variant="bodySmall" style={{ color: theme.colors.text.secondary }}>
+      <AppText variant="caption" style={{ color: theme.colors.text.secondary }}>
         {description}
       </AppText>
     </View>

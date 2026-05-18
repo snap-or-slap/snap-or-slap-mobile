@@ -50,7 +50,7 @@ export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProp
           >
             {getIcon(tab.key, isActive)}
             <AppText
-              variant="labelSmall"
+              variant="caption"
               style={{
                 color: isActive ? theme.colors.text.brand : theme.colors.text.secondary,
                 marginTop: 4,

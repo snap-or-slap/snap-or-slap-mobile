@@ -46,17 +46,17 @@ export function HistoryChallengeCard({
                 {challenge.heartsText ? (
                     <HeartCountBadge
                         label={challenge.heartsText}
-                        variant="outline"
+                        variant="filled"
                         tone={HEART_TONE_MAP[challenge.status]}
                     />
                 ) : null}
             </View>
 
-            <AppText variant="titleMedium" style={styles.title}>
+            <AppText variant="subtitle" style={styles.title}>
                 {challenge.title}
             </AppText>
 
-            <AppText variant="bodyLarge" style={styles.description}>
+            <AppText variant="body" style={styles.description}>
                 {challenge.description}
             </AppText>
         </View>

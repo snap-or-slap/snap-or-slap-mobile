@@ -25,8 +25,7 @@ export function OnboardingActions({
   return (
     <View style={styles.container}>
       <Button
-        intent="primary"
-        variant="solid"
+        variant="primary"
         size="lg"
         fullWidth
         title={primaryLabel}
@@ -41,7 +40,6 @@ export function OnboardingActions({
 
       {secondaryLabel && onSecondaryPress && (
         <Button
-          intent="subtle"
           variant="ghost"
           size="md"
           fullWidth

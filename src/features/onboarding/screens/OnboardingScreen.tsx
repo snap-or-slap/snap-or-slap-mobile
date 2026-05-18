@@ -5,7 +5,7 @@ import {
   StatusBar,
   Animated,
   Pressable,
-  useWindowDimensions,
+  useWindowDimensions, TouchableOpacity, Text
 } from 'react-native';
 import { useTheme } from '@ds/theme';
 import { AppText, Screen } from '@ds/components';
@@ -91,7 +91,7 @@ export function OnboardingScreen({
           >
             <ArrowCircleLeftIcon variant="outline" size={16} color={brandColor} />
             <AppText
-              variant="labelLarge"
+              variant="label"
               style={{ color: brandColor, marginLeft: 4 }}
             >
               Back
@@ -108,7 +108,7 @@ export function OnboardingScreen({
             testID="onboarding-skip-button"
           >
             <AppText
-              variant="labelMedium"
+              variant="label"
               style={{ color: brandColor }}
             >
               Skip

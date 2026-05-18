@@ -3,34 +3,40 @@ import { AppTheme } from '../../theme';
 import { AppTextVariant, AppTextColor } from './AppText.types';
 
 export const getTextColor = (theme: AppTheme, colorKey: AppTextColor | string): string => {
-  const textColors = theme.colors?.text || ({} as any);
+  const c = theme.colors.text as any;
   
   const map: Record<string, string> = {
-    primary: textColors.primary || '#000',
-    secondary: textColors.secondary || '#666',
-    tertiary: textColors.tertiary || '#999',
-    inverse: textColors.inverse || '#fff',
-    disabled: textColors.disabled || '#ccc',
-    brand: textColors.brand || (theme.colors as any)?.brand || '#007AFF',
-    danger: textColors.error || '#FF3B30',
-    success: textColors.success || '#34C759',
-    warning: textColors.warning || '#FF9500',
-    info: textColors.info || '#5856D6',
+    primary: c.primary,
+    secondary: c.secondary,
+    tertiary: c.tertiary,
+    inverse: c.inverse,
+    disabled: c.disabled,
+    brand: c.brand,
+    danger: c.error,
+    success: c.success,
+    warning: c.warning,
+    info: c.info,
   };
 
   return map[colorKey] || colorKey;
 };
 
 export const getTypographyStyle = (theme: AppTheme, variant: AppTextVariant): TextStyle => {
-  const [category, sizeRaw] = variant.split(/(?=[A-Z])/);
-  const size = sizeRaw ? sizeRaw.toLowerCase() : 'medium';
+  const t = theme.typography as any;
+
+  const map: Record<AppTextVariant, TextStyle> = {
+    display: t.display.medium,
+    heading: t.headline.medium,
+    title: t.title.large,
+    subtitle: t.title.medium,
+    body: t.body.large,
+    bodyStrong: { ...t.body.large, fontWeight: '600' },
+    label: t.label.large,
+    caption: t.body.medium,
+    overline: { ...t.label.small, textTransform: 'uppercase' },
+  };
   
-  const typographyGroup = (theme.typography as any)[category];
-  if (typographyGroup && typographyGroup[size]) {
-    return typographyGroup[size] as TextStyle;
-  }
-  
-  return theme.typography?.body?.medium as TextStyle || {};
+  return map[variant] || t.body.large;
 };
 
 export const createAppTextStyles = (theme: AppTheme, variant: AppTextVariant, colorKey: AppTextColor | string, align: 'left' | 'center' | 'right' | 'auto' | 'justify') => {

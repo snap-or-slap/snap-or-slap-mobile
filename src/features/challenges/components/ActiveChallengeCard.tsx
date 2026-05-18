@@ -33,7 +33,7 @@ export function ActiveChallengeCard({
                 />
             </View>
 
-            <AppText variant="titleMedium" style={styles.title}>
+            <AppText variant="subtitle" style={styles.title}>
                 {challenge.title}
             </AppText>
 
@@ -41,12 +41,12 @@ export function ActiveChallengeCard({
                 <View style={styles.resetGroup}>
                     <ClockIcon variant="outline" size={21} color={theme.colors.text.secondary} />
 
-                    <AppText variant="bodyLarge" style={styles.metaText}>
+                    <AppText variant="body" style={styles.metaText}>
                         Reset {challenge.resetTimeText}
                     </AppText>
                 </View>
 
-                <AppText variant="bodyLarge" style={styles.stepText}>
+                <AppText variant="body" style={styles.stepText}>
                     {challenge.stepText}
                 </AppText>
             </View>

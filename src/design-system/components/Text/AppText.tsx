@@ -5,7 +5,7 @@ import { AppTextProps } from './AppText.types';
 import { createAppTextStyles } from './AppText.styles';
 
 export const AppText: React.FC<AppTextProps> = ({
-  variant = 'bodyMedium',
+  variant = 'body',
   color = 'primary',
   align = 'auto',
   children,

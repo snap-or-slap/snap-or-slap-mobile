@@ -22,19 +22,19 @@ export function JoinedMembersBar({
     <View testID={testID} style={styles.root}>
       <View style={styles.avatarStack}>
         <View style={styles.avatar}>
-          <AppText variant="bodyLarge" style={styles.avatarText}>
+          <AppText variant="body" style={styles.avatarText}>
             S
           </AppText>
         </View>
 
         <View style={styles.extraAvatar}>
-          <AppText variant="bodyLarge" style={styles.extraAvatarText}>
+          <AppText variant="body" style={styles.extraAvatarText}>
             {extraMembersText}
           </AppText>
         </View>
       </View>
 
-      <AppText variant="bodyLarge" style={styles.joinedText}>
+      <AppText variant="body" style={styles.joinedText}>
         {joinedText}
       </AppText>
     </View>

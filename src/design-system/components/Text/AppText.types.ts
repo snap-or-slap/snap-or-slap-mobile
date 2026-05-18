@@ -1,11 +1,8 @@
 import { TextStyle, TextProps, StyleProp } from 'react-native';
 
 export type AppTextVariant = 
-  | 'displayLarge' | 'displayMedium' | 'displaySmall'
-  | 'headlineLarge' | 'headlineMedium' | 'headlineSmall'
-  | 'titleLarge' | 'titleMedium' | 'titleSmall'
-  | 'bodyLarge' | 'bodyMedium' | 'bodySmall'
-  | 'labelLarge' | 'labelMedium' | 'labelSmall' | 'labelExtraSmall';
+  | 'display' | 'heading' | 'title' | 'subtitle' 
+  | 'body' | 'bodyStrong' | 'label' | 'caption' | 'overline';
 
 export type AppTextColor = 
   | 'primary' | 'secondary' | 'tertiary' | 'inverse' 

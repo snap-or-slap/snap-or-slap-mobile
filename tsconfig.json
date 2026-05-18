@@ -38,5 +38,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.d.ts"
+  ],
+  "exclude": [
+    "src-reference",
+    "node_modules"
   ]
 }
