@@ -12,6 +12,7 @@ export * from './EmojiHappyIcon';
 export * from './EyeIcon';
 export * from './EyeSlashIcon';
 export * from './FingerScanIcon';
+export * from './FireIcon';
 export * from './FlashIcon';
 export * from './HeartIcon';
 export * from './HomeTrendUpIcon';

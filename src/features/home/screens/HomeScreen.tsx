@@ -9,18 +9,29 @@ import {
   ChallengeHubScreen,
   CreateChallengeScreen,
 } from '@features/challenges';
-import { FriendsScreen } from '@features/friends';
+import {
+  FriendsHubScreen,
+  FriendRequestsScreen,
+  AddFriendScreen,
+  FriendProfileScreen,
+  UserProfilePreviewScreen,
+} from '@features/friends';
 import { ProfileScreen } from '@features/profile';
 
 type HomeRoute =
   | { name: 'tabs' }
   | { name: 'createChallenge' }
-  | { name: 'challengeDetail'; challengeId: string };
+  | { name: 'challengeDetail'; challengeId: string }
+  | { name: 'friendRequests' }
+  | { name: 'addFriend' }
+  | { name: 'friendProfile'; userId: string }
+  | { name: 'userPreview'; userId: string };
 
 export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<HomeTabKey>('challenges');
   const [route, setRoute] = useState<HomeRoute>({ name: 'tabs' });
 
+  // ── Challenge sub-routes ─────────────────────────────────────────
   if (route.name === 'createChallenge') {
     return (
       <CreateChallengeScreen
@@ -39,10 +50,55 @@ export function HomeScreen() {
     );
   }
 
+  // ── Friend sub-routes ────────────────────────────────────────────
+  if (route.name === 'friendRequests') {
+    return (
+      <FriendRequestsScreen
+        onBack={() => setRoute({ name: 'tabs' })}
+        onFindFriends={() => setRoute({ name: 'addFriend' })}
+        onOpenUserPreview={(userId) => setRoute({ name: 'userPreview', userId })}
+      />
+    );
+  }
+
+  if (route.name === 'addFriend') {
+    return (
+      <AddFriendScreen
+        onBack={() => setRoute({ name: 'tabs' })}
+        onOpenUserPreview={(userId) => setRoute({ name: 'userPreview', userId })}
+      />
+    );
+  }
+
+  if (route.name === 'friendProfile') {
+    return (
+      <FriendProfileScreen
+        userId={route.userId}
+        onBack={() => setRoute({ name: 'tabs' })}
+      />
+    );
+  }
+
+  if (route.name === 'userPreview') {
+    return (
+      <UserProfilePreviewScreen
+        userId={route.userId}
+        onBack={() => setRoute({ name: 'tabs' })}
+      />
+    );
+  }
+
+  // ── Main tabs ────────────────────────────────────────────────────
   const renderContent = () => {
     switch (activeTab) {
       case 'friends':
-        return <FriendsScreen />;
+        return (
+          <FriendsHubScreen
+            onOpenFriendRequests={() => setRoute({ name: 'friendRequests' })}
+            onOpenAddFriend={() => setRoute({ name: 'addFriend' })}
+            onOpenFriendProfile={(userId) => setRoute({ name: 'friendProfile', userId })}
+          />
+        );
       case 'challenges':
         return (
           <ChallengeHubScreen
