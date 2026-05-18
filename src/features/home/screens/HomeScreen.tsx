@@ -6,7 +6,7 @@ import { HomeTabKey } from '../types';
 
 import {
   ChallengeDetailScreen,
-  ChallengesScreen,
+  ChallengeHubScreen,
   CreateChallengeScreen,
 } from '@features/challenges';
 import { FriendsScreen } from '@features/friends';
@@ -45,7 +45,7 @@ export function HomeScreen() {
         return <FriendsScreen />;
       case 'challenges':
         return (
-          <ChallengesScreen
+          <ChallengeHubScreen
             onCreateChallenge={() => setRoute({ name: 'createChallenge' })}
             onOpenChallenge={(challengeId) =>
               setRoute({ name: 'challengeDetail', challengeId })

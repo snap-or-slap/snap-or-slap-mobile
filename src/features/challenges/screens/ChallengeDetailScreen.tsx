@@ -1,12 +1,14 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { AppText, Badge, Button, Card, Screen } from '@ds/components';
-import { ClockIcon } from '@ds/icons';
+import { AppText, Button, Card, Screen } from '@ds/components';
+import { ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { Avatar } from '@shared/components';
 import { getChallengeDetailMock } from '../data/challenges.mock';
-import { ChallengeStatusPill, HeartCountBadge } from '../components';
+import { ChallengeStatusBadge } from '../components/ChallengeStatusBadge';
+import { ChallengeHearts } from '../components/ChallengeHearts';
+import { ChallengeMetaRow } from '../components/ChallengeMetaRow';
 
 type ChallengeDetailScreenProps = {
   challengeId?: string;
@@ -21,6 +23,13 @@ export function ChallengeDetailScreen({
   const styles = createStyles(theme);
   const challenge = getChallengeDetailMock(challengeId);
 
+  const isHistory =
+    challenge.status === 'success' ||
+    challenge.status === 'game-over' ||
+    challenge.status === 'cancelled';
+
+  const isFormation = challenge.status === 'formation';
+
   return (
     <Screen
       scrollable
@@ -28,6 +37,7 @@ export function ChallengeDetailScreen({
       testID="challenge-detail-screen"
       contentStyle={styles.content}
     >
+      {/* ── Back button ── */}
       <View style={styles.header}>
         <Button
           title="Back"
@@ -38,28 +48,84 @@ export function ChallengeDetailScreen({
         />
       </View>
 
+      {/* ── Hero card ── */}
       <Card padding="none" style={styles.heroCard}>
         <View style={styles.heroTopRow}>
-          <ChallengeStatusPill tone={challenge.status} label={challenge.statusLabel} />
-          <HeartCountBadge label={challenge.heartsText} tone="brand" variant="filled" />
+          <ChallengeStatusBadge tone={challenge.status} label={challenge.statusLabel} />
+          <ChallengeHearts label={challenge.heartsText} tone="brand" />
         </View>
 
         <AppText variant="heading" style={styles.heroTitle}>
           {challenge.title}
         </AppText>
 
-        <View style={styles.metaRow}>
-          <ClockIcon variant="outline" color={theme.colors.text['on-brand']} size={20} />
-          <AppText variant="body" style={styles.heroMeta}>
-            Reset {challenge.resetTimeText}
-          </AppText>
-        </View>
+        <ChallengeMetaRow
+          icon={<ClockIcon variant="outline" color={theme.colors.text['on-brand']} size={20} />}
+          label={`Reset ${challenge.resetTimeText}`}
+        />
 
         <AppText variant="caption" style={styles.heroMeta}>
-          Host @{challenge.hostUsername} | {challenge.dateRangeText}
+          Host @{challenge.hostUsername} · {challenge.dateRangeText}
         </AppText>
       </Card>
 
+      {/* ── Formation waiting state ── */}
+      {isFormation ? (
+        <Card style={styles.card}>
+          <AppText variant="subtitle" style={styles.sectionTitle}>
+            Waiting for members
+          </AppText>
+          <AppText variant="body" style={styles.bodyText}>
+            This challenge will start once the minimum number of members have joined.
+          </AppText>
+          <Button
+            title="Invite Friends"
+            variant="secondary"
+            size="sm"
+            onPress={() => undefined}
+            testID="invite-friends-button"
+          />
+        </Card>
+      ) : null}
+
+      {/* ── History result ── */}
+      {isHistory ? (
+        <Card style={styles.card}>
+          {challenge.status === 'success' ? (
+            <View style={styles.resultRow}>
+              <CupIcon size={28} color={theme.colors.text.success} variant="bold" />
+              <View style={styles.resultText}>
+                <AppText variant="subtitle" style={[styles.sectionTitle, { color: theme.colors.text.success }]}>
+                  Challenge Completed!
+                </AppText>
+                <AppText variant="caption" style={styles.bodyText}>
+                  Great job keeping the squad accountable.
+                </AppText>
+              </View>
+            </View>
+          ) : null}
+          {challenge.status === 'game-over' ? (
+            <View style={styles.resultRow}>
+              <MedalStarIcon size={28} color={theme.colors.text.error} variant="outline" />
+              <View style={styles.resultText}>
+                <AppText variant="subtitle" style={[styles.sectionTitle, { color: theme.colors.text.error }]}>
+                  Game Over
+                </AppText>
+                <AppText variant="caption" style={styles.bodyText}>
+                  The squad ran out of hearts. Better luck next time!
+                </AppText>
+              </View>
+            </View>
+          ) : null}
+          {challenge.status === 'cancelled' ? (
+            <AppText variant="body" style={styles.bodyText}>
+              This challenge was cancelled before completion.
+            </AppText>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {/* ── Members ── */}
       <Card style={styles.card}>
         <AppText variant="subtitle" style={styles.sectionTitle}>
           Members
@@ -73,63 +139,76 @@ export function ChallengeDetailScreen({
                   {member.displayName}
                 </AppText>
                 <AppText variant="caption" style={styles.memberMeta}>
-                  @{member.username} | {member.role === 'host' ? 'Host' : 'Member'}
+                  @{member.username} · {member.role === 'host' ? 'Host' : 'Member'}
                 </AppText>
               </View>
+              {/* Slap nudge — placeholder for non-host, active challenges */}
+              {!isHistory && !isFormation && member.role !== 'host' ? (
+                <Button
+                  title="Slap"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => undefined}
+                  testID={`slap-${member.id}`}
+                />
+              ) : null}
             </View>
           ))}
         </View>
       </Card>
 
-      <Card style={styles.card}>
-        <AppText variant="subtitle" style={styles.sectionTitle}>
-          Today
-        </AppText>
-        {challenge.activities.map((activity) => (
-          <View key={activity.id} style={styles.activityCard}>
-            <View style={styles.activityHeader}>
-              <AppText variant="subtitle" style={styles.activityName}>
-                {activity.name}
+      {/* ── Today's activities / check-in (active only) ── */}
+      {!isHistory && !isFormation && challenge.activities.length > 0 ? (
+        <Card style={styles.card}>
+          <AppText variant="subtitle" style={styles.sectionTitle}>
+            Today
+          </AppText>
+          {challenge.activities.map((activity) => (
+            <View key={activity.id} style={styles.activityCard}>
+              <View style={styles.activityHeader}>
+                <AppText variant="subtitle" style={styles.activityName}>
+                  {activity.name}
+                </AppText>
+                <AppText variant="caption" style={styles.activityStatus}>
+                  {activity.statusLabel}
+                </AppText>
+              </View>
+              <AppText variant="caption" style={styles.activityWindow}>
+                {activity.windowLabel}
               </AppText>
-              <Badge
-                variant="brand"
-                size="sm"
-                style={styles.activityStatus}
-              >
-                {activity.statusLabel}
-              </Badge>
+              <View style={styles.actionRow}>
+                <Button
+                  title="Check in"
+                  variant="primary"
+                  size="sm"
+                  onPress={() => undefined}
+                  style={styles.actionButton}
+                  testID={`check-in-${activity.id}`}
+                />
+                <Button
+                  title="Slap nudge"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => undefined}
+                  style={styles.actionButton}
+                />
+              </View>
             </View>
-            <AppText variant="caption" style={styles.activityWindow}>
-              {activity.windowLabel}
-            </AppText>
-            <View style={styles.actionRow}>
-              <Button
-                title="Check in"
-                variant="primary"
-                size="sm"
-                onPress={() => undefined}
-                style={styles.actionButton}
-              />
-              <Button
-                title="Slap nudge"
-                variant="secondary"
-                size="sm"
-                onPress={() => undefined}
-                style={styles.actionButton}
-              />
-            </View>
-          </View>
-        ))}
-      </Card>
+          ))}
+        </Card>
+      ) : null}
 
-      <Card style={styles.card}>
-        <AppText variant="subtitle" style={styles.sectionTitle}>
-          Evidence feed
-        </AppText>
-        <AppText variant="body" style={styles.emptyText}>
-          Media upload and evidence playback are intentionally reserved for the next adapter batch.
-        </AppText>
-      </Card>
+      {/* ── Evidence feed placeholder ── */}
+      {!isHistory ? (
+        <Card style={styles.card}>
+          <AppText variant="subtitle" style={styles.sectionTitle}>
+            Evidence feed
+          </AppText>
+          <AppText variant="body" style={styles.bodyText}>
+            Media upload and evidence playback are reserved for the next adapter batch.
+          </AppText>
+        </Card>
+      ) : null}
     </Screen>
   );
 }
@@ -143,7 +222,7 @@ function createStyles(theme: AppTheme) {
       alignItems: 'flex-start',
     },
     heroCard: {
-      gap: 14,
+      gap: 12,
       borderRadius: 28,
       padding: 20,
       backgroundColor: theme.colors.bg.brand,
@@ -160,11 +239,7 @@ function createStyles(theme: AppTheme) {
     },
     heroMeta: {
       color: theme.colors.text['on-brand'],
-    },
-    metaRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      opacity: 0.8,
     },
     card: {
       padding: 16,
@@ -173,6 +248,19 @@ function createStyles(theme: AppTheme) {
     sectionTitle: {
       color: theme.colors.text.primary,
       fontWeight: '800',
+    },
+    bodyText: {
+      color: theme.colors.text.secondary,
+      lineHeight: 20,
+    },
+    resultRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 14,
+    },
+    resultText: {
+      flex: 1,
+      gap: 4,
     },
     membersList: {
       gap: 12,
@@ -207,7 +295,7 @@ function createStyles(theme: AppTheme) {
       fontWeight: '800',
     },
     activityStatus: {
-      alignSelf: 'flex-start',
+      color: theme.colors.text.secondary,
     },
     activityWindow: {
       color: theme.colors.text.secondary,
@@ -218,10 +306,6 @@ function createStyles(theme: AppTheme) {
     },
     actionButton: {
       flex: 1,
-    },
-    emptyText: {
-      color: theme.colors.text.secondary,
-      lineHeight: 20,
     },
   });
 }
