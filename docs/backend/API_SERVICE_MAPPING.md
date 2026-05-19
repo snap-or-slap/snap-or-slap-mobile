@@ -124,6 +124,7 @@ Methods:
   - Returns: `{ challenges, total, page, limit }`
   - Mapper: yes.
   - Screens: `HomeScreen`, `ChallengesScreen`
+  - Backend also applies due formation transitions before returning data; FE should not call cron.
 - `createChallenge(userId, payload)` -> `POST /api/challenges?user_id=`
   - Body: `{ title, description?, durationDays, frequency, frequencyDays?, startAt?, resetTime?, totalHearts?, maxMembers?, isPrivate?, invitedUserIds?, coverUrl? }`
   - Returns: `{ challenge }`
@@ -133,6 +134,7 @@ Methods:
   - Returns: `{ challenge, members, my_membership }`
   - Mapper: yes.
   - Screens: `ChallengeDetailScreen`
+  - Backend applies due formation transitions when `user_id` is supplied.
 - `updateChallenge(id, userId, payload)` -> `PATCH /api/challenges/{id}?user_id=`
   - Body: same as create without `invitedUserIds`, all optional.
   - Returns: `{ challenge }`
@@ -214,6 +216,12 @@ Methods:
   - Returns: `{ challenge_id, cycle_number, duration_days, hearts_left, reset_at, time_until_reset, members }`
   - Mapper: yes.
   - Screens: `HomeScreen`, `ChallengeDetailScreen`
+  - Source of truth for current DONE/PENDING member state.
+- `nudgeMember(challengeId, memberId)` -> `POST /api/challenges/{id}/nudge/{memberId}?user_id=`
+  - Returns: `{ message: "Nudge sent successfully", target_user_id }`
+  - Mapper: yes.
+  - Screens: `ChallengeDetailScreen`
+  - UI label is "Slap"; backend behavior is reminder-only. It does not change check-in state or hearts.
 - `uploadProof(...)` -> no usable backend endpoint
   - `POST /api/challenges/{id}/proof` is 501.
   - Screens: `CheckInCameraScreen`
@@ -253,6 +261,7 @@ Methods:
   - Returns: `{ current_streak, active_challenges, unread_notifications }`
   - Mapper: yes.
   - Screens: `HomeScreen`, widgets.
+  - Backend applies due formation transitions before returning data.
 
 ## Setup Permissions Screen
 

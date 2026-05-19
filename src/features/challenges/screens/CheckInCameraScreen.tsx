@@ -1,7 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Image, Linking, StyleSheet, TextInput, View } from 'react-native';
+import {
+  CameraView,
+  useCameraPermissions,
+  type CameraCapturedPicture,
+} from 'expo-camera';
+
 import { AppText, Button, Card, Screen } from '@ds/components';
-import { CameraIcon, CloseIcon, InfoCircleIcon } from '@ds/icons';
+import { CloseIcon, InfoCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { IconButton } from '@shared/components';
@@ -15,55 +21,108 @@ type CheckInCameraScreenProps = {
   onSubmitted?: () => void;
 };
 
-const CAMERA_DEPENDENCY_MESSAGE =
-  'Camera capture requires expo-camera or expo-image-picker. Add it with: npx expo install expo-camera';
-
 export function CheckInCameraScreen({
   challengeId,
-  currentUserId = 'me',
+  currentUserId,
   onBack,
   onSubmitted,
 }: CheckInCameraScreenProps) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const cameraRef = useRef<CameraView | null>(null);
+
+  const [permission, requestPermission] = useCameraPermissions();
+
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [caption, setCaption] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const hasPhoto = Boolean(photoUri);
 
-  const handleCaptureFallback = () => {
+  const handleRequestPermission = async () => {
+    try {
+      setError(undefined);
+      await requestPermission();
+    } catch {
+      setError('Could not request camera permission. Please try again.');
+    }
+  };
+
+  const handleOpenSettings = async () => {
+    try {
+      await Linking.openSettings();
+    } catch {
+      setError('Could not open settings. Please update camera permission manually.');
+    }
+  };
+
+  const handleCapture = async () => {
+    try {
+      setError(undefined);
+
+      if (!cameraRef.current || !isCameraReady) {
+        setError('Camera is not ready yet. Please try again.');
+        return;
+      }
+
+      setIsCapturing(true);
+
+      const photo: CameraCapturedPicture =
+        await cameraRef.current.takePictureAsync({
+          quality: 0.75,
+          skipProcessing: false,
+        });
+
+      if (!photo.uri) {
+        setError('Could not capture photo. Please try again.');
+        return;
+      }
+
+      setPhotoUri(photo.uri);
+    } catch {
+      setError('Could not access camera. Please check camera permission.');
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const handleRetake = () => {
     setError(undefined);
-    // TODO: Replace this local demo URI with a captured file URI from
-    // expo-camera or expo-image-picker, then upload it and submit the media URL.
-    setPhotoUri(`local://check-in-proof/${challengeId}/${Date.now()}`);
+    setPhotoUri(undefined);
+    setIsCameraReady(false);
   };
 
   const handleSubmit = async () => {
+    if (!photoUri) {
+      setError('Please take a photo before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(undefined);
 
     try {
-      void currentUserId;
-      const hostedEvidenceUrl =
-        photoUri?.startsWith('http://') || photoUri?.startsWith('https://')
-          ? photoUri
-          : undefined;
-
-      // TODO: Submit hosted media here when the backend provides a binary upload endpoint.
-      await checkinService.submitCheckin(challengeId, {
-        evidenceUrl: hostedEvidenceUrl,
+      await checkinService.submitCheckinWithPhoto(challengeId, {
+        userId: currentUserId,
+        photoUri,
         caption: caption.trim() || undefined,
       });
+
       onSubmitted?.();
       onBack();
     } catch (submitError) {
       if (submitError instanceof ApiError && submitError.status === 409) {
         setError(submitError.message || 'You already checked in for this cycle.');
       } else if (submitError instanceof ApiError) {
-        setError(submitError.message || 'Could not submit your check-in. Please try again.');
+        setError(
+          submitError.message || 'Could not submit your check-in. Please try again.'
+        );
+      } else if (submitError instanceof Error) {
+        setError(submitError.message || 'Could not submit your check-in.');
       } else {
         setError('Could not submit your check-in. Please try again.');
       }
@@ -72,16 +131,113 @@ export function CheckInCameraScreen({
     }
   };
 
+  if (!permission) {
+    return (
+      <Screen padding="md" safeArea="top" contentStyle={styles.centered}>
+        <AppText variant="body" style={styles.loadingText}>
+          Loading camera permission...
+        </AppText>
+      </Screen>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <Screen
+        padding="md"
+        safeArea="top"
+        contentStyle={styles.content}
+        testID="check-in-camera-permission-screen"
+      >
+        <View style={styles.header}>
+          <IconButton
+            accessibilityLabel="Close check-in"
+            onPress={onBack}
+            variant="ghost"
+            icon={
+              <CloseIcon
+                size={28}
+                color={theme.colors.text.brand}
+                variant="outline"
+              />
+            }
+            testID="check-in-close-button"
+          />
+
+          <AppText variant="heading" style={styles.title}>
+            Photo proof
+          </AppText>
+        </View>
+
+        <Card variant="outlined" style={styles.permissionCard}>
+          <InfoCircleIcon
+            size={20}
+            color={theme.colors.icon.info}
+            variant="outline"
+          />
+
+          <View style={styles.permissionText}>
+            <AppText variant="subtitle" style={styles.permissionTitle}>
+              Camera permission needed
+            </AppText>
+
+            <AppText variant="caption" style={styles.permissionDescription}>
+              SnapOrSlap needs camera access so you can take a check-in proof.
+            </AppText>
+          </View>
+        </Card>
+
+        {error ? (
+          <AppText variant="caption" style={styles.errorText}>
+            {error}
+          </AppText>
+        ) : null}
+
+        <View style={styles.footer}>
+          <Button
+            title="Grant Permission"
+            variant="primary"
+            size="lg"
+            fullWidth
+            onPress={handleRequestPermission}
+            testID="check-in-grant-permission-button"
+          />
+
+          <Button
+            title="Open Settings"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onPress={handleOpenSettings}
+            testID="check-in-open-settings-button"
+          />
+        </View>
+      </Screen>
+    );
+  }
+
   return (
-    <Screen padding="md" safeArea="top" contentStyle={styles.content} testID="check-in-camera-screen">
+    <Screen
+      padding="md"
+      safeArea="top"
+      contentStyle={styles.content}
+      testID="check-in-camera-screen"
+    >
       <View style={styles.header}>
         <IconButton
           accessibilityLabel="Close check-in"
           onPress={onBack}
           variant="ghost"
-          icon={<CloseIcon size={28} color={theme.colors.text.brand} variant="outline" />}
+          icon={
+            <CloseIcon
+              size={28}
+              color={theme.colors.text.brand}
+              variant="outline"
+            />
+          }
           testID="check-in-close-button"
         />
+
         <AppText variant="heading" style={styles.title}>
           Photo proof
         </AppText>
@@ -89,46 +245,23 @@ export function CheckInCameraScreen({
 
       <View style={styles.previewArea}>
         {hasPhoto ? (
-          photoUri?.startsWith('local://') ? (
-            <View style={styles.demoPreview}>
-              <CameraIcon size={64} color={theme.colors.icon.brand} variant="bold" />
-              <AppText variant="subtitle" style={styles.demoTitle}>
-                Demo proof ready
-              </AppText>
-              <AppText variant="caption" style={styles.demoCaption}>
-                Replace this with a captured camera URI when camera dependencies are installed.
-              </AppText>
-            </View>
-          ) : (
-            <Image source={{ uri: photoUri }} style={styles.previewImage} />
-          )
+          <Image
+            source={{ uri: photoUri }}
+            style={styles.previewImage}
+            resizeMode="cover"
+            testID="check-in-photo-preview"
+          />
         ) : (
-          <View style={styles.cameraFallback}>
-            <CameraIcon size={72} color={theme.colors.icon.tertiary} variant="outline" />
-            <AppText variant="subtitle" style={styles.cameraTitle}>
-              Camera unavailable
-            </AppText>
-            <AppText variant="body" style={styles.cameraBody}>
-              {CAMERA_DEPENDENCY_MESSAGE}
-            </AppText>
-          </View>
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing="back"
+            onCameraReady={() => {
+              setIsCameraReady(true);
+            }}
+          />
         )}
       </View>
-
-      {!hasPhoto ? (
-        <Card variant="outlined" style={styles.permissionCard}>
-          <InfoCircleIcon size={20} color={theme.colors.icon.info} variant="outline" />
-          <View style={styles.permissionText}>
-            <AppText variant="subtitle" style={styles.permissionTitle}>
-              Camera permission needed
-            </AppText>
-            <AppText variant="caption" style={styles.permissionDescription}>
-              Once camera support is installed, denied permissions can be updated in device settings.
-            </AppText>
-          </View>
-          <Button title="Open Settings" variant="secondary" size="sm" onPress={Linking.openSettings} />
-        </Card>
-      ) : null}
 
       <View style={styles.captionGroup}>
         <TextInput
@@ -137,9 +270,15 @@ export function CheckInCameraScreen({
           placeholder="Add a short note..."
           placeholderTextColor={theme.colors.text.disabled}
           multiline
+          maxLength={280}
+          editable={!isSubmitting}
           style={styles.captionInput}
           testID="check-in-caption-input"
         />
+
+        <AppText variant="caption" style={styles.captionCounter}>
+          {caption.length}/280
+        </AppText>
       </View>
 
       {error ? (
@@ -156,16 +295,18 @@ export function CheckInCameraScreen({
             size="lg"
             fullWidth
             disabled={isSubmitting}
-            onPress={() => setPhotoUri(undefined)}
+            onPress={handleRetake}
             testID="check-in-retake-button"
           />
         ) : (
           <Button
-            title="Use demo proof"
+            title="Take Photo"
             variant="secondary"
             size="lg"
             fullWidth
-            onPress={handleCaptureFallback}
+            loading={isCapturing}
+            disabled={isCapturing || !isCameraReady}
+            onPress={handleCapture}
             testID="check-in-capture-button"
           />
         )}
@@ -176,7 +317,7 @@ export function CheckInCameraScreen({
           size="lg"
           fullWidth
           loading={isSubmitting}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !hasPhoto}
           onPress={handleSubmit}
           testID="check-in-submit-button"
         />
@@ -187,6 +328,14 @@ export function CheckInCameraScreen({
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadingText: {
+      color: theme.colors.text.secondary,
+    },
     content: {
       flex: 1,
       gap: theme.spacing[16],
@@ -213,37 +362,6 @@ function createStyles(theme: AppTheme) {
       width: '100%',
       height: '100%',
     },
-    cameraFallback: {
-      padding: theme.spacing[24],
-      alignItems: 'center',
-      gap: theme.spacing[12],
-    },
-    cameraTitle: {
-      color: theme.colors.text.inverse,
-      fontWeight: '900',
-    },
-    cameraBody: {
-      color: theme.colors.text.inverse,
-      textAlign: 'center',
-      lineHeight: 22,
-    },
-    demoPreview: {
-      width: '100%',
-      height: '100%',
-      padding: theme.spacing[24],
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: theme.spacing[12],
-      backgroundColor: theme.colors.bg['brand-subtle'],
-    },
-    demoTitle: {
-      color: theme.colors.text.brand,
-      fontWeight: '900',
-    },
-    demoCaption: {
-      color: theme.colors.text.secondary,
-      textAlign: 'center',
-    },
     permissionCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -262,7 +380,7 @@ function createStyles(theme: AppTheme) {
       color: theme.colors.text.secondary,
     },
     captionGroup: {
-      minHeight: 86,
+      minHeight: 104,
     },
     captionInput: {
       minHeight: 86,
@@ -274,6 +392,10 @@ function createStyles(theme: AppTheme) {
       backgroundColor: theme.colors.bg.surface,
       textAlignVertical: 'top',
       fontSize: 16,
+    },
+    captionCounter: {
+      alignSelf: 'flex-end',
+      color: theme.colors.text.secondary,
     },
     errorText: {
       color: theme.colors.text.error,

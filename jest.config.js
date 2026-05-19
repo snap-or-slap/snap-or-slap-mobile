@@ -14,6 +14,11 @@ module.exports = {
     '^@ds/(.*)$': '<rootDir>/src/design-system/$1',
     '^@features/(.*)$': '<rootDir>/src/features/$1',
     '^@app/(.*)$': '<rootDir>/src/app/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@services/(.*)$': '<rootDir>/src/services/$1',
+    '^@store/(.*)$': '<rootDir>/src/store/$1',
+    '^@types/(.*)$': '<rootDir>/src/types/$1',
+    '^@mocks/(.*)$': '<rootDir>/src/mocks/$1',
   },
 
   collectCoverageFrom: [

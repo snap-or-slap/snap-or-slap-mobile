@@ -66,6 +66,7 @@ src/features/widget/services/widget.service.ts
 - `GET /api/teams`: 501 legacy placeholder.
 - `POST /api/teams`: 501 legacy placeholder.
 - `POST /api/teams/{id}/slap`: 501 legacy placeholder.
+- `POST /api/crons/formation-transition`: admin/scheduler/manual testing only; challenge reads already apply due transitions.
 - `GET /api/test-data`: debug dump only.
 - `GET /api/hello`: smoke endpoint only.
 - Old FE "teams" or "slap" APIs do not map to the implemented challenge/nudge model.
@@ -85,6 +86,8 @@ await api.post(`/api/friends/request?user_id=${userId}`, {
 });
 
 await api.get(`/api/challenges?user_id=${userId}&status=active`);
+// Challenge reads apply due formation transitions server-side.
+// Do not call /api/crons/formation-transition from the app.
 
 await api.post(`/api/challenges?user_id=${userId}`, {
   title,
@@ -109,6 +112,14 @@ await api.post(`/api/challenges/${challengeId}/nudge/${memberId}?user_id=${userI
 
 await api.delete(`/api/users/me?user_id=${userId}`);
 ```
+
+## Formation transition and Slap behavior
+
+- Formation challenges become active when `start_at <= now`, at least two accepted members exist, and all accepted members are ready.
+- `GET /api/challenges`, `GET /api/challenges/{id}?user_id=...`, and `GET /api/widget/summary` apply due transitions before returning data.
+- Slap is a UI label for `POST /api/challenges/{id}/nudge/{memberId}?user_id=<currentUserId>`.
+- Slap should be shown for other accepted active members. Use `/api/challenges/{id}/checkins/today` to decide DONE/PENDING; keep the button visible but disabled for DONE members.
+- Slap/nudge only sends a reminder notification. It does not mark DONE/PENDING, reduce hearts, or evaluate the current step.
 
 ## Challenge invitation flow
 

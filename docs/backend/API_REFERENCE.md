@@ -637,6 +637,8 @@ Source: `src/app/api/challenges/route.ts`
 
 Purpose: List challenges where current user is an accepted member.
 
+Before returning data, this route opportunistically applies due formation transitions. A formation challenge becomes active when `start_at <= now`, at least two accepted members exist, and every accepted member is ready. The frontend should not call cron endpoints to make challenge status fresh.
+
 Required query: `user_id`. Optional query: `status`, `page`, `limit`.
 
 Success 200:
@@ -709,6 +711,8 @@ In OpenAPI: yes. FE usable: yes. Status: Fully implemented.
 Source: `src/app/api/challenges/[id]/route.ts`
 
 Purpose: Challenge detail with members and optional viewer membership.
+
+When `user_id` is supplied, this route opportunistically applies due formation transitions before reading the challenge.
 
 Path: `id`. Optional query: `user_id`.
 
@@ -1048,6 +1052,8 @@ Source: `src/app/api/challenges/[id]/nudge/[memberId]/route.ts`
 
 Purpose: Send nudge notification to accepted member who has not checked in this cycle.
 
+UI label: Slap. Backend action: nudge reminder. This endpoint only creates a challenge notification. It does not change check-in state, evaluate the cycle, or reduce hearts.
+
 Auth: nudger `user_id`. Path: `id`, `memberId`.
 
 Success 200:
@@ -1154,6 +1160,8 @@ Source: `src/app/api/widget/summary/route.ts`
 
 Purpose: Compact dashboard/widget data for user.
 
+Before returning data, this route opportunistically applies due formation transitions so widget/home data does not stay stale when the scheduler is not running.
+
 Required query: `user_id`.
 
 Success 200:
@@ -1211,6 +1219,8 @@ In OpenAPI: yes. FE usable: no, admin/test only. Status: Fully implemented.
 Source: `src/app/api/crons/[jobName]/route.ts`, `src/lib/services/cronService.ts`
 
 Purpose: Execute cron job.
+
+`formation-transition` uses the same shared transition service as challenge list/detail/widget reads. It is intended for admin/scheduler/manual testing only; FE should not call it.
 
 Auth: `Authorization: Bearer <CRON_SECRET>`. Path: `jobName`.
 

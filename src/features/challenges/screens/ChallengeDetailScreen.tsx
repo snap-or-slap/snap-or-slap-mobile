@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View, Image } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
@@ -11,7 +11,7 @@ import { ChallengeMetaRow } from '../components/ChallengeMetaRow';
 import { challengesService } from '../services/challenges.service';
 import { checkinService } from '../services/checkin.service';
 import { friendsService } from '@features/friends/services';
-import { ApiError, session } from '@services/api';
+import { ApiError, session, getApiBaseUrl } from '@services/api';
 import type { FriendUser } from '@features/friends/types';
 
 type ChallengeDetailScreenProps = {
@@ -744,43 +744,62 @@ export function ChallengeDetailScreen({
           <AppText variant="subtitle" style={styles.sectionTitle}>
             Members
           </AppText>
+
           <View style={styles.membersList}>
             {challenge.members.map((member) => (
               <View key={member.id} style={styles.memberRow}>
                 <Avatar name={member.displayName} avatarUrl={member.avatarUrl} size={44} />
+
                 <View style={styles.memberText}>
                   <AppText variant="subtitle" style={styles.memberName}>
                     {member.displayName}
                   </AppText>
+
                   <AppText variant="caption" style={styles.memberMeta}>
                     @{member.username} · {member.role === 'host' ? 'Host' : 'Member'}
                     {member.status ? ` · ${member.status}` : ''}
                     {member.isReady != null ? ` · ${member.isReady ? 'Ready' : 'Not ready'}` : ''}
-                    {isActive && member.checkedInToday != null ? ` · ${member.checkedInToday ? 'DONE' : 'PENDING'}` : ''}
+                    {isActive && member.checkedInToday != null
+                      ? ` · ${member.checkedInToday ? 'DONE' : 'PENDING'}`
+                      : ''}
                   </AppText>
+
                   {isActive && member.checkedInToday && member.currentCheckin?.caption ? (
                     <AppText variant="caption" style={styles.bodyText}>
                       {member.currentCheckin.caption}
                     </AppText>
                   ) : null}
+
                   {isActive && member.checkedInToday && member.currentCheckin?.evidenceUrl ? (
-                    <AppText variant="caption" style={styles.linkText}>
-                      {member.currentCheckin.evidenceUrl}
-                    </AppText>
+                    <Image
+                      source={{
+                        uri: getRenderableEvidenceUrl(member.currentCheckin.evidenceUrl),
+                      }}
+                      style={styles.proofThumbnail}
+                      resizeMode="cover"
+                    />
                   ) : null}
                 </View>
-                {isActive &&
-                member.status === 'accepted' &&
-                member.checkedInToday === false &&
-                member.userId !== currentUserId ? (
-                  <Button
-                    title="Slap"
-                    variant="secondary"
-                    size="sm"
-                    disabled={isMutating}
-                    onPress={() => nudgeMember(member)}
-                    testID={`slap-${member.id}`}
-                  />
+
+                {isActive && member.status === 'accepted' && member.userId !== currentUserId ? (
+                  <View style={styles.slapAction}>
+                    <Button
+                      title="Slap"
+                      variant="secondary"
+                      size="sm"
+                      disabled={isMutating || member.checkedInToday !== false}
+                      onPress={() => nudgeMember(member)}
+                      testID={`slap-${member.id}`}
+                    />
+
+                    <AppText variant="caption" style={styles.slapHelper}>
+                      {member.checkedInToday === true
+                        ? 'Checked in'
+                        : member.checkedInToday === false
+                          ? 'Send reminder'
+                          : 'Status unavailable'}
+                    </AppText>
+                  </View>
                 ) : null}
               </View>
             ))}
@@ -792,11 +811,13 @@ export function ChallengeDetailScreen({
             <AppText variant="subtitle" style={styles.sectionTitle}>
               History and stats
             </AppText>
+
             {challenge.statsText ? (
               <AppText variant="caption" style={styles.bodyText}>
                 {challenge.statsText}
               </AppText>
             ) : null}
+
             <View style={styles.actionRow}>
               <Button
                 title={showGallery ? 'Hide Gallery' : 'View Gallery'}
@@ -804,19 +825,12 @@ export function ChallengeDetailScreen({
                 size="sm"
                 onPress={() => setShowGallery((value) => !value)}
               />
-              <Button
-                title="View Previous Steps"
-                variant="ghost"
-                size="sm"
-                disabled
-              />
-              <Button
-                title="View History"
-                variant="ghost"
-                size="sm"
-                disabled
-              />
+
+              <Button title="View Previous Steps" variant="ghost" size="sm" disabled />
+
+              <Button title="View History" variant="ghost" size="sm" disabled />
             </View>
+
             {isHost ? (
               <Button
                 title="Cancel challenge"
@@ -833,11 +847,12 @@ export function ChallengeDetailScreen({
           </Card>
         ) : null}
 
-        {(!isFormation && (isHistory || showGallery)) ? (
+        {!isFormation && (isHistory || showGallery) ? (
           <Card style={styles.card}>
             <AppText variant="subtitle" style={styles.sectionTitle}>
               {isHistory ? 'Evidence feed' : 'Gallery'}
             </AppText>
+
             {challenge.checkins.length === 0 ? (
               <AppText variant="body" style={styles.bodyText}>
                 No check-ins yet.
@@ -849,13 +864,19 @@ export function ChallengeDetailScreen({
                     <AppText variant="subtitle" style={styles.memberName}>
                       {checkin.memberName ?? 'Member'}
                     </AppText>
+
                     <AppText variant="caption" style={styles.bodyText}>
                       {checkin.caption || 'Checked in'}
                     </AppText>
+
                     {checkin.evidenceUrl ? (
-                      <AppText variant="caption" style={styles.linkText}>
-                        {checkin.evidenceUrl}
-                      </AppText>
+                      <Image
+                        source={{
+                          uri: getRenderableEvidenceUrl(checkin.evidenceUrl),
+                        }}
+                        style={styles.proofImage}
+                        resizeMode="cover"
+                      />
                     ) : null}
                   </View>
                 ))}
@@ -951,6 +972,41 @@ export function ChallengeDetailScreen({
     </Screen>
   );
 }
+
+function getRenderableEvidenceUrl(evidenceUrl?: string | null): string | undefined {
+  if (!evidenceUrl) {
+    return undefined;
+  }
+
+  const uploadBaseUrl = getApiBaseUrl().replace(/\/api\/?$/, '');
+
+  return evidenceUrl
+    .replace(/^http:\/\/localhost:3000/i, uploadBaseUrl)
+    .replace(/^http:\/\/127\.0\.0\.1:3000/i, uploadBaseUrl);
+}
+
+function EvidenceImage({
+  evidenceUrl,
+  variant = 'large',
+}: {
+  evidenceUrl?: string | null;
+  variant?: 'thumbnail' | 'large';
+}) {
+  const renderableUrl = getRenderableEvidenceUrl(evidenceUrl);
+
+  if (!renderableUrl) {
+    return null;
+  }
+
+  return (
+    <Image
+      source={{ uri: renderableUrl }}
+      style={variant === 'thumbnail' ? styles.proofThumbnail : styles.proofImage}
+      resizeMode="cover"
+    />
+  );
+}
+
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -1069,6 +1125,15 @@ function createStyles(theme: AppTheme) {
     linkText: {
       color: theme.colors.text.brand,
     },
+    slapAction: {
+      alignItems: 'center',
+      gap: 4,
+      minWidth: 88,
+    },
+    slapHelper: {
+      color: theme.colors.text.secondary,
+      textAlign: 'center',
+    },
     modalBackdrop: {
       flex: 1,
       backgroundColor: 'rgba(0,0,0,0.35)',
@@ -1114,6 +1179,21 @@ function createStyles(theme: AppTheme) {
     },
     inviteFriendDisabled: {
       opacity: 0.45,
+    },
+    proofThumbnail: {
+      width: 120,
+      height: 120,
+      marginTop: theme.spacing[8],
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bg['page-subtle'],
+    },
+
+    proofImage: {
+      width: '100%',
+      height: 220,
+      marginTop: theme.spacing[8],
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bg['page-subtle'],
     },
   });
 }

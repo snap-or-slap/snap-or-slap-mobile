@@ -127,6 +127,10 @@ Frontend workaround:
 - `POST /api/challenges/{id}/invite` now allows any accepted member of a formation challenge to invite friends from that member's own friends list. It is no longer host-only.
 - Challenge invitation notifications include challenge navigation metadata: `challenge_id`, `challengeId`, `challenge_title`, `challengeTitle`, `inviter_id`, and `inviterId`.
 - Notifications remain in-app database notifications. Push token registration is still not implemented.
+- Formation challenge freshness is handled server-side. `GET /api/challenges`, `GET /api/challenges/{id}?user_id=...`, and `GET /api/widget/summary` run the shared due-transition service before returning data. FE should not call `/api/crons/formation-transition`.
+- Formation transition requires `start_at <= now`, at least two accepted members, and all accepted members ready. Not-ready and not-enough-member challenges remain in formation.
+- Slap UI maps to `POST /api/challenges/{id}/nudge/{memberId}?user_id=<currentUserId>`. The legacy `POST /api/teams/{id}/slap` remains 501 and should not be used.
+- Slap/nudge is reminder-only: it creates a notification but does not mark check-in state, reduce hearts, or evaluate/reset the step.
 
 ### Theme setting
 

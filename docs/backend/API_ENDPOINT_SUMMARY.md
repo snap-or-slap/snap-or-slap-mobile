@@ -73,3 +73,12 @@ Totals:
 - Actual route handlers: 63
 - Implemented handlers: 59
 - Not implemented handlers returning 501: 4
+
+## Runtime behavior notes
+
+- `GET /api/challenges`, `GET /api/challenges/{id}?user_id=...`, and `GET /api/widget/summary` apply due formation transitions before returning data.
+- Formation transition conditions: `status = formation`, `start_at <= now`, at least two accepted members, and all accepted members are ready. Not-enough-member or not-ready challenges stay in formation and are reported as skipped by the cron result.
+- `POST /api/crons/formation-transition` remains available for scheduler/manual testing with `Authorization: Bearer <CRON_SECRET>`, but the frontend should not call it.
+- Slap UI maps to `POST /api/challenges/{id}/nudge/{memberId}?user_id=<currentUserId>`.
+- `POST /api/teams/{id}/slap` remains a legacy 501 placeholder and must not be used.
+- Slap/nudge only sends a notification. It does not mark DONE/PENDING, reduce hearts, or evaluate a step.

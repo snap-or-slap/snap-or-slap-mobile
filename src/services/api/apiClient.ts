@@ -23,6 +23,12 @@ export type RequestOptions = {
   body?: unknown;
   headers?: Record<string, string>;
   withCurrentUser?: boolean;
+
+  /**
+   * Optional flag for upload requests.
+   * In most cases, FormData is auto-detected, so this is only a safety flag.
+   */
+  isMultipart?: boolean;
 };
 
 const DEFAULT_API_BASE_URL =
@@ -71,6 +77,7 @@ function appendQuery(url: URL, query?: QueryParams): void {
 async function buildUrl(path: string, options: RequestOptions): Promise<string> {
   const baseUrl = getApiBaseUrl();
   const url = new URL(`${baseUrl}${normalizePath(path)}`);
+
   appendQuery(url, options.query);
 
   if (options.withCurrentUser && !url.searchParams.has('user_id')) {
@@ -93,21 +100,49 @@ async function parseResponse(response: Response): Promise<unknown> {
   }
 }
 
+function isFormDataBody(body: unknown): body is FormData {
+  return typeof FormData !== 'undefined' && body instanceof FormData;
+}
+
+function removeContentTypeHeader(headers: Record<string, string>): void {
+  Object.keys(headers).forEach((key) => {
+    if (key.toLowerCase() === 'content-type') {
+      delete headers[key];
+    }
+  });
+}
+
 async function request<T>(
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
   const token = await session.getAccessToken();
+
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...options.headers,
   };
 
   let body: BodyInit | undefined;
+
   if (options.body !== undefined) {
-    headers['Content-Type'] = headers['Content-Type'] ?? 'application/json';
-    body = JSON.stringify(options.body);
+    const shouldSendMultipart =
+      options.isMultipart === true || isFormDataBody(options.body);
+
+    if (shouldSendMultipart) {
+      /**
+       * Important for React Native / Expo:
+       * Do NOT manually set Content-Type for FormData.
+       * fetch will add:
+       * multipart/form-data; boundary=...
+       */
+      removeContentTypeHeader(headers);
+      body = options.body as BodyInit;
+    } else {
+      headers['Content-Type'] = headers['Content-Type'] ?? 'application/json';
+      body = JSON.stringify(options.body);
+    }
   }
 
   if (token) {
@@ -119,6 +154,7 @@ async function request<T>(
     headers,
     body,
   });
+
   const parsed = await parseResponse(response);
 
   if (!response.ok) {
@@ -129,12 +165,27 @@ async function request<T>(
 }
 
 export const apiClient = {
-  get: <T>(path: string, options?: RequestOptions) => request<T>('GET', path, options),
-  post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>) =>
-    request<T>('POST', path, { ...options, body }),
-  put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>) =>
-    request<T>('PUT', path, { ...options, body }),
-  patch: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>) =>
-    request<T>('PATCH', path, { ...options, body }),
-  delete: <T>(path: string, options?: RequestOptions) => request<T>('DELETE', path, options),
+  get: <T>(path: string, options?: RequestOptions) =>
+    request<T>('GET', path, options),
+
+  post: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'body'>,
+  ) => request<T>('POST', path, { ...options, body }),
+
+  put: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'body'>,
+  ) => request<T>('PUT', path, { ...options, body }),
+
+  patch: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'body'>,
+  ) => request<T>('PATCH', path, { ...options, body }),
+
+  delete: <T>(path: string, options?: RequestOptions) =>
+    request<T>('DELETE', path, options),
 };
