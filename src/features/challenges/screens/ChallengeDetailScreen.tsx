@@ -13,11 +13,13 @@ import { ChallengeMetaRow } from '../components/ChallengeMetaRow';
 type ChallengeDetailScreenProps = {
   challengeId?: string;
   onBack?: () => void;
+  onCheckIn?: (challengeId: string) => void;
 };
 
 export function ChallengeDetailScreen({
   challengeId,
   onBack,
+  onCheckIn,
 }: ChallengeDetailScreenProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -185,7 +187,7 @@ export function ChallengeDetailScreen({
                   title="Check in"
                   variant="primary"
                   size="sm"
-                  onPress={() => undefined}
+                  onPress={() => onCheckIn?.(challenge.id)}
                   style={styles.actionButton}
                   testID={`check-in-${activity.id}`}
                 />

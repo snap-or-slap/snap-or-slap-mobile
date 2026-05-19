@@ -45,6 +45,29 @@ export async function updateProfile(patch: Partial<UserProfile>): Promise<UserPr
   return Promise.resolve({ ...MOCK_PROFILE, ...patch });
 }
 
+export type UpdateCurrentUserProfilePayload = {
+  displayName: string;
+  bio?: string;
+  avatarUrl?: string;
+};
+
+/**
+ * PATCH /api/users/me?user_id=<me>
+ * Body: { displayName, bio?, avatarUrl? }
+ *
+ * The app currently has no real auth session or API base URL configured, so this
+ * delegates to the existing mock-backed updater until backend integration lands.
+ */
+export async function updateCurrentUserProfile(
+  payload: UpdateCurrentUserProfilePayload
+): Promise<UserProfile> {
+  return updateProfile({
+    displayName: payload.displayName,
+    bio: payload.bio,
+    avatarUrl: payload.avatarUrl,
+  } as Partial<UserProfile>);
+}
+
 /**
  * DELETE /api/users/me?user_id=<me>
  * TODO: Uncomment and wire when endpoint is available.
@@ -59,5 +82,6 @@ export async function deleteAccount(): Promise<void> {
 export const profileService = {
   getMyProfile,
   updateProfile,
+  updateCurrentUserProfile,
   deleteAccount,
 };
