@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
@@ -11,7 +11,7 @@ import { ChallengeMetaRow } from '../components/ChallengeMetaRow';
 import { challengesService } from '../services/challenges.service';
 import { checkinService } from '../services/checkin.service';
 import { friendsService } from '@features/friends/services';
-import { ApiError } from '@services/api';
+import { ApiError, session } from '@services/api';
 import type { FriendUser } from '@features/friends/types';
 
 type ChallengeDetailScreenProps = {
@@ -59,10 +59,13 @@ type DetailMember = {
   isReady?: boolean;
   avatarUrl?: string;
   checkedInToday?: boolean;
+  currentCheckin?: CheckinItem;
 };
 
 type CheckinItem = {
   id: string;
+  userId?: string;
+  cycleNumber?: number;
   caption?: string;
   evidenceUrl?: string;
   createdAt?: string;
@@ -79,7 +82,9 @@ type LoadedDetail = {
   resetTimeText: string;
   dateRangeText: string;
   hostUsername: string;
+  maxMembers: number;
   currentCycleText?: string;
+  timeUntilResetText?: string;
   statsText?: string;
   members: DetailMember[];
   myMembership: BackendRecord | null;
@@ -141,6 +146,9 @@ function statusLabel(status: LoadedDetail['status']): string {
 }
 
 function isCheckedIn(raw: BackendRecord): boolean {
+  const status = String(raw.status ?? '').toLowerCase();
+  if (status === 'checked_in' || status === 'done') return true;
+  if (status === 'pending') return false;
   return Boolean(
     raw.checkedIn ??
     raw.checked_in ??
@@ -151,7 +159,11 @@ function isCheckedIn(raw: BackendRecord): boolean {
   );
 }
 
-function mapMember(raw: BackendRecord, todayMembers: BackendRecord[]): DetailMember {
+function mapMember(
+  raw: BackendRecord,
+  todayMembers: BackendRecord[],
+  currentCycleCheckins: CheckinItem[],
+): DetailMember {
   const user = (raw.user ?? {}) as BackendRecord;
   const userId = stringValue(raw.userId ?? raw.user_id ?? user.id);
   const today = todayMembers.find((entry) => {
@@ -173,6 +185,7 @@ function mapMember(raw: BackendRecord, todayMembers: BackendRecord[]): DetailMem
     isReady: boolValue(raw.isReady ?? raw.is_ready),
     avatarUrl: stringValue(raw.avatarUrl ?? raw.avatar_url ?? user.avatarUrl ?? user.avatar_url),
     checkedInToday: today ? isCheckedIn(today) : undefined,
+    currentCheckin: currentCycleCheckins.find((checkin) => checkin.userId === userId),
   };
 }
 
@@ -180,6 +193,8 @@ function mapCheckin(raw: BackendRecord): CheckinItem {
   const user = (raw.user ?? raw.member ?? {}) as BackendRecord;
   return {
     id: String(raw.id ?? raw.checkinId ?? raw.checkin_id ?? ''),
+    userId: stringValue(raw.userId ?? raw.user_id),
+    cycleNumber: numberValue(raw.cycleNumber ?? raw.cycle_number),
     caption: stringValue(raw.caption),
     evidenceUrl: stringValue(raw.evidenceUrl ?? raw.evidence_url),
     createdAt: stringValue(raw.createdAt ?? raw.created_at),
@@ -198,7 +213,12 @@ function mapLoadedDetail(
   const challenge = detail.challenge ?? {};
   const status = normalizeStatus(challenge.status);
   const todayMembers = todayStatus?.members ?? [];
-  const members = (detail.members ?? []).map((member) => mapMember(member, todayMembers));
+  const currentCycleCheckins = checkins
+    .map(mapCheckin)
+    .filter((item) => item.id && item.cycleNumber === todayStatus?.cycleNumber);
+  const members = (detail.members ?? []).map((member) =>
+    mapMember(member, todayMembers, currentCycleCheckins),
+  );
   const host = members.find((member) => member.role === 'host');
   const totalHearts = numberValue(challenge.totalHearts ?? challenge.total_hearts);
   const heartsLeft =
@@ -228,12 +248,17 @@ function mapLoadedDetail(
       : formatTime(challenge.resetTime ?? challenge.reset_time),
     dateRangeText: `${formatDate(challenge.startAt ?? challenge.start_at)} - ${durationDays ?? '?'} days`,
     hostUsername: host?.username ?? stringValue(challenge.hostUsername ?? challenge.host_username) ?? 'host',
+    maxMembers: numberValue(challenge.maxMembers ?? challenge.max_members) ?? 10,
     currentCycleText:
       todayStatus?.cycleNumber != null
         ? `Cycle ${todayStatus.cycleNumber}`
         : stats?.elapsedCycles != null
           ? `Cycle ${stats.elapsedCycles}`
           : undefined,
+    timeUntilResetText:
+      todayStatus?.timeUntilReset != null
+        ? formatDuration(todayStatus.timeUntilReset)
+        : undefined,
     statsText:
       stats?.completionRate != null
         ? `${Math.round(stats.completionRate)}% completion · ${stats.totalCheckins ?? 0} check-ins`
@@ -245,10 +270,22 @@ function mapLoadedDetail(
   };
 }
 
+function formatDuration(totalSeconds: number): string {
+  const clamped = Math.max(0, totalSeconds);
+  const hours = Math.floor(clamped / 3600);
+  const minutes = Math.floor((clamped % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    const lowerMessage = error.message.toLowerCase();
+    if (error.status === 400 && lowerMessage.includes('yourself')) return 'You cannot slap yourself.';
+    if (error.status === 400 && lowerMessage.includes('already checked in')) return 'That member already checked in.';
     if (error.status === 409) return error.message;
     if (error.status === 403) return 'You do not have access to this challenge.';
+    if (error.status === 429) return 'Already nudged this member today.';
     if (error.status === 404) return 'Challenge not found.';
     return error.message;
   }
@@ -266,6 +303,11 @@ export function ChallengeDetailScreen({
 
   const [challenge, setChallenge] = useState<LoadedDetail | null>(null);
   const [friends, setFriends] = useState<FriendUser[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isInviteModalVisible, setInviteModalVisible] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState('');
+  const [selectedInviteIds, setSelectedInviteIds] = useState<string[]>([]);
+  const [showGallery, setShowGallery] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -290,6 +332,7 @@ export function ChallengeDetailScreen({
           checkinService.listCheckins<CheckinsResponse>(challengeId, { limit: 30 }),
           friendsService.listFriends({ limit: 50 }),
         ]);
+      const userId = await session.getCurrentUserId().catch(() => null);
 
       if (detailResult.status === 'rejected') {
         throw detailResult.reason;
@@ -300,6 +343,7 @@ export function ChallengeDetailScreen({
       const checkins = checkinsResult.status === 'fulfilled' ? checkinsResult.value.checkins ?? [] : [];
       setChallenge(mapLoadedDetail(detailResult.value, todayStatus, stats, checkins));
       setFriends(friendsResult.status === 'fulfilled' ? friendsResult.value.friends : []);
+      setCurrentUserId(userId);
     } catch (loadError) {
       setChallenge(null);
       setError(getErrorMessage(loadError));
@@ -327,9 +371,44 @@ export function ChallengeDetailScreen({
   const myReady = Boolean(myMembership?.isReady ?? myMembership?.is_ready);
 
   const pendingTodayMembers = useMemo(
-    () => challenge?.members.filter((member) => member.checkedInToday === false) ?? [],
+    () =>
+      challenge?.members.filter(
+        (member) =>
+          member.status === 'accepted' &&
+          member.checkedInToday === false &&
+          member.userId !== currentUserId,
+      ) ?? [],
+    [challenge?.members, currentUserId],
+  );
+
+  const nonDeclinedMembers = useMemo(
+    () => challenge?.members.filter((member) => member.status !== 'declined') ?? [],
     [challenge?.members],
   );
+  const remainingSlots = challenge
+    ? Math.max(0, challenge.maxMembers - nonDeclinedMembers.length)
+    : 0;
+  const canInviteMore = Boolean(isFormation && isAcceptedMember && remainingSlots > 0);
+  const currentUserToday = useMemo(
+    () => challenge?.members.find((member) => member.userId === currentUserId),
+    [challenge?.members, currentUserId],
+  );
+  const shouldShowCheckIn = Boolean(isActive && isAcceptedMember && currentUserToday?.checkedInToday === false);
+
+  const existingUserIds = useMemo(
+    () => new Set(challenge?.members.map((member) => member.userId).filter(Boolean) ?? []),
+    [challenge?.members],
+  );
+  const filteredFriends = useMemo(() => {
+    const query = inviteSearch.trim().toLowerCase();
+    return friends.filter((friend) => {
+      if (!query) return true;
+      return (
+        friend.displayName.toLowerCase().includes(query) ||
+        friend.username.toLowerCase().includes(query)
+      );
+    });
+  }, [friends, inviteSearch]);
 
   const runMutation = useCallback(
     async (action: () => Promise<unknown>, successMessage?: string) => {
@@ -348,22 +427,53 @@ export function ChallengeDetailScreen({
     [loadChallenge],
   );
 
-  const handleInviteFriends = () => {
-    if (!challenge) return;
-    const memberUserIds = new Set(challenge.members.map((member) => member.userId).filter(Boolean));
-    const inviteeIds = friends
-      .filter((friend) => !memberUserIds.has(friend.id))
-      .map((friend) => friend.id)
-      .slice(0, Math.max(0, 50 - challenge.members.length));
+  const openInviteModal = () => {
+    setSelectedInviteIds([]);
+    setInviteSearch('');
+    setInviteModalVisible(true);
+  };
 
-    if (inviteeIds.length === 0) {
-      setActionMessage('No eligible friends to invite.');
+  const toggleInviteSelection = (friendId: string) => {
+    if (existingUserIds.has(friendId)) return;
+    setSelectedInviteIds((current) => {
+      if (current.includes(friendId)) {
+        return current.filter((id) => id !== friendId);
+      }
+      if (current.length >= remainingSlots) return current;
+      return [...current, friendId];
+    });
+  };
+
+  const submitInvites = () => {
+    if (!challenge) return;
+    if (selectedInviteIds.length === 0) {
+      setActionMessage('Select at least one friend to invite.');
+      return;
+    }
+    if (selectedInviteIds.length > remainingSlots) {
+      setActionMessage(`Only ${remainingSlots} slot${remainingSlots === 1 ? '' : 's'} remaining.`);
       return;
     }
 
+    setIsMutating(true);
+    setActionMessage(null);
+    challengesService
+      .inviteUsers(challenge.id, selectedInviteIds)
+      .then(() => {
+        setActionMessage(`${selectedInviteIds.length} invite${selectedInviteIds.length === 1 ? '' : 's'} sent.`);
+        setInviteModalVisible(false);
+        setSelectedInviteIds([]);
+        setInviteSearch('');
+        return loadChallenge();
+      })
+      .catch((inviteError) => setActionMessage(getErrorMessage(inviteError)))
+      .finally(() => setIsMutating(false));
+  };
+
+  const nudgeMember = (member: DetailMember) => {
     void runMutation(
-      () => challengesService.inviteUsers(challenge.id, inviteeIds),
-      'Invites sent.',
+      () => checkinService.nudgeMember(challenge!.id, member.userId ?? member.id),
+      'Reminder sent.',
     );
   };
 
@@ -512,13 +622,13 @@ export function ChallengeDetailScreen({
                   onPress={() => void runMutation(() => challengesService.setReady(challenge.id, !myReady))}
                 />
               ) : null}
-              {isHost ? (
+              {canInviteMore ? (
                 <Button
-                  title="Invite Friends"
+                  title="Invite More"
                   variant="secondary"
                   size="sm"
                   disabled={isMutating}
-                  onPress={handleInviteFriends}
+                  onPress={openInviteModal}
                   testID="invite-friends-button"
                 />
               ) : null}
@@ -588,6 +698,48 @@ export function ChallengeDetailScreen({
           </Card>
         ) : null}
 
+        {isActive ? (
+          <Card style={styles.card}>
+            <AppText variant="subtitle" style={styles.sectionTitle}>
+              Current step
+            </AppText>
+            <View style={styles.currentStepGrid}>
+              <View style={styles.currentStepMetric}>
+                <AppText variant="caption" style={styles.memberMeta}>
+                  Cycle
+                </AppText>
+                <AppText variant="subtitle" style={styles.memberName}>
+                  {challenge.currentCycleText ?? 'Current'}
+                </AppText>
+              </View>
+              <View style={styles.currentStepMetric}>
+                <AppText variant="caption" style={styles.memberMeta}>
+                  Reset
+                </AppText>
+                <AppText variant="subtitle" style={styles.memberName}>
+                  {challenge.timeUntilResetText ?? challenge.resetTimeText}
+                </AppText>
+              </View>
+            </View>
+            <AppText variant="body" style={styles.bodyText}>
+              Complete today's proof before reset. Slap is only a reminder and does not change check-in state or hearts.
+            </AppText>
+            {shouldShowCheckIn ? (
+              <Button
+                title="My Check-in"
+                variant="primary"
+                size="md"
+                onPress={() => onCheckIn?.(challenge.id)}
+                testID="my-check-in-button"
+              />
+            ) : (
+              <AppText variant="caption" style={styles.bodyText}>
+                {currentUserToday?.checkedInToday ? 'You are done for this cycle.' : 'Check-in is not available.'}
+              </AppText>
+            )}
+          </Card>
+        ) : null}
+
         <Card style={styles.card}>
           <AppText variant="subtitle" style={styles.sectionTitle}>
             Members
@@ -602,22 +754,31 @@ export function ChallengeDetailScreen({
                   </AppText>
                   <AppText variant="caption" style={styles.memberMeta}>
                     @{member.username} · {member.role === 'host' ? 'Host' : 'Member'}
+                    {member.status ? ` · ${member.status}` : ''}
                     {member.isReady != null ? ` · ${member.isReady ? 'Ready' : 'Not ready'}` : ''}
-                    {member.checkedInToday != null ? ` · ${member.checkedInToday ? 'Checked in' : 'Pending'}` : ''}
+                    {isActive && member.checkedInToday != null ? ` · ${member.checkedInToday ? 'DONE' : 'PENDING'}` : ''}
                   </AppText>
+                  {isActive && member.checkedInToday && member.currentCheckin?.caption ? (
+                    <AppText variant="caption" style={styles.bodyText}>
+                      {member.currentCheckin.caption}
+                    </AppText>
+                  ) : null}
+                  {isActive && member.checkedInToday && member.currentCheckin?.evidenceUrl ? (
+                    <AppText variant="caption" style={styles.linkText}>
+                      {member.currentCheckin.evidenceUrl}
+                    </AppText>
+                  ) : null}
                 </View>
-                {isActive && member.checkedInToday === false ? (
+                {isActive &&
+                member.status === 'accepted' &&
+                member.checkedInToday === false &&
+                member.userId !== currentUserId ? (
                   <Button
                     title="Slap"
                     variant="secondary"
                     size="sm"
                     disabled={isMutating}
-                    onPress={() =>
-                      void runMutation(
-                        () => checkinService.nudgeMember(challenge.id, member.id),
-                        'Nudge sent.',
-                      )
-                    }
+                    onPress={() => nudgeMember(member)}
                     testID={`slap-${member.id}`}
                   />
                 ) : null}
@@ -629,50 +790,32 @@ export function ChallengeDetailScreen({
         {isActive ? (
           <Card style={styles.card}>
             <AppText variant="subtitle" style={styles.sectionTitle}>
-              Today
+              History and stats
             </AppText>
             {challenge.statsText ? (
               <AppText variant="caption" style={styles.bodyText}>
                 {challenge.statsText}
               </AppText>
             ) : null}
-            <View style={styles.activityCard}>
-              <View style={styles.activityHeader}>
-                <AppText variant="subtitle" style={styles.activityName}>
-                  Daily check-in
-                </AppText>
-                <AppText variant="caption" style={styles.activityStatus}>
-                  {pendingTodayMembers.length} pending
-                </AppText>
-              </View>
-              <AppText variant="caption" style={styles.activityWindow}>
-                Reset {challenge.resetTimeText}
-              </AppText>
-              <View style={styles.actionRow}>
-                <Button
-                  title="Check in"
-                  variant="primary"
-                  size="sm"
-                  onPress={() => onCheckIn?.(challenge.id)}
-                  style={styles.actionButton}
-                  testID="check-in-daily"
-                />
-                {pendingTodayMembers[0] ? (
-                  <Button
-                    title="Slap nudge"
-                    variant="secondary"
-                    size="sm"
-                    disabled={isMutating}
-                    onPress={() =>
-                      void runMutation(
-                        () => checkinService.nudgeMember(challenge.id, pendingTodayMembers[0].id),
-                        'Nudge sent.',
-                      )
-                    }
-                    style={styles.actionButton}
-                  />
-                ) : null}
-              </View>
+            <View style={styles.actionRow}>
+              <Button
+                title={showGallery ? 'Hide Gallery' : 'View Gallery'}
+                variant="secondary"
+                size="sm"
+                onPress={() => setShowGallery((value) => !value)}
+              />
+              <Button
+                title="View Previous Steps"
+                variant="ghost"
+                size="sm"
+                disabled
+              />
+              <Button
+                title="View History"
+                variant="ghost"
+                size="sm"
+                disabled
+              />
             </View>
             {isHost ? (
               <Button
@@ -690,10 +833,10 @@ export function ChallengeDetailScreen({
           </Card>
         ) : null}
 
-        {!isFormation ? (
+        {(!isFormation && (isHistory || showGallery)) ? (
           <Card style={styles.card}>
             <AppText variant="subtitle" style={styles.sectionTitle}>
-              Evidence feed
+              {isHistory ? 'Evidence feed' : 'Gallery'}
             </AppText>
             {challenge.checkins.length === 0 ? (
               <AppText variant="body" style={styles.bodyText}>
@@ -721,6 +864,90 @@ export function ChallengeDetailScreen({
           </Card>
         ) : null}
       </ScrollView>
+
+      <Modal
+        visible={isInviteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setInviteModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalPanel}>
+            <View style={styles.modalHeader}>
+              <View>
+                <AppText variant="subtitle" style={styles.sectionTitle}>
+                  Invite friends
+                </AppText>
+                <AppText variant="caption" style={styles.bodyText}>
+                  {remainingSlots} slot{remainingSlots === 1 ? '' : 's'} remaining
+                </AppText>
+              </View>
+              <Button
+                title="Close"
+                variant="ghost"
+                size="sm"
+                onPress={() => setInviteModalVisible(false)}
+              />
+            </View>
+
+            <TextInput
+              value={inviteSearch}
+              onChangeText={setInviteSearch}
+              placeholder="Search friends"
+              placeholderTextColor={theme.colors.text.tertiary}
+              style={styles.searchInput}
+            />
+
+            <ScrollView style={styles.inviteList} keyboardShouldPersistTaps="handled">
+              {filteredFriends.length === 0 ? (
+                <AppText variant="body" style={styles.bodyText}>
+                  No friends found.
+                </AppText>
+              ) : (
+                filteredFriends.map((friend) => {
+                  const disabled = existingUserIds.has(friend.id);
+                  const selected = selectedInviteIds.includes(friend.id);
+                  return (
+                    <Pressable
+                      key={friend.id}
+                      disabled={disabled}
+                      onPress={() => toggleInviteSelection(friend.id)}
+                      style={[
+                        styles.inviteFriendRow,
+                        selected && styles.inviteFriendSelected,
+                        disabled && styles.inviteFriendDisabled,
+                      ]}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: selected, disabled }}
+                    >
+                      <Avatar name={friend.displayName} avatarUrl={friend.avatarUrl} size={36} />
+                      <View style={styles.memberText}>
+                        <AppText variant="subtitle" style={styles.memberName}>
+                          {friend.displayName}
+                        </AppText>
+                        <AppText variant="caption" style={styles.memberMeta}>
+                          @{friend.username}
+                          {disabled ? ' · already invited/member' : selected ? ' · selected' : ''}
+                        </AppText>
+                      </View>
+                    </Pressable>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            <Button
+              title={`Invite Selected (${selectedInviteIds.length})`}
+              variant="primary"
+              size="md"
+              fullWidth
+              disabled={isMutating || selectedInviteIds.length === 0}
+              loading={isMutating}
+              onPress={submitInvites}
+            />
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -822,6 +1049,17 @@ function createStyles(theme: AppTheme) {
     actionButton: {
       flex: 1,
     },
+    currentStepGrid: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    currentStepMetric: {
+      flex: 1,
+      borderRadius: 14,
+      padding: 12,
+      backgroundColor: theme.colors.bg['brand-subtle'],
+      gap: 4,
+    },
     feedItem: {
       gap: 4,
       paddingVertical: 10,
@@ -830,6 +1068,52 @@ function createStyles(theme: AppTheme) {
     },
     linkText: {
       color: theme.colors.text.brand,
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'flex-end',
+    },
+    modalPanel: {
+      maxHeight: '82%',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 20,
+      gap: 14,
+      backgroundColor: theme.colors.bg.surface,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    searchInput: {
+      minHeight: 46,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      borderRadius: theme.radius.md,
+      paddingHorizontal: 14,
+      color: theme.colors.text.primary,
+      backgroundColor: theme.colors.bg['surface-elevated'],
+      fontSize: 16,
+    },
+    inviteList: {
+      maxHeight: 360,
+    },
+    inviteFriendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 4,
+      borderRadius: 12,
+    },
+    inviteFriendSelected: {
+      backgroundColor: theme.colors.bg['brand-subtle'],
+    },
+    inviteFriendDisabled: {
+      opacity: 0.45,
     },
   });
 }

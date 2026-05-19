@@ -145,6 +145,14 @@ export function validateCreateChallengeField(
       return undefined;
     }
     case 'invitedFriendIds': {
+      const uniqueInvitees = new Set(values.invitedFriendIds);
+      if (uniqueInvitees.size !== values.invitedFriendIds.length) {
+        return 'Invitees cannot contain duplicates.';
+      }
+      const remainingSlots = Math.max(0, values.maxMembers - 1);
+      if (values.invitedFriendIds.length > remainingSlots) {
+        return `You can invite up to ${remainingSlots} friend${remainingSlots === 1 ? '' : 's'} for this challenge.`;
+      }
       if (!validFriendIds.length) return undefined;
       const invalidInvitee = values.invitedFriendIds.some((id) => !validFriendIds.includes(id));
       return invalidInvitee ? 'Invitees must be selected from your friends list.' : undefined;

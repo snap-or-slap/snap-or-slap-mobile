@@ -38,7 +38,7 @@ Source of truth: `Backend/src/app/api/**/route.ts`, checked on 2026-05-19. Base 
 | Challenges | GET | `/api/challenges/{id}` | Challenge detail | Optional | No | P0 | Implemented |
 | Challenges | PATCH | `/api/challenges/{id}` | Edit formation challenge | Yes | Yes | P1 | Implemented |
 | Challenges | DELETE | `/api/challenges/{id}` | Delete formation or cancel active | Yes | No | P1 | Implemented |
-| Challenge Invitation / Formation | POST | `/api/challenges/{id}/invite` | Invite friends | Yes | Yes | P0 | Implemented |
+| Challenge Invitation / Formation | POST | `/api/challenges/{id}/invite` | Accepted member invites friends during formation | Yes | Yes | P0 | Implemented |
 | Challenge Invitation / Formation | POST | `/api/challenges/{id}/join` | Accept invite | Yes | No | P0 | Implemented |
 | Challenge Invitation / Formation | GET | `/api/challenges/{id}/join` | View pending invitations | Optional | No | P2 | Implemented, browser-test helper |
 | Challenge Invitation / Formation | POST | `/api/challenges/{id}/decline` | Decline invite | Yes | No | P0 | Implemented |

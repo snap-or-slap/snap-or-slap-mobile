@@ -790,9 +790,9 @@ In OpenAPI: yes. FE usable: yes. Status: Fully implemented.
 
 Source: `src/app/api/challenges/[id]/invite/route.ts`
 
-Purpose: Host invites friends to formation challenge.
+Purpose: Accepted challenge member invites friends to a formation challenge.
 
-Auth: host `user_id`. Path: `id`.
+Auth: accepted member `user_id`. Path: `id`.
 
 Request body:
 
@@ -800,7 +800,7 @@ Request body:
 { "userIds": ["uuid"] }
 ```
 
-Validation: at least one UUID; challenge must be formation; invitees must be friends; capacity not exceeded.
+Validation: at least one UUID; challenge must be formation; inviter must be an accepted member; invitees must be friends of the inviter; duplicate members/invites are skipped; capacity not exceeded.
 
 Success 201:
 
@@ -808,7 +808,9 @@ Success 201:
 { "invited": [], "skipped": [] }
 ```
 
-Errors: 400 missing user_id/invalid JSON/validation/non-friends; 403 not host/not found; 409 started/full/already members.
+Errors: 400 missing user_id/invalid JSON/validation/non-friends; 403 not accepted member/not found; 409 started/full/all already members.
+
+Challenge invite notifications include `metadata.challenge_id`, `metadata.challengeId`, `metadata.challenge_title`, `metadata.challengeTitle`, `metadata.inviter_id`, and `metadata.inviterId`.
 
 In OpenAPI: yes. FE usable: yes. Status: Fully implemented.
 
@@ -1089,6 +1091,8 @@ Success 200:
 ```json
 { "notifications": [], "unread_count": 0, "total": 0, "page": 1, "limit": 20, "total_pages": 0 }
 ```
+
+Each formatted notification includes `id`, `type`, `category`, `title`, `message`, `metadata`, `is_read`, `created_at`, and `challenge_id` when the notification metadata references a challenge.
 
 Errors: 400 missing user_id.
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppText, Screen } from '@ds/components';
 import { HomeBottomTabBar } from '../components';
@@ -19,6 +19,7 @@ import {
   UserProfilePreviewScreen,
 } from '@features/friends';
 import { ProfileScreen } from '@features/profile';
+import { notificationsService } from '@features/notifications/services';
 
 type HomeRoute =
   | { name: 'tabs' }
@@ -38,6 +39,29 @@ type HomeScreenProps = {
 export function HomeScreen({ onSignedOut }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeTabKey>('challenges');
   const [route, setRoute] = useState<HomeRoute>({ name: 'tabs' });
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
+
+  const refreshNotificationBadge = useCallback(async () => {
+    try {
+      const response = await notificationsService.listNotifications<{ unreadCount?: number }>({
+        limit: 1,
+      });
+      setNotificationUnreadCount(response.unreadCount ?? 0);
+    } catch {
+      setNotificationUnreadCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (route.name === 'tabs') {
+      void refreshNotificationBadge();
+    }
+  }, [activeTab, refreshNotificationBadge, route.name]);
+
+  const handleTabPress = (tab: HomeTabKey) => {
+    setRoute({ name: 'tabs' });
+    setActiveTab(tab);
+  };
 
   // ── Challenge sub-routes ─────────────────────────────────────────
   if (route.name === 'createChallenge') {
@@ -147,12 +171,18 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
             </View>
             <ChallengeHubScreen
               onCreateChallenge={() => setRoute({ name: 'createChallenge' })}
-              onOpenNotifications={() => setRoute({ name: 'notifications' })}
               onOpenChallenge={(challengeId) =>
                 setRoute({ name: 'challengeDetail', challengeId })
               }
             />
           </View>
+        );
+      case 'notifications':
+        return (
+          <NotificationsScreen
+            onOpenChallenge={(challengeId) => setRoute({ name: 'challengeDetail', challengeId })}
+            onUnreadCountChange={setNotificationUnreadCount}
+          />
         );
       case 'profile':
         return <ProfileScreen onSignedOut={onSignedOut} />;
@@ -166,7 +196,11 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
       <View style={styles.content}>
         {renderContent()}
       </View>
-      <HomeBottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <HomeBottomTabBar
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+        notificationUnreadCount={notificationUnreadCount}
+      />
     </Screen>
   );
 }

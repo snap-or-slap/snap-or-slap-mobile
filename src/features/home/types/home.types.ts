@@ -1,4 +1,4 @@
-export type HomeTabKey = 'friends' | 'challenges' | 'profile';
+export type HomeTabKey = 'friends' | 'challenges' | 'notifications' | 'profile';
 
 export interface HomeTabItem {
   key: HomeTabKey;

@@ -6,11 +6,13 @@ import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { AppHeader, IconButton } from '@shared/components';
 import { notificationsService } from '../services';
+import { challengesService } from '@features/challenges/services';
 import { ApiError } from '@services/api';
 
 type NotificationsScreenProps = {
   onBack?: () => void;
   onOpenChallenge?: (challengeId: string) => void;
+  onUnreadCountChange?: (count: number) => void;
 };
 
 type NotificationCategory = 'all' | 'social' | 'challenge' | 'system';
@@ -27,9 +29,13 @@ type NotificationItem = {
   title: string;
   message: string;
   category?: string;
+  type?: string;
   isRead: boolean;
   createdAt?: string;
   challengeId?: string;
+  challengeTitle?: string;
+  inviterId?: string;
+  action?: string;
 };
 
 function stringValue(value: unknown): string | undefined {
@@ -63,15 +69,38 @@ function extractChallengeId(raw: BackendNotification): string | undefined {
   );
 }
 
+function metadataValue(raw: BackendNotification, key: string): unknown {
+  const payload = (raw.payload ?? raw.data ?? raw.metadata ?? {}) as BackendNotification;
+  return raw[key] ?? payload[key];
+}
+
 function mapNotification(raw: BackendNotification): NotificationItem {
+  const type = stringValue(raw.type);
+  const challengeTitle = stringValue(
+    metadataValue(raw, 'challengeTitle') ?? metadataValue(raw, 'challenge_title'),
+  );
   return {
     id: String(raw.id ?? raw.notificationId ?? raw.notification_id ?? ''),
-    title: stringValue(raw.title ?? raw.type) ?? 'Notification',
-    message: stringValue(raw.message ?? raw.body ?? raw.description) ?? 'You have a new update.',
+    title:
+      stringValue(raw.title) ??
+      (type === 'challenge_invite' ? 'Challenge invitation' : undefined) ??
+      type ??
+      'Notification',
+    message:
+      stringValue(raw.message ?? raw.body ?? raw.description) ??
+      (challengeTitle ? `You were invited to ${challengeTitle}.` : 'You have a new update.'),
     category: stringValue(raw.category),
+    type,
     isRead: boolValue(raw.isRead ?? raw.is_read),
     createdAt: formatDate(raw.createdAt ?? raw.created_at),
     challengeId: extractChallengeId(raw),
+    challengeTitle,
+    inviterId: stringValue(
+      metadataValue(raw, 'inviterId') ??
+        metadataValue(raw, 'inviter_id') ??
+        metadataValue(raw, 'invited_by'),
+    ),
+    action: stringValue(metadataValue(raw, 'action')),
   };
 }
 
@@ -84,6 +113,7 @@ function getErrorMessage(error: unknown): string {
 export function NotificationsScreen({
   onBack,
   onOpenChallenge,
+  onUnreadCountChange,
 }: NotificationsScreenProps) {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -112,7 +142,9 @@ export function NotificationsScreen({
       setNotifications(
         (response.notifications ?? []).map(mapNotification).filter((item) => item.id),
       );
-      setUnreadCount(response.unreadCount ?? 0);
+      const nextUnreadCount = response.unreadCount ?? 0;
+      setUnreadCount(nextUnreadCount);
+      onUnreadCountChange?.(nextUnreadCount);
     } catch (loadError) {
       setError(getErrorMessage(loadError));
       setNotifications([]);
@@ -121,7 +153,7 @@ export function NotificationsScreen({
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [category]);
+  }, [category, onUnreadCountChange]);
 
   useEffect(() => {
     void loadNotifications();
@@ -141,6 +173,29 @@ export function NotificationsScreen({
   const handleMarkAllRead = async () => {
     await notificationsService.markAllRead();
     await loadNotifications(true);
+  };
+
+  const handleInviteAction = async (
+    notification: NotificationItem,
+    action: 'accept' | 'decline',
+  ) => {
+    if (!notification.challengeId) return;
+
+    try {
+      if (action === 'accept') {
+        await challengesService.acceptInvite(notification.challengeId);
+        await notificationsService.markRead([notification.id]).catch(() => undefined);
+        await loadNotifications(true);
+        onOpenChallenge?.(notification.challengeId);
+        return;
+      }
+
+      await challengesService.declineInvite(notification.challengeId);
+      await notificationsService.markRead([notification.id]).catch(() => undefined);
+      await loadNotifications(true);
+    } catch (inviteError) {
+      setError(getErrorMessage(inviteError));
+    }
   };
 
   const handleDelete = (notification: NotificationItem) => {
@@ -243,11 +298,20 @@ export function NotificationsScreen({
           ) : null}
 
           {!error
-            ? notifications.map((notification) => (
+            ? notifications.map((notification) => {
+                const isChallengeInvite =
+                  notification.type === 'challenge_invite' &&
+                  notification.category === 'challenge' &&
+                  !notification.action &&
+                  Boolean(notification.challengeId);
+                const isReadOnlyInvite =
+                  notification.type === 'challenge_invite' && !notification.challengeId;
+
+                return (
                 <Card
                   key={notification.id}
-                  pressable
-                  onPress={() => void handleOpen(notification)}
+                  pressable={!isChallengeInvite}
+                  onPress={!isChallengeInvite ? () => void handleOpen(notification) : undefined}
                   style={[
                     styles.notificationCard,
                     !notification.isRead && styles.unreadCard,
@@ -273,8 +337,48 @@ export function NotificationsScreen({
                   <AppText variant="body" style={styles.bodyText}>
                     {notification.message}
                   </AppText>
+                  {isReadOnlyInvite ? (
+                    <AppText variant="caption" style={styles.metaText}>
+                      TODO: backend should include challengeId in challenge invitation notification payload.
+                    </AppText>
+                  ) : null}
+                  {isChallengeInvite ? (
+                    <View style={styles.inviteActions}>
+                      <Button
+                        title="Accept"
+                        variant="primary"
+                        size="sm"
+                        onPress={() => void handleInviteAction(notification, 'accept')}
+                      />
+                      <Button
+                        title="Decline"
+                        variant="secondary"
+                        size="sm"
+                        onPress={() => void handleInviteAction(notification, 'decline')}
+                      />
+                      <Button
+                        title="View Detail"
+                        variant="ghost"
+                        size="sm"
+                        onPress={() => {
+                          void notificationsService.markRead([notification.id]).catch(() => undefined);
+                          onOpenChallenge?.(notification.challengeId!);
+                        }}
+                      />
+                    </View>
+                  ) : notification.challengeId ? (
+                    <View style={styles.inviteActions}>
+                      <Button
+                        title="View Detail"
+                        variant="secondary"
+                        size="sm"
+                        onPress={() => void handleOpen(notification)}
+                      />
+                    </View>
+                  ) : null}
                 </Card>
-              ))
+                );
+              })
             : null}
         </ScrollView>
       </View>
@@ -339,6 +443,11 @@ function createStyles(theme: AppTheme) {
     },
     metaText: {
       color: theme.colors.text.tertiary,
+    },
+    inviteActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing[8],
     },
   });
 }

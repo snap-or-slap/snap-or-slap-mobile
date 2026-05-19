@@ -1,24 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
-import { NotificationBingIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { AppHeader, IconButton } from '@shared/components';
+import { AppHeader } from '@shared/components';
 import type { ChallengeSegment } from '../types/challenge.types';
 import type { ChallengeListItem, ChallengeStatus } from '../types/challenge.types';
 import { ChallengeTabBar } from '../components/ChallengeTabBar';
 import { ChallengeCard } from '../components/ChallengeCard';
 import { ChallengeEmptyState } from '../components/ChallengeEmptyState';
 import { challengesService } from '../services/challenges.service';
-import { notificationsService } from '@features/notifications/services';
 import { widgetService } from '@features/widget/services';
 import { ApiError } from '@services/api';
 
 type ChallengeHubScreenProps = {
   onCreateChallenge?: () => void;
   onOpenChallenge?: (challengeId: string) => void;
-  onOpenNotifications?: () => void;
 };
 
 type BackendChallenge = Record<string, unknown>;
@@ -30,10 +27,6 @@ type ChallengeListResponse = {
 
 type HistoryListResponse = {
   challenges?: BackendChallenge[];
-};
-
-type NotificationsResponse = {
-  unreadCount?: number;
 };
 
 type WidgetSummaryResponse = {
@@ -111,14 +104,12 @@ function getErrorMessage(error: unknown): string {
 export function ChallengeHubScreen({
   onCreateChallenge,
   onOpenChallenge,
-  onOpenNotifications,
 }: ChallengeHubScreenProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
 
   const [segment, setSegment] = useState<ChallengeSegment>('active');
   const [challenges, setChallenges] = useState<ChallengeListItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [currentStreak, setCurrentStreak] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -143,18 +134,12 @@ export function ChallengeHubScreen({
                 limit: 50,
               });
 
-        const [listResponse, notificationsResponse, widgetResponse] = await Promise.all([
+        const [listResponse, widgetResponse] = await Promise.all([
           listPromise,
-          notificationsService.listNotifications<NotificationsResponse>({ limit: 1 }),
           widgetService.getSummary<WidgetSummaryResponse>(),
         ]);
 
         setChallenges((listResponse.challenges ?? []).map(mapChallengeListItem).filter((item) => item.id));
-        setUnreadCount(
-          notificationsResponse.unreadCount ??
-            widgetResponse.unreadNotifications ??
-            0,
-        );
         setCurrentStreak(widgetResponse.currentStreak);
       } catch (loadError) {
         setError(getErrorMessage(loadError));
@@ -309,25 +294,6 @@ export function ChallengeHubScreen({
           <AppHeader
             title="Challenges"
             subtitle="Keep your squad accountable."
-            rightAction={
-              <View style={styles.notifWrap}>
-                <IconButton
-                  accessibilityLabel="Challenge notifications"
-                  variant="ghost"
-                  onPress={onOpenNotifications}
-                  icon={
-                    <NotificationBingIcon
-                      size={24}
-                      color={theme.colors.text.brand}
-                      variant="outline"
-                    />
-                  }
-                />
-                {unreadCount > 0 ? (
-                  <View style={[styles.notifDot, { backgroundColor: theme.colors.bg.error }]} />
-                ) : null}
-              </View>
-            }
             testID="challenge-hub-header"
           />
         </View>
@@ -343,10 +309,10 @@ export function ChallengeHubScreen({
           </Card>
           <Card style={styles.summaryCard}>
             <AppText variant="caption" style={styles.summaryLabel}>
-              Unread
+              Showing
             </AppText>
             <AppText variant="subtitle" style={styles.summaryValue}>
-              {unreadCount}
+              {challenges.length}
             </AppText>
           </Card>
         </View>
@@ -399,21 +365,6 @@ function createStyles(theme: AppTheme) {
     headerWrap: {
       paddingHorizontal: theme.spacing[24],
       paddingTop: theme.spacing[16],
-    },
-    notifWrap: {
-      position: 'relative',
-      width: 40,
-      height: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    notifDot: {
-      position: 'absolute',
-      top: 8,
-      right: 8,
-      width: 8,
-      height: 8,
-      borderRadius: 4,
     },
     ctaWrap: {
       paddingHorizontal: theme.spacing[24],

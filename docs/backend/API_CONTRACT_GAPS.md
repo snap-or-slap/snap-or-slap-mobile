@@ -108,12 +108,25 @@ Frontend workaround:
 - Workaround: If FE has a hosted URL, pass it as `evidenceUrl`; local `file://` URIs will fail Zod `.url()` or be unusable outside the device. Need verification if `file://` is accepted by Zod in the deployed runtime; do not rely on it.
 - Backend change later: Required for production photo proof upload.
 
+### Reject invalid proof
+
+- Affected endpoint/file: No implemented reject endpoint was found. `POST /api/challenges/{id}/proof` is a 501 placeholder and should not be used as a reject workflow.
+- Frontend impact: FE must not show a working Reject action for proof review.
+- Workaround: Hide the action or show a disabled "coming soon" state.
+- Backend change later: Required for SRS peer-review/reject behavior.
+
 ### Real push notification token registration
 
 - Affected endpoint/file: No route for Expo/APNs/FCM token registration was found.
 - Frontend impact: Backend notifications are in-app database notifications only.
 - Workaround: Use in-app `/api/notifications` and local Expo Go placeholder notifications.
 - Backend change later: Required for push notifications.
+
+## 9. Updated contract notes
+
+- `POST /api/challenges/{id}/invite` now allows any accepted member of a formation challenge to invite friends from that member's own friends list. It is no longer host-only.
+- Challenge invitation notifications include challenge navigation metadata: `challenge_id`, `challengeId`, `challenge_title`, `challengeTitle`, `inviter_id`, and `inviterId`.
+- Notifications remain in-app database notifications. Push token registration is still not implemented.
 
 ### Theme setting
 

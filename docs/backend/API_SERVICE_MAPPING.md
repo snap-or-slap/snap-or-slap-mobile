@@ -151,6 +151,7 @@ Methods:
   - Returns: `{ invited, skipped }`
   - Mapper: yes.
   - Screens: `CreateChallengeScreen`, `ChallengeDetailScreen`
+  - Rule: caller must be an accepted member of a formation challenge; invitees must be friends of that caller.
 - `acceptInvite(id, userId)` -> `POST /api/challenges/{id}/join?user_id=`
   - Returns: `{ member }`
   - Mapper: yes.
@@ -225,6 +226,7 @@ Methods:
 
 - `listNotifications(userId, params)` -> `GET /api/notifications?user_id=&page=&limit=&is_read=&category=`
   - Returns: `{ notifications, unread_count, total, page, limit, total_pages }`
+  - Challenge invite notifications expose challenge metadata in `metadata.challenge_id`/`metadata.challengeId` and top-level `challenge_id` when available.
   - Mapper: yes.
   - Screens: `HomeScreen`, `Notifications`
 - `markRead(userId, notificationIds)` -> `PUT /api/notifications/read?user_id=`

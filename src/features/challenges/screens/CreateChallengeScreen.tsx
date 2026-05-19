@@ -683,6 +683,7 @@ function InviteStep({
   theme,
 }: InviteStepProps) {
   const selectedCount = values.invitedFriendIds.length;
+  const remainingSlots = Math.max(0, values.maxMembers - 1);
 
   return (
     <>
@@ -693,15 +694,22 @@ function InviteStep({
           </AppText>
           {selectedCount > 0 ? (
             <AppText variant="caption" style={{ color: theme.colors.text.brand, fontWeight: '700' }}>
-              {selectedCount} selected
+              {selectedCount}/{remainingSlots} selected
             </AppText>
           ) : null}
         </View>
+        <AppText variant="caption" style={styles.helperText}>
+          Choose exactly who receives an invitation. The host uses one slot, so {remainingSlots} invite slots remain.
+        </AppText>
         <CreateChallengeFriendPicker
           friends={friends}
           selectedIds={values.invitedFriendIds}
           onToggle={(id) => {
             const current = values.invitedFriendIds;
+            if (!current.includes(id) && current.length >= remainingSlots) {
+              patchValues({ invitedFriendIds: current });
+              return;
+            }
             patchValues({
               invitedFriendIds: current.includes(id)
                 ? current.filter((fid) => fid !== id)

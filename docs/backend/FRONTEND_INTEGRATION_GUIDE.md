@@ -110,6 +110,13 @@ await api.post(`/api/challenges/${challengeId}/nudge/${memberId}?user_id=${userI
 await api.delete(`/api/users/me?user_id=${userId}`);
 ```
 
+## Challenge invitation flow
+
+- Create challenge sends only selected invitees in `invitedUserIds`.
+- Invite more during formation uses `POST /api/challenges/{id}/invite?user_id=<acceptedMemberId>` with `{ "userIds": ["..."] }`.
+- The inviter must be an accepted member, invitees must be friends of the inviter, and available slots must remain.
+- Invited users should discover invitations through `/api/notifications`; challenge invitation notifications include `challenge_id`/`challengeId` metadata for navigation and accept/decline actions.
+
 ## Error handling strategy
 
 - Parse JSON for every non-204 response.
