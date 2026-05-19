@@ -10,6 +10,7 @@ import {
   ChallengeHubScreen,
   CreateChallengeScreen,
 } from '@features/challenges';
+import { NotificationsScreen } from '@features/notifications';
 import {
   FriendsHubScreen,
   FriendRequestsScreen,
@@ -24,6 +25,7 @@ type HomeRoute =
   | { name: 'createChallenge' }
   | { name: 'challengeDetail'; challengeId: string }
   | { name: 'checkInCamera'; challengeId: string }
+  | { name: 'notifications' }
   | { name: 'friendRequests' }
   | { name: 'addFriend' }
   | { name: 'friendProfile'; userId: string }
@@ -63,6 +65,15 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
         challengeId={route.challengeId}
         onBack={() => setRoute({ name: 'challengeDetail', challengeId: route.challengeId })}
         onSubmitted={() => undefined}
+      />
+    );
+  }
+
+  if (route.name === 'notifications') {
+    return (
+      <NotificationsScreen
+        onBack={() => setRoute({ name: 'tabs' })}
+        onOpenChallenge={(challengeId) => setRoute({ name: 'challengeDetail', challengeId })}
       />
     );
   }
@@ -136,6 +147,7 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
             </View>
             <ChallengeHubScreen
               onCreateChallenge={() => setRoute({ name: 'createChallenge' })}
+              onOpenNotifications={() => setRoute({ name: 'notifications' })}
               onOpenChallenge={(challengeId) =>
                 setRoute({ name: 'challengeDetail', challengeId })
               }

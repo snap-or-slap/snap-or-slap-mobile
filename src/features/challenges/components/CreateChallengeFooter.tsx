@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button } from '@ds/components';
-import { ArrowCircleLeftIcon } from '@ds/icons';
+import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 
@@ -12,6 +12,7 @@ type CreateChallengeFooterProps = {
   isLastStep?: boolean;
   isLoading?: boolean;
   canGoBack?: boolean;
+  nextDisabled?: boolean;
   testID?: string;
 };
 
@@ -22,6 +23,7 @@ export function CreateChallengeFooter({
   isLastStep = false,
   isLoading = false,
   canGoBack = true,
+  nextDisabled = false,
   testID,
 }: CreateChallengeFooterProps) {
   const theme = useTheme();
@@ -31,10 +33,9 @@ export function CreateChallengeFooter({
     <View testID={testID} style={styles.root}>
       {canGoBack && onBack ? (
         <Button
-          iconOnly
+          title="Back"
           leftIcon={<ArrowCircleLeftIcon size={22} color={theme.colors.text.primary} variant="outline" />}
-          accessibilityLabel="Go back"
-          variant="ghost"
+          variant="secondary"
           size="md"
           onPress={onBack}
           style={styles.backButton}
@@ -45,7 +46,9 @@ export function CreateChallengeFooter({
         title={isLastStep ? 'Create Challenge' : 'Continue'}
         variant="primary"
         size="md"
+        rightIcon={!isLastStep ? <ArrowCircleRightIcon size={22} color={theme.colors.text['on-brand']} variant="outline" /> : undefined}
         loading={isLoading}
+        disabled={nextDisabled}
         onPress={isLastStep ? onSubmit : onNext}
         style={styles.nextButton}
         fullWidth={!canGoBack || !onBack}
@@ -59,11 +62,11 @@ function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     root: {
       flexDirection: 'row',
-      gap: 12,
-      paddingTop: 8,
+      gap: theme.spacing[12],
+      paddingTop: theme.spacing[8],
     },
     backButton: {
-      width: 44,
+      flex: 1,
     },
     nextButton: {
       flex: 1,

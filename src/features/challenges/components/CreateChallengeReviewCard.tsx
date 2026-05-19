@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Badge, Card } from '@ds/components';
-import { ClockIcon, HeartIcon, UserAddIcon, CupIcon, InfoCircleIcon } from '@ds/icons';
+import { ClockIcon, HeartIcon, UserAddIcon, InfoCircleIcon, CameraIcon, LockIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import type { CreateChallengeFormValues } from '../types/createChallenge.types';
@@ -37,6 +37,17 @@ function ReviewRow({ icon, label, value, theme }: ReviewRowProps) {
   );
 }
 
+function formatDateTime(date: Date | null): string {
+  if (!date) return 'Starts when the host launches it';
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export function CreateChallengeReviewCard({
   values,
   friends,
@@ -66,8 +77,8 @@ export function CreateChallengeReviewCard({
 
       <ReviewRow
         icon={<ClockIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
-        label="Schedule"
-        value={`${values.startDate} → ${values.endDate}`}
+        label="Start"
+        value={formatDateTime(values.startAt)}
         theme={theme}
       />
       <ReviewRow
@@ -78,8 +89,14 @@ export function CreateChallengeReviewCard({
       />
       <ReviewRow
         icon={<InfoCircleIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
-        label="Step length"
-        value={`${values.stepLengthDays} day${values.stepLengthDays !== 1 ? 's' : ''} per step`}
+        label="Duration"
+        value={`${values.durationDays} day${values.durationDays !== 1 ? 's' : ''}`}
+        theme={theme}
+      />
+      <ReviewRow
+        icon={<InfoCircleIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
+        label="Frequency"
+        value={values.frequency === 'daily' ? 'Daily' : `${values.frequencyDays.length} custom days`}
         theme={theme}
       />
       <ReviewRow
@@ -90,10 +107,24 @@ export function CreateChallengeReviewCard({
       />
       <ReviewRow
         icon={<UserAddIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
-        label="Min. members"
-        value={`${values.minMembers}`}
+        label="Max members"
+        value={`${values.maxMembers}`}
         theme={theme}
       />
+      <ReviewRow
+        icon={<LockIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
+        label="Privacy"
+        value={values.isPrivate ? 'Private' : 'Public'}
+        theme={theme}
+      />
+      {values.coverUrl?.trim() ? (
+        <ReviewRow
+          icon={<CameraIcon size={18} color={theme.colors.text.secondary} variant="outline" />}
+          label="Cover"
+          value={values.coverUrl.trim()}
+          theme={theme}
+        />
+      ) : null}
 
       {invitedFriends.length > 0 ? (
         <>

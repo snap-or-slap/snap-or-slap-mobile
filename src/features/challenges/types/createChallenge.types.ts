@@ -2,12 +2,15 @@ export type CreateChallengeFormValues = {
   title: string;
   description?: string;
   taskInstruction?: string;
-  stepLengthDays: number;
+  coverUrl?: string;
+  durationDays: number;
+  frequency: 'daily' | 'custom';
+  frequencyDays: number[];
   resetTime: string;
-  startDate: string;
-  endDate: string;
+  startAt: Date | null;
   totalHearts: number;
-  minMembers: number;
+  maxMembers: number;
+  isPrivate: boolean;
   invitedFriendIds: string[];
 };
 

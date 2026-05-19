@@ -55,11 +55,11 @@ export const apiRoutes = {
 } as const;
 
 export const doNotUseApiRoutes = [
-  '/challenges/{id}/proof',
-  '/teams',
-  '/teams/{id}/slap',
-  '/test-data',
-  '/hello',
+  'challenge proof upload placeholder',
+  'legacy teams placeholder',
+  'legacy team slap placeholder',
+  'debug test data dump',
+  'railway smoke hello',
 ] as const;
 
 export const ENDPOINTS = apiRoutes;

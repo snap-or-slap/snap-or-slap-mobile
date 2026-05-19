@@ -12,6 +12,8 @@ export * from './CreateChallengeStepHeader';
 export * from './CreateChallengeFooter';
 export * from './CreateChallengeFriendPicker';
 export * from './CreateChallengeReviewCard';
+export * from './ChallengeInfoCard';
+export * from './NumericStepper';
 
 // ─── Legacy components (preserved for backward compat with tests) ───
 export * from './ActiveChallengeCard';

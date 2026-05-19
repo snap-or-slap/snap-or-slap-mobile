@@ -27,7 +27,6 @@ export function FormationChallengeCard({
 
                 <HeartCountBadge
                     label={challenge.heartsText}
-                    variant="filled"
                     tone="brand"
                 />
             </View>

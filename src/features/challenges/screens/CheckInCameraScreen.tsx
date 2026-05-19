@@ -5,7 +5,8 @@ import { CameraIcon, CloseIcon, InfoCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { IconButton } from '@shared/components';
-import { submitCheckIn } from '../services';
+import { checkinService } from '../services/checkin.service';
+import { ApiError } from '@services/api';
 
 type CheckInCameraScreenProps = {
   challengeId: string;
@@ -41,24 +42,31 @@ export function CheckInCameraScreen({
   };
 
   const handleSubmit = async () => {
-    if (!photoUri) {
-      setError('Take or choose a photo proof before submitting.');
-      return;
-    }
-
     setIsSubmitting(true);
     setError(undefined);
 
     try {
-      await submitCheckIn(challengeId, {
-        userId: currentUserId,
-        evidenceUrl: photoUri,
-        caption,
+      void currentUserId;
+      const hostedEvidenceUrl =
+        photoUri?.startsWith('http://') || photoUri?.startsWith('https://')
+          ? photoUri
+          : undefined;
+
+      // TODO: Submit hosted media here when the backend provides a binary upload endpoint.
+      await checkinService.submitCheckin(challengeId, {
+        evidenceUrl: hostedEvidenceUrl,
+        caption: caption.trim() || undefined,
       });
       onSubmitted?.();
       onBack();
-    } catch {
-      setError('Could not submit your check-in. Please try again.');
+    } catch (submitError) {
+      if (submitError instanceof ApiError && submitError.status === 409) {
+        setError(submitError.message || 'You already checked in for this cycle.');
+      } else if (submitError instanceof ApiError) {
+        setError(submitError.message || 'Could not submit your check-in. Please try again.');
+      } else {
+        setError('Could not submit your check-in. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +176,7 @@ export function CheckInCameraScreen({
           size="lg"
           fullWidth
           loading={isSubmitting}
-          disabled={!hasPhoto || isSubmitting}
+          disabled={isSubmitting}
           onPress={handleSubmit}
           testID="check-in-submit-button"
         />

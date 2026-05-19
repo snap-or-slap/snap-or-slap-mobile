@@ -1,13 +1,17 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from '@ds/components';
+import { TickCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import type { CreateChallengeStep } from '../types/createChallenge.types';
+import type { CreateChallengeFieldErrors, CreateChallengeStep } from '../types/createChallenge.types';
 import { STEP_LABELS, STEP_NUMBERS, CREATE_CHALLENGE_STEPS } from '../types/createChallenge.types';
+import { getCreateChallengeStepFields } from '../utils/createChallengeValidation';
 
 type CreateChallengeStepHeaderProps = {
   currentStep: CreateChallengeStep;
+  completedSteps?: CreateChallengeStep[];
+  fieldErrors?: CreateChallengeFieldErrors;
   testID?: string;
 };
 
@@ -15,6 +19,8 @@ const TOTAL_STEPS = CREATE_CHALLENGE_STEPS.length;
 
 export function CreateChallengeStepHeader({
   currentStep,
+  completedSteps = [],
+  fieldErrors = {},
   testID,
 }: CreateChallengeStepHeaderProps) {
   const theme = useTheme();
@@ -26,17 +32,56 @@ export function CreateChallengeStepHeader({
       <View style={styles.progressRow}>
         {CREATE_CHALLENGE_STEPS.map((step, index) => {
           const stepNum = index + 1;
-          const isDone = stepNum < stepNumber;
+          const hasError = getCreateChallengeStepFields(step).some((field) => Boolean(fieldErrors[field]));
+          const isDone = completedSteps.includes(step) && stepNum < stepNumber && !hasError;
           const isActive = step === currentStep;
+          const isPending = !isDone && !isActive && !hasError;
           return (
             <View
               key={step}
               style={[
-                styles.dot,
-                isDone && styles.dotDone,
-                isActive && styles.dotActive,
+                styles.stepItem,
+                isDone && styles.stepItemDone,
+                isActive && styles.stepItemActive,
+                hasError && styles.stepItemError,
+                isPending && styles.stepItemPending,
               ]}
-            />
+            >
+              <View
+                style={[
+                  styles.marker,
+                  isDone && styles.markerDone,
+                  isActive && styles.markerActive,
+                  hasError && styles.markerError,
+                ]}
+              >
+                {isDone ? (
+                  <TickCircleIcon size={16} color={theme.colors.text['on-brand']} variant="bold" />
+                ) : (
+                  <AppText
+                    variant="caption"
+                    style={[
+                      styles.markerText,
+                      isActive && !hasError && styles.markerTextActive,
+                      hasError && styles.markerTextError,
+                    ]}
+                  >
+                    {stepNum}
+                  </AppText>
+                )}
+              </View>
+              <AppText
+                variant="caption"
+                style={[
+                  styles.stepLabel,
+                  isActive && styles.stepLabelActive,
+                  hasError && styles.stepLabelError,
+                ]}
+                numberOfLines={1}
+              >
+                {STEP_LABELS[step]}
+              </AppText>
+            </View>
           );
         })}
       </View>
@@ -53,25 +98,70 @@ export function CreateChallengeStepHeader({
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     root: {
-      gap: 8,
+      gap: theme.spacing[8],
     },
     progressRow: {
       flexDirection: 'row',
-      gap: 6,
+      gap: theme.spacing[8],
     },
-    dot: {
+    stepItem: {
       flex: 1,
-      height: 4,
-      borderRadius: 999,
-      backgroundColor: theme.colors.border.subtle,
+      gap: theme.spacing[4],
+      minWidth: 0,
     },
-    dotDone: {
-      backgroundColor: theme.colors.bg.brand,
-      opacity: 0.4,
-    },
-    dotActive: {
-      backgroundColor: theme.colors.bg.brand,
+    stepItemDone: {
       opacity: 1,
+    },
+    stepItemActive: {
+      opacity: 1,
+    },
+    stepItemPending: {
+      opacity: 0.7,
+    },
+    stepItemError: {
+      opacity: 1,
+    },
+    marker: {
+      height: 24,
+      borderRadius: theme.radius.full,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      backgroundColor: theme.colors.bg.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    markerDone: {
+      backgroundColor: theme.colors.bg.brand,
+      borderColor: theme.colors.bg.brand,
+    },
+    markerActive: {
+      backgroundColor: theme.colors.bg.brand,
+      borderColor: theme.colors.bg.brand,
+    },
+    markerError: {
+      backgroundColor: theme.colors.bg['error-subtle'],
+      borderColor: theme.colors.border.error,
+    },
+    markerText: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '800',
+    },
+    markerTextActive: {
+      color: theme.colors.text['on-brand'],
+    },
+    markerTextError: {
+      color: theme.colors.text.error,
+    },
+    stepLabel: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    stepLabelActive: {
+      color: theme.colors.text.brand,
+    },
+    stepLabelError: {
+      color: theme.colors.text.error,
     },
     counter: {
       color: theme.colors.text.tertiary,
