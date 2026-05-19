@@ -1,26 +1,33 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useColorScheme } from 'react-native';
 import { lightTheme } from './lightTheme';
 import { darkTheme } from './darkTheme';
 import { AppTheme } from './theme.types';
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 type ThemeContextType = {
   theme: AppTheme;
-  setMode: (mode: 'light' | 'dark') => void;
+  mode: ThemeMode;
+  resolvedMode: 'light' | 'dark';
+  setMode: (mode: ThemeMode) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: ReactNode;
-  initialMode?: 'light' | 'dark';
+  initialMode?: ThemeMode;
 }
 
 export const ThemeProvider = ({ children, initialMode = 'light' }: ThemeProviderProps) => {
-  const [mode, setMode] = useState<'light' | 'dark'>(initialMode);
-  const theme = mode === 'light' ? lightTheme : darkTheme;
+  const systemMode = useColorScheme();
+  const [mode, setMode] = useState<ThemeMode>(initialMode);
+  const resolvedMode = mode === 'system' ? (systemMode === 'dark' ? 'dark' : 'light') : mode;
+  const theme = resolvedMode === 'light' ? lightTheme : darkTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, setMode }}>
+    <ThemeContext.Provider value={{ theme, mode, resolvedMode, setMode }}>
       {children}
     </ThemeContext.Provider>
   );

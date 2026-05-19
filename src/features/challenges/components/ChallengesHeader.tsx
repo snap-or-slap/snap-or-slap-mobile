@@ -14,10 +14,10 @@ export function ChallengesHeader() {
         variant="ghost"
         size="sm"
         iconOnly
-        leftIcon={<Setting2Icon size={24} color={theme.colors.text.primary} variant="outline" />}
+        leftIcon={<Setting2Icon size={24} color={theme.colors.text.brand} variant="outline" />}
         accessibilityLabel="Challenge settings"
       />
-      <AppText variant="title" style={{ color: theme.colors.text.primary }}>
+      <AppText variant="title" style={{ color: theme.colors.text.brand }}>
         Challenges
       </AppText>
       <View style={styles.iconButton}>
@@ -25,7 +25,7 @@ export function ChallengesHeader() {
           variant="ghost"
           size="sm"
           iconOnly
-          leftIcon={<NotificationBingIcon size={24} color={theme.colors.text.primary} variant="outline" />}
+          leftIcon={<NotificationBingIcon size={24} color={theme.colors.text.brand} variant="outline" />}
           accessibilityLabel="Challenge notifications"
         />
         <View style={[styles.dot, { backgroundColor: theme.colors.bg.error }]} />

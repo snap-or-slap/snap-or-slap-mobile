@@ -9,9 +9,10 @@ import {
   View,
 } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
-import { InfoCircleIcon } from '@ds/icons';
+import { ArrowCircleLeftIcon, InfoCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
+import { AppHeader, IconButton } from '@shared/components';
 import type { CreateChallengeFormValues, CreateChallengeStep } from '../types/createChallenge.types';
 import { CREATE_CHALLENGE_STEPS } from '../types/createChallenge.types';
 import { validateCreateChallengeStep, validateCreateChallengeFull } from '../utils/createChallengeValidation';
@@ -151,14 +152,20 @@ export function CreateChallengeScreen({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        {/* ── Top header with Back ── */}
         <View style={styles.topHeader}>
-          <Button
-            title="Cancel"
-            variant="ghost"
-            size="sm"
-            onPress={onBack}
-            testID="create-challenge-back-button"
+          <AppHeader
+            title="Create Challenge"
+            leftAction={
+              onBack ? (
+                <IconButton
+                  accessibilityLabel="Cancel create challenge"
+                  onPress={onBack}
+                  icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+                  testID="create-challenge-back-button"
+                />
+              ) : undefined
+            }
+            testID="create-challenge-header"
           />
         </View>
 
@@ -526,7 +533,6 @@ function createStyles(theme: AppTheme) {
       paddingHorizontal: theme.spacing[16],
       paddingTop: theme.spacing[8],
       paddingBottom: theme.spacing[4],
-      alignItems: 'flex-start',
     },
     scrollContent: {
       paddingHorizontal: theme.spacing[24],

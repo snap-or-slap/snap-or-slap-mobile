@@ -11,6 +11,7 @@ import {
   MOCK_SEARCH_RESULTS,
   MOCK_FRIEND_PROFILE,
   MOCK_NON_FRIEND_PREVIEW,
+  MOCK_SQUADMATE_PREVIEW,
 } from '../data/friends.mock';
 
 // ─────────────────────────────────────────────────────────────────
@@ -211,5 +212,25 @@ export async function getUserProfile(userId: string): Promise<UserProfilePreview
   //   const data = await res.json();
   //   return mapProfileFromBackend(data);
   // }
+  if (userId === MOCK_NON_FRIEND_PREVIEW.id || userId === 'user-james') {
+    return Promise.resolve(MOCK_NON_FRIEND_PREVIEW);
+  }
+  if (userId === MOCK_SQUADMATE_PREVIEW.id || userId === 'user-tung') {
+    return Promise.resolve(MOCK_SQUADMATE_PREVIEW);
+  }
+  if (userId.startsWith('user-minh') || userId.startsWith('user-ngan') || userId.startsWith('user-maya')) {
+    return Promise.resolve({
+      ...MOCK_NON_FRIEND_PREVIEW,
+      id: userId,
+      relationship: 'pending_incoming',
+    });
+  }
+  if (userId.startsWith('user-hai') || userId.startsWith('user-tuan')) {
+    return Promise.resolve({
+      ...MOCK_NON_FRIEND_PREVIEW,
+      id: userId,
+      relationship: 'pending_outgoing',
+    });
+  }
   return Promise.resolve(MOCK_FRIEND_PROFILE);
 }

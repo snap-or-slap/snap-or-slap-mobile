@@ -11,3 +11,4 @@ export * from './BadgeTile';
 export * from './ActivityFeedCard';
 export * from './SharedChallengePreviewCard';
 export * from './LimitedInformationCard';
+export * from './FriendProfileActions';

@@ -4,7 +4,6 @@ import { AppText, Card, Button } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { Avatar } from '@shared/components';
-import { Pressable } from 'react-native';
 import type { FriendRequest } from '../types';
 import { formatMutualCount } from '../utils';
 
@@ -35,56 +34,57 @@ export function FriendRequestCard({
   const mutual = formatMutualCount(request.user.mutualCount);
 
   return (
-    <Pressable
+    <Card
+      variant="default"
+      pressable={!!onPress}
       onPress={onPress}
       accessibilityLabel={`${request.user.displayName} friend request`}
       testID={testID}
+      style={styles.card}
     >
-      <Card style={styles.card}>
-        <Avatar
-          name={request.user.displayName}
-          avatarUrl={request.user.avatarUrl}
-          size={48}
-        />
-        <View style={styles.info}>
-          <AppText variant="subtitle" style={styles.name}>
-            {request.user.displayName}
-          </AppText>
-          <AppText variant="caption" style={styles.username}>
-            @{request.user.username}
-            {mutual ? `  ·  ${mutual}` : ''}
-          </AppText>
-        </View>
-        <View style={styles.actions}>
-          {mode === 'incoming' ? (
-            <>
-              <Button
-                title="Accept"
-                variant="primary"
-                size="sm"
-                onPress={onAccept}
-                testID={testID ? `${testID}-accept` : undefined}
-              />
-              <Button
-                title="Decline"
-                variant="secondary"
-                size="sm"
-                onPress={onDecline}
-                testID={testID ? `${testID}-decline` : undefined}
-              />
-            </>
-          ) : (
+      <Avatar
+        name={request.user.displayName}
+        avatarUrl={request.user.avatarUrl}
+        size={48}
+      />
+      <View style={styles.info}>
+        <AppText variant="subtitle" style={styles.name}>
+          {request.user.displayName}
+        </AppText>
+        <AppText variant="caption" style={styles.username}>
+          @{request.user.username}
+          {mutual ? `  ·  ${mutual}` : ''}
+        </AppText>
+      </View>
+      <View style={styles.actions}>
+        {mode === 'incoming' ? (
+          <>
             <Button
-              title="Unsend"
+              title="Accept"
+              variant="primary"
+              size="sm"
+              onPress={onAccept}
+              testID={testID ? `${testID}-accept` : undefined}
+            />
+            <Button
+              title="Decline"
               variant="secondary"
               size="sm"
-              onPress={onUnsend}
-              testID={testID ? `${testID}-unsend` : undefined}
+              onPress={onDecline}
+              testID={testID ? `${testID}-decline` : undefined}
             />
-          )}
-        </View>
-      </Card>
-    </Pressable>
+          </>
+        ) : (
+          <Button
+            title="Unsend"
+            variant="secondary"
+            size="sm"
+            onPress={onUnsend}
+            testID={testID ? `${testID}-unsend` : undefined}
+          />
+        )}
+      </View>
+    </Card>
   );
 }
 
@@ -96,13 +96,14 @@ function createStyles(theme: AppTheme) {
       gap: 12,
       paddingVertical: 14,
       paddingHorizontal: 16,
+      backgroundColor: theme.colors.bg['surface-elevated'],
     },
     info: {
       flex: 1,
       gap: 2,
     },
     name: {
-      color: theme.colors.text.primary,
+      color: theme.colors.text.brand,
       fontWeight: '700',
     },
     username: {

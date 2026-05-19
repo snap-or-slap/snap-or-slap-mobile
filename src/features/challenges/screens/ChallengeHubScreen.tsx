@@ -4,6 +4,7 @@ import { AppText, Button, Screen } from '@ds/components';
 import { NotificationBingIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
+import { AppHeader, IconButton } from '@shared/components';
 import type { ChallengeSegment } from '../types/challenge.types';
 import { ChallengeTabBar } from '../components/ChallengeTabBar';
 import { ChallengeCard } from '../components/ChallengeCard';
@@ -113,24 +114,28 @@ export function ChallengeHubScreen({
   return (
     <Screen testID="challenge-hub-screen">
       <View style={styles.root}>
-        {/* ── Header ── */}
-        <View style={styles.header}>
-          <View style={styles.headerText}>
-            <AppText variant="title" style={styles.headerTitle}>
-              Challenges
-            </AppText>
-            <AppText variant="body" style={styles.headerSubtitle}>
-              Keep your squad accountable.
-            </AppText>
-          </View>
-          <View style={styles.notifWrap}>
-            <NotificationBingIcon
-              size={24}
-              color={theme.colors.text.primary}
-              variant="outline"
-            />
-            <View style={[styles.notifDot, { backgroundColor: theme.colors.bg.error }]} />
-          </View>
+        <View style={styles.headerWrap}>
+          <AppHeader
+            title="Challenges"
+            subtitle="Keep your squad accountable."
+            rightAction={
+              <View style={styles.notifWrap}>
+                <IconButton
+                  accessibilityLabel="Challenge notifications"
+                  variant="ghost"
+                  icon={
+                    <NotificationBingIcon
+                      size={24}
+                      color={theme.colors.text.brand}
+                      variant="outline"
+                    />
+                  }
+                />
+                <View style={[styles.notifDot, { backgroundColor: theme.colors.bg.error }]} />
+              </View>
+            }
+            testID="challenge-hub-header"
+          />
         </View>
 
         {/* ── Create Challenge CTA ── */}
@@ -175,24 +180,9 @@ function createStyles(theme: AppTheme) {
     root: {
       flex: 1,
     },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
+    headerWrap: {
       paddingHorizontal: theme.spacing[24],
       paddingTop: theme.spacing[16],
-      paddingBottom: theme.spacing[12],
-    },
-    headerText: {
-      gap: 4,
-    },
-    headerTitle: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
-    headerSubtitle: {
-      color: theme.colors.text.secondary,
-      fontSize: 15,
     },
     notifWrap: {
       position: 'relative',

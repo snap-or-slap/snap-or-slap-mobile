@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Animated } from 'react-native';
-import { Screen, AppText, Button } from '@ds/components';
+import { Screen, AppText } from '@ds/components';
 import { ArrowCircleLeftIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { motion } from '@ds/utils';
-import { Pressable } from 'react-native';
+import { AppHeader, IconButton } from '@shared/components';
 import {
   RelationshipBadge,
   ProfileStatCard,
   BadgeTile,
   ActivityFeedCard,
   FriendEmptyState,
+  FriendProfileActions,
+  LimitedInformationCard,
 } from '../components';
 import { Avatar } from '@shared/components';
 import type { UserProfilePreview } from '../types';
-import { getUserProfile } from '../services';
+import { getUserProfile, removeFriend } from '../services';
 import { formatStreak, formatCompletionRate } from '../utils';
 
 type FriendProfileScreenProps = {
@@ -30,6 +31,9 @@ export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps
   const [profile, setProfile] = useState<UserProfilePreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [removeLoading, setRemoveLoading] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -52,24 +56,40 @@ export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps
     loadProfile();
   }, [userId]);
 
+  const handleRemoveFriend = async () => {
+    if (!profile) return;
+    setRemoveLoading(true);
+    setRemoveError(null);
+    try {
+      await removeFriend(profile.id);
+      setProfile({ ...profile, relationship: 'non_friend' });
+      setConfirmingRemove(false);
+    } catch {
+      setRemoveError('Could not remove friend. Please try again later.');
+    } finally {
+      setRemoveLoading(false);
+    }
+  };
+
+  const canViewFullProfile = profile?.relationship === 'friend';
+
   return (
     <Screen scrollable padding="md" testID="friend-profile-screen">
-      {/* ── Header ────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        {onBack ? (
-          <Pressable
-            onPress={onBack}
-            style={styles.backButton}
-            accessibilityLabel="Go back"
-            testID="friend-profile-back"
-          >
-            <ArrowCircleLeftIcon size={28} color={theme.colors.icon.primary} variant="outline" />
-          </Pressable>
-        ) : null}
-        <AppText variant="heading" style={styles.headerTitle}>
-          Friend Profile
-        </AppText>
-      </View>
+      <AppHeader
+        title={canViewFullProfile ? 'Friend Profile' : 'Identity Preview'}
+        leftAction={
+          onBack ? (
+            <IconButton
+              accessibilityLabel="Go back"
+              onPress={onBack}
+              size="md"
+              icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+              testID="friend-profile-back"
+            />
+          ) : undefined
+        }
+        testID="friend-profile-header"
+      />
 
       {loading ? (
         <AppText variant="body" style={styles.loading}>
@@ -99,65 +119,84 @@ export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps
             </AppText>
           </View>
 
-          {/* ── Stats ─────────────────────────────────────────── */}
-          <View style={styles.statsSection}>
-            <AppText variant="subtitle" style={styles.sectionTitle}>
-              Stats
-            </AppText>
-            <View style={styles.statsRow}>
-              <ProfileStatCard
-                label="Current Streak"
-                value={formatStreak(profile.currentStreak)}
-                testID="stat-streak"
-              />
-              <ProfileStatCard
-                label="Challenges"
-                value={profile.challengesJoined ?? '—'}
-                testID="stat-challenges"
-              />
-              <ProfileStatCard
-                label="Completion"
-                value={formatCompletionRate(profile.completionRate)}
-                testID="stat-completion"
-              />
-            </View>
-          </View>
-
-          {/* ── Badges ────────────────────────────────────────── */}
-          {profile.badges && profile.badges.length > 0 ? (
-            <View style={styles.section}>
-              <AppText variant="subtitle" style={styles.sectionTitle}>
-                Badges
-              </AppText>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.badgesScroll}
-              >
-                {profile.badges.map((badge) => (
-                  <BadgeTile key={badge.id} label={badge.label} testID={`badge-${badge.id}`} />
-                ))}
-              </ScrollView>
-            </View>
-          ) : null}
-
-          {/* ── Latest Activities ─────────────────────────────── */}
-          {profile.latestActivities && profile.latestActivities.length > 0 ? (
-            <View style={styles.section}>
-              <AppText variant="subtitle" style={styles.sectionTitle}>
-                Latest Activities
-              </AppText>
-              <View style={styles.activityList}>
-                {profile.latestActivities.map((activity, idx) => (
-                  <ActivityFeedCard
-                    key={`activity-${idx}`}
-                    activity={activity}
-                    testID={`activity-${idx}`}
+          {canViewFullProfile ? (
+            <>
+              <View style={styles.statsSection}>
+                <AppText variant="subtitle" style={styles.sectionTitle}>
+                  Stats
+                </AppText>
+                <View style={styles.statsRow}>
+                  <ProfileStatCard
+                    label="Current Streak"
+                    value={formatStreak(profile.currentStreak)}
+                    testID="stat-streak"
                   />
-                ))}
+                  <ProfileStatCard
+                    label="Challenges"
+                    value={profile.challengesJoined ?? '—'}
+                    testID="stat-challenges"
+                  />
+                  <ProfileStatCard
+                    label="Completion"
+                    value={formatCompletionRate(profile.completionRate)}
+                    testID="stat-completion"
+                  />
+                </View>
               </View>
-            </View>
-          ) : null}
+
+              {profile.badges && profile.badges.length > 0 ? (
+                <View style={styles.section}>
+                  <AppText variant="subtitle" style={styles.sectionTitle}>
+                    Badges
+                  </AppText>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.badgesScroll}
+                  >
+                    {profile.badges.map((badge) => (
+                      <BadgeTile key={badge.id} label={badge.label} testID={`badge-${badge.id}`} />
+                    ))}
+                  </ScrollView>
+                </View>
+              ) : null}
+
+              {profile.latestActivities && profile.latestActivities.length > 0 ? (
+                <View style={styles.section}>
+                  <AppText variant="subtitle" style={styles.sectionTitle}>
+                    Latest Activities
+                  </AppText>
+                  <View style={styles.activityList}>
+                    {profile.latestActivities.map((activity, idx) => (
+                      <ActivityFeedCard
+                        key={`activity-${idx}`}
+                        activity={activity}
+                        testID={`activity-${idx}`}
+                      />
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+
+              <FriendProfileActions
+                confirming={confirmingRemove}
+                loading={removeLoading}
+                error={removeError}
+                onStartRemove={() => setConfirmingRemove(true)}
+                onCancelRemove={() => {
+                  setConfirmingRemove(false);
+                  setRemoveError(null);
+                }}
+                onConfirmRemove={handleRemoveFriend}
+              />
+            </>
+          ) : (
+            <LimitedInformationCard
+              title="Limited profile"
+              message="Full profile details and activity feed are hidden until you're friends."
+              testID="friend-profile-limited"
+            />
+          )}
         </Animated.View>
       )}
     </Screen>
@@ -166,19 +205,6 @@ export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      marginBottom: 20,
-    },
-    backButton: {
-      padding: 4,
-    },
-    headerTitle: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
     loading: {
       color: theme.colors.text.tertiary,
       textAlign: 'center',

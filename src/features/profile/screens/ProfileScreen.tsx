@@ -1,23 +1,65 @@
-
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Screen, AppText, Card, Badge } from '@ds/components';
-import { MedalStarIcon } from '@ds/icons';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { AppText, Screen } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { Avatar } from '@shared/components';
-
-const stats = [
-  { label: 'Streak', value: '12' },
-  { label: 'Completed', value: '8' },
-  { label: 'Friends', value: '24' },
-];
-
-const badges = ['Newcomer', 'Early riser', 'Team player'];
+import { AppHeader } from '@shared/components';
+import {
+  DangerZoneCard,
+  DeleteAccountConfirmCard,
+  ProfileBadgeSection,
+  ProfileHeaderCard,
+  ProfileSettingsSection,
+  ProfileStatsGrid,
+} from '../components';
+import { deleteAccount, getMyProfile } from '../services';
+import type { UserProfile } from '../types';
 
 export function ProfileScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
+
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteComplete, setDeleteComplete] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadProfile() {
+      try {
+        const nextProfile = await getMyProfile();
+        if (mounted) setProfile(nextProfile);
+      } catch {
+        if (mounted) setError('Could not load your profile. Please try again later.');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadProfile();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setDeleteComplete(true);
+      setConfirmDelete(false);
+    } catch {
+      setDeleteError('Could not delete account. Please try again later.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   return (
     <Screen
@@ -26,68 +68,53 @@ export function ProfileScreen() {
       testID="profile-screen"
       contentStyle={styles.content}
     >
-      <View style={styles.header}>
-        <AppText variant="heading" style={styles.title}>
-          Profile
-        </AppText>
-        <AppText variant="body" style={styles.subtitle}>
-          Track your streaks, trophies, and challenge history.
-        </AppText>
-      </View>
+      <AppHeader
+        title="Profile"
+        subtitle="Your streaks, settings, and account controls"
+        testID="profile-header"
+      />
 
-      <View style={styles.profileHeader}>
-        <Avatar name="SnapOrSlap User" size={96} />
-        <View style={styles.profileInfo}>
-          <AppText variant="heading" style={styles.displayName}>
-            SnapOrSlap User
-          </AppText>
-          <AppText variant="body" style={styles.username}>
-            @snapstarter
-          </AppText>
-          <Badge variant="neutral">Newcomer</Badge>
-        </View>
-      </View>
-
-      <Card style={styles.card}>
-        <AppText variant="subtitle" style={styles.sectionTitle}>
-          Stats
+      {loading ? (
+        <AppText variant="body" style={styles.stateText}>
+          Loading profile...
         </AppText>
-        <View style={styles.statsGrid}>
-          {stats.map((stat) => (
-            <View key={stat.label} style={styles.statCard}>
-              <AppText variant="heading" style={styles.statValue}>
-                {stat.value}
+      ) : error || !profile ? (
+        <AppText variant="body" style={styles.errorText}>
+          {error ?? 'Profile unavailable.'}
+        </AppText>
+      ) : (
+        <>
+          <ProfileHeaderCard profile={profile} />
+          <ProfileStatsGrid profile={profile} />
+          <ProfileBadgeSection profile={profile} />
+          <ProfileSettingsSection profile={profile} />
+
+          {deleteComplete ? (
+            <View style={styles.successCard}>
+              <AppText variant="subtitle" style={styles.successTitle}>
+                Account deletion requested
               </AppText>
-              <AppText variant="caption" style={styles.statLabel}>
-                {stat.label}
+              <AppText variant="body" style={styles.successBody}>
+                Backend deletion is currently a safe placeholder. Session clearing will be wired when auth persistence is available.
               </AppText>
             </View>
-          ))}
-        </View>
-      </Card>
+          ) : null}
 
-      <Card style={styles.card}>
-        <AppText variant="subtitle" style={styles.sectionTitle}>
-          Badges and trophies
-        </AppText>
-        <View style={styles.badgeGrid}>
-          {badges.map((badge) => (
-            <View key={badge} style={styles.trophyCard}>
-              <MedalStarIcon
-                size={26}
-                color={theme.colors.text.brand}
-                variant="bold"
-              />
-              <Badge variant="neutral" size="sm" textStyle={styles.trophyLabel}>
-                {badge}
-              </Badge>
-            </View>
-          ))}
-        </View>
-        <AppText variant="caption" style={styles.helper}>
-          Trophy rules and earned-state sync are reserved for backend integration.
-        </AppText>
-      </Card>
+          {confirmDelete ? (
+            <DeleteAccountConfirmCard
+              loading={deleteLoading}
+              error={deleteError}
+              onCancel={() => {
+                setConfirmDelete(false);
+                setDeleteError(null);
+              }}
+              onConfirm={handleConfirmDelete}
+            />
+          ) : (
+            <DangerZoneCard onDeletePress={() => setConfirmDelete(true)} />
+          )}
+        </>
+      )}
     </Screen>
   );
 }
@@ -95,90 +122,32 @@ export function ProfileScreen() {
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     content: {
-      gap: 16,
-      paddingBottom: 120,
+      gap: theme.spacing[16],
+      paddingBottom: 112,
     },
-    header: {
-      gap: 8,
-    },
-    title: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
-    subtitle: {
-      color: theme.colors.text.secondary,
-    },
-    profileHeader: {
-      alignItems: 'center',
-      gap: 14,
-      paddingVertical: 10,
-    },
-    profileInfo: {
-      alignItems: 'center',
-      gap: 6,
-    },
-    displayName: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
+    stateText: {
+      color: theme.colors.text.tertiary,
       textAlign: 'center',
+      paddingVertical: theme.spacing[48],
     },
-    username: {
-      color: theme.colors.text.secondary,
+    errorText: {
+      color: theme.colors.text.error,
       textAlign: 'center',
+      paddingVertical: theme.spacing[48],
     },
-    card: {
-      padding: 16,
-      gap: 14,
+    successCard: {
+      borderRadius: theme.radius.md,
+      padding: theme.spacing[16],
+      backgroundColor: theme.colors.bg.success,
+      gap: theme.spacing[8],
     },
-    sectionTitle: {
-      color: theme.colors.text.primary,
+    successTitle: {
+      color: theme.colors.text['on-success'],
       fontWeight: '800',
     },
-    statsGrid: {
-      flexDirection: 'row',
-      gap: 10,
-    },
-    statCard: {
-      flex: 1,
-      minHeight: 88,
-      borderRadius: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.bg['brand-subtle'],
-      gap: 4,
-    },
-    statValue: {
-      color: theme.colors.text.brand,
-      fontWeight: '800',
-    },
-    statLabel: {
-      color: theme.colors.text.secondary,
-      fontWeight: '700',
-    },
-    badgeGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
-    },
-    trophyCard: {
-      width: '30%',
-      minWidth: 96,
-      borderRadius: 18,
-      padding: 12,
-      alignItems: 'center',
-      backgroundColor: theme.colors.bg.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border.subtle,
-      gap: 6,
-    },
-    trophyLabel: {
-      color: theme.colors.text.primary,
-      textAlign: 'center',
-      fontWeight: '700',
-    },
-    helper: {
-      color: theme.colors.text.secondary,
-      lineHeight: 18,
+    successBody: {
+      color: theme.colors.text['on-success'],
+      lineHeight: 20,
     },
   });
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button } from '@ds/components';
+import { ArrowCircleLeftIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 
@@ -30,7 +31,9 @@ export function CreateChallengeFooter({
     <View testID={testID} style={styles.root}>
       {canGoBack && onBack ? (
         <Button
-          title="Back"
+          iconOnly
+          leftIcon={<ArrowCircleLeftIcon size={22} color={theme.colors.text.primary} variant="outline" />}
+          accessibilityLabel="Go back"
           variant="ghost"
           size="md"
           onPress={onBack}
@@ -60,7 +63,7 @@ function createStyles(theme: AppTheme) {
       paddingTop: 8,
     },
     backButton: {
-      minWidth: 90,
+      width: 44,
     },
     nextButton: {
       flex: 1,

@@ -165,7 +165,7 @@ function createStyles(theme: AppTheme) {
       gap: 8,
     },
     title: {
-      color: theme.colors.text.primary,
+      color: theme.colors.text.brand,
       fontWeight: '800',
     },
     subtitle: {

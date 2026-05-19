@@ -4,8 +4,7 @@ import { Screen, AppText, Button } from '@ds/components';
 import { ArrowCircleLeftIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { Pressable } from 'react-native';
-import { Avatar } from '@shared/components';
+import { AppHeader, Avatar, IconButton } from '@shared/components';
 import {
   RelationshipBadge,
   LimitedInformationCard,
@@ -35,6 +34,7 @@ export function UserProfilePreviewScreen({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
+  const [relationshipOverride, setRelationshipOverride] = useState<RelationshipType | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -70,7 +70,7 @@ export function UserProfilePreviewScreen({
   // Determine effective relationship
   const relationship = requestSent
     ? ('pending_outgoing' as RelationshipType)
-    : (profile?.relationship ?? initialRelationship ?? 'non_friend');
+    : (relationshipOverride ?? profile?.relationship ?? initialRelationship ?? 'non_friend');
 
   const isSquadmate = relationship === 'squadmate';
   const isNonFriend =
@@ -85,22 +85,21 @@ export function UserProfilePreviewScreen({
 
   return (
     <Screen scrollable padding="md" testID="user-profile-preview-screen">
-      {/* ── Header ────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        {onBack ? (
-          <Pressable
-            onPress={onBack}
-            style={styles.backButton}
-            accessibilityLabel="Go back"
-            testID="preview-back"
-          >
-            <ArrowCircleLeftIcon size={28} color={theme.colors.icon.primary} variant="outline" />
-          </Pressable>
-        ) : null}
-        <AppText variant="heading" style={styles.headerTitle}>
-          {screenTitle}
-        </AppText>
-      </View>
+      <AppHeader
+        title={screenTitle}
+        leftAction={
+          onBack ? (
+            <IconButton
+              accessibilityLabel="Go back"
+              onPress={onBack}
+              size="md"
+              icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+              testID="preview-back"
+            />
+          ) : undefined
+        }
+        testID="user-preview-header"
+      />
 
       {loading ? (
         <AppText variant="body" style={styles.loadingText}>
@@ -161,8 +160,26 @@ export function UserProfilePreviewScreen({
             />
           ) : null}
 
-          {/* ── CTA ───────────────────────────────────────────── */}
-          {relationship !== 'self' ? (
+          {relationship === 'pending_incoming' ? (
+            <View style={styles.actionRow}>
+              <Button
+                title="Accept"
+                variant="primary"
+                size="lg"
+                style={styles.actionButton}
+                onPress={() => setRelationshipOverride('friend')}
+                testID="preview-accept-friend"
+              />
+              <Button
+                title="Decline"
+                variant="secondary"
+                size="lg"
+                style={styles.actionButton}
+                onPress={() => setRelationshipOverride('non_friend')}
+                testID="preview-decline-friend"
+              />
+            </View>
+          ) : relationship !== 'self' ? (
             <Button
               title={addLabel}
               variant="primary"
@@ -181,19 +198,6 @@ export function UserProfilePreviewScreen({
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      marginBottom: 20,
-    },
-    backButton: {
-      padding: 4,
-    },
-    headerTitle: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
     loadingText: {
       color: theme.colors.text.tertiary,
       textAlign: 'center',
@@ -219,6 +223,13 @@ function createStyles(theme: AppTheme) {
     sectionTitle: {
       color: theme.colors.text.primary,
       fontWeight: '800',
+    },
+    actionRow: {
+      flexDirection: 'row',
+      gap: theme.spacing[8],
+    },
+    actionButton: {
+      flex: 1,
     },
   });
 }

@@ -6,11 +6,12 @@ import {
   Animated,
   Pressable,
 } from 'react-native';
-import { Screen, AppText, Button, Badge } from '@ds/components';
+import { Screen, AppText, Badge } from '@ds/components';
 import { UserAddIcon, SearchNormalIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { motion } from '@ds/utils';
+import { AppHeader, IconButton } from '@shared/components';
 import {
   FriendListItem,
   FriendRequestPreviewCard,
@@ -105,35 +106,29 @@ export function FriendsHubScreen({
 
   return (
     <Screen scrollable padding="md" testID="friends-hub-screen" keyboardShouldPersistTaps="handled">
-      {/* ── Header ────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <AppText variant="heading" style={styles.title}>
-            Friends
-          </AppText>
-          <AppText variant="body" style={styles.subtitle}>
-            Manage your squad connections.
-          </AppText>
-        </View>
-        <View style={styles.headerActions}>
-          <Pressable
-            onPress={() => setIsSearchActive(!isSearchActive)}
-            style={styles.iconButton}
-            accessibilityLabel="Search friends"
-            testID="friends-hub-search-toggle"
-          >
-            <SearchNormalIcon size={22} color={theme.colors.icon.primary} variant="outline" />
-          </Pressable>
-          <Pressable
-            onPress={onOpenAddFriend}
-            style={styles.iconButton}
-            accessibilityLabel="Add friend"
-            testID="friends-hub-add-friend"
-          >
-            <UserAddIcon size={22} color={theme.colors.icon.primary} variant="outline" />
-          </Pressable>
-        </View>
-      </View>
+      <AppHeader
+        title="Friends"
+        subtitle="Manage your squad connections."
+        rightAction={
+          <View style={styles.headerActions}>
+            <IconButton
+              onPress={() => setIsSearchActive(!isSearchActive)}
+              accessibilityLabel="Search friends"
+              variant="ghost"
+              icon={<SearchNormalIcon size={22} color={theme.colors.text.brand} variant="outline" />}
+              testID="friends-hub-search-toggle"
+            />
+            <IconButton
+              onPress={onOpenAddFriend}
+              accessibilityLabel="Add friend"
+              variant="ghost"
+              icon={<UserAddIcon size={22} color={theme.colors.text.brand} variant="outline" />}
+              testID="friends-hub-add-friend"
+            />
+          </View>
+        }
+        testID="friends-hub-header"
+      />
 
       {/* ── Search bar ────────────────────────────────────────── */}
       {isSearchActive ? (
@@ -260,35 +255,9 @@ export function FriendsHubScreen({
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: 16,
-    },
-    headerLeft: {
-      flex: 1,
-      gap: 2,
-    },
     headerActions: {
       flexDirection: 'row',
-      gap: 8,
-      paddingTop: 4,
-    },
-    iconButton: {
-      width: 40,
-      height: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: theme.radius.full,
-      backgroundColor: theme.colors.bg.surface,
-    },
-    title: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
-    subtitle: {
-      color: theme.colors.text.secondary,
+      gap: theme.spacing[4],
     },
     content: {
       gap: 20,
@@ -324,7 +293,7 @@ function createStyles(theme: AppTheme) {
       gap: 8,
     },
     noRequestsRow: {
-      backgroundColor: theme.colors.bg.surface,
+      backgroundColor: theme.colors.bg['surface-elevated'],
       borderRadius: theme.radius.lg,
       paddingHorizontal: 16,
       paddingVertical: 12,

@@ -5,6 +5,7 @@ import { AppText } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { EmojiHappyIcon, CupIcon, ProfileCircleIcon } from '@ds/icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeTabKey } from '../types';
 
 interface HomeBottomTabBarProps {
@@ -14,12 +15,13 @@ interface HomeBottomTabBarProps {
 
 export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProps) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = createStyles(theme);
 
   const getIcon = (key: HomeTabKey, isActive: boolean) => {
     const variant = isActive ? 'bold' : 'outline';
     const color = isActive ? theme.colors.text.brand : theme.colors.text.secondary;
-    const size = 28;
+    const size = 22;
 
     switch (key) {
       case 'friends':
@@ -40,29 +42,35 @@ export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProp
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.bg.surface, borderTopColor: theme.colors.border.subtle }]} testID="home-bottom-tab-bar">
+    <View
+      style={[
+        styles.container,
+        { paddingBottom: Math.max(insets.bottom, theme.spacing[8]) },
+      ]}
+      testID="home-bottom-tab-bar"
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
           <Pressable
             key={tab.key}
-            style={styles.tab}
+            style={({ pressed }) => [
+              styles.tab,
+              isActive && styles.activeTab,
+              pressed && styles.pressedTab,
+            ]}
             onPress={() => onTabPress(tab.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
             testID={`home-tab-${tab.key}`}
           >
             {getIcon(tab.key, isActive)}
             <AppText
               variant="caption"
-              style={{
-                color: isActive ? theme.colors.text.brand : theme.colors.text.secondary,
-                marginTop: 4,
-              }}
+              style={[styles.label, isActive && styles.activeLabel]}
             >
               {tab.label}
             </AppText>
-            {isActive && (
-              <View style={[styles.indicator, { backgroundColor: theme.colors.bg.brand }]} />
-            )}
           </Pressable>
         );
       })}
@@ -72,25 +80,40 @@ export function HomeBottomTabBar({ activeTab, onTabPress }: HomeBottomTabBarProp
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingBottom: theme.spacing[24],
-    paddingTop: theme.spacing[8],
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing[8],
-    position: 'relative',
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: -8,
-    width: 24,
-    height: 4,
-    borderRadius: theme.radius.xs,
-  },
+    container: {
+      minHeight: 62,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.bg['surface-elevated'],
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border.subtle,
+      borderTopLeftRadius: theme.radius.md,
+      borderTopRightRadius: theme.radius.md,
+      paddingTop: theme.spacing[4],
+      paddingHorizontal: theme.spacing[8],
+      gap: theme.spacing[4],
+    },
+    tab: {
+      flex: 1,
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: theme.radius.sm,
+      gap: 2,
+    },
+    activeTab: {
+      backgroundColor: theme.colors.bg['brand-subtle'],
+    },
+    pressedTab: {
+      backgroundColor: theme.colors.bg['surface-pressed'],
+    },
+    label: {
+      color: theme.colors.text.secondary,
+      fontWeight: '600',
+    },
+    activeLabel: {
+      color: theme.colors.text.brand,
+      fontWeight: '700',
+    },
   });
 }

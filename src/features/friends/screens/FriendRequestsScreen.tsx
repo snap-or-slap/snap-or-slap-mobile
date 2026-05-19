@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Animated } from 'react-native';
-import { Screen, AppText, Button } from '@ds/components';
+import { Screen, AppText, Card } from '@ds/components';
 import { ArrowCircleLeftIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { motion } from '@ds/utils';
-import { Pressable } from 'react-native';
+import { AppHeader, IconButton } from '@shared/components';
 import {
   FriendRequestCard,
   FriendRequestTabs,
@@ -105,22 +105,20 @@ export function FriendRequestsScreen({
 
   return (
     <Screen scrollable padding="md" testID="friend-requests-screen" keyboardShouldPersistTaps="handled">
-      {/* ── Header ────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        {onBack ? (
-          <Pressable
-            onPress={onBack}
-            style={styles.backButton}
-            accessibilityLabel="Go back"
-            testID="friend-requests-back"
-          >
-            <ArrowCircleLeftIcon size={28} color={theme.colors.icon.primary} variant="outline" />
-          </Pressable>
-        ) : null}
-        <AppText variant="heading" style={styles.title}>
-          Friend Requests
-        </AppText>
-      </View>
+      <AppHeader
+        title="Friend Requests"
+        leftAction={
+          onBack ? (
+            <IconButton
+              accessibilityLabel="Go back"
+              onPress={onBack}
+              icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+              testID="friend-requests-back"
+            />
+          ) : undefined
+        }
+        testID="friend-requests-header"
+      />
 
       {/* ── Tabs ──────────────────────────────────────────────── */}
       <FriendRequestTabs
@@ -198,15 +196,15 @@ export function FriendRequestsScreen({
 function RequestTipsCard({ theme }: { theme: AppTheme }) {
   const styles = createInfoCardStyles(theme);
   return (
-    <View style={styles.card}>
+    <Card variant="subtle" style={styles.card}>
       <AppText variant="label" style={styles.title}>
         Request Tips
       </AppText>
       <AppText variant="caption" style={styles.text}>
-        • Requests expire after 30 days if not accepted.{'\n'}
-        • You can send a new invite later if needed.
+        - Requests expire after 30 days if not accepted.{'\n'}
+        - You can send a new invite later if needed.
       </AppText>
-    </View>
+    </Card>
   );
 }
 
@@ -231,19 +229,6 @@ function createInfoCardStyles(theme: AppTheme) {
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      marginBottom: 16,
-    },
-    backButton: {
-      padding: 4,
-    },
-    title: {
-      color: theme.colors.text.primary,
-      fontWeight: '800',
-    },
     summaryRow: {
       marginTop: 8,
       marginBottom: 4,

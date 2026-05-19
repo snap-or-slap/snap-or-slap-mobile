@@ -1,10 +1,10 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
-import { ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
+import { ArrowCircleLeftIcon, ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { Avatar } from '@shared/components';
+import { AppHeader, Avatar, IconButton } from '@shared/components';
 import { getChallengeDetailMock } from '../data/challenges.mock';
 import { ChallengeStatusBadge } from '../components/ChallengeStatusBadge';
 import { ChallengeHearts } from '../components/ChallengeHearts';
@@ -37,16 +37,20 @@ export function ChallengeDetailScreen({
       testID="challenge-detail-screen"
       contentStyle={styles.content}
     >
-      {/* ── Back button ── */}
-      <View style={styles.header}>
-        <Button
-          title="Back"
-          variant="ghost"
-          size="sm"
-          onPress={onBack}
-          testID="challenge-detail-back-button"
-        />
-      </View>
+      <AppHeader
+        title="Challenge Detail"
+        leftAction={
+          onBack ? (
+            <IconButton
+              accessibilityLabel="Go back"
+              onPress={onBack}
+              icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+              testID="challenge-detail-back-button"
+            />
+          ) : undefined
+        }
+        testID="challenge-detail-header"
+      />
 
       {/* ── Hero card ── */}
       <Card padding="none" style={styles.heroCard}>
@@ -217,9 +221,6 @@ function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     content: {
       gap: 16,
-    },
-    header: {
-      alignItems: 'flex-start',
     },
     heroCard: {
       gap: 12,
