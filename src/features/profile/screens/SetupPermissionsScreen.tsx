@@ -201,29 +201,34 @@ export function SetupPermissionsScreen({ onBack, onComplete }: SetupPermissionsS
   }
 }
 
-async function getPermissionStates(): Promise<Record<PermissionItem['key'], PermissionState>> {
-  const [notifications, camera, photos] = await Promise.all([
-    getPermissionState(() => Notifications.getPermissionsAsync()),
+async function getPermissionStates(): Promise<Record<PermissionItem["key"], PermissionState>> {
+  const [camera, photos] = await Promise.all([
     getPermissionState(() => ImagePicker.getCameraPermissionsAsync()),
     getPermissionState(() => ImagePicker.getMediaLibraryPermissionsAsync()),
   ]);
 
-  return { notifications, camera, photos };
+  return {
+    notifications: "unavailable",
+    camera,
+    photos,
+  };
 }
 
-async function requestPermission(key: PermissionItem['key']): Promise<PermissionState> {
+async function requestPermission(key: PermissionItem["key"]): Promise<PermissionState> {
   switch (key) {
-    case 'notifications':
-      return getPermissionState(() => Notifications.requestPermissionsAsync());
+    case "notifications":
+      // Expo Go Android SDK 53+ does not support remote push notifications.
+      // Keep this as a placeholder until we use a development build.
+      return "unavailable";
 
-    case 'camera':
+    case "camera":
       return getPermissionState(() => ImagePicker.requestCameraPermissionsAsync());
 
-    case 'photos':
+    case "photos":
       return getPermissionState(() => ImagePicker.requestMediaLibraryPermissionsAsync());
 
     default:
-      return 'unavailable';
+      return "unavailable";
   }
 }
 
