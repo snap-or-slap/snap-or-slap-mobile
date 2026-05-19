@@ -54,4 +54,12 @@ export const apiRoutes = {
   },
 } as const;
 
+export const doNotUseApiRoutes = [
+  '/challenges/{id}/proof',
+  '/teams',
+  '/teams/{id}/slap',
+  '/test-data',
+  '/hello',
+] as const;
+
 export const ENDPOINTS = apiRoutes;

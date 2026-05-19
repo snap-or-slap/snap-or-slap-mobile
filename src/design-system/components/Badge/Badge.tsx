@@ -22,8 +22,8 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <View style={[styles.badge, style]} testID={testID}>
       {leftIcon && <View>{leftIcon}</View>}
-      {typeof children === 'string' ? (
-        <AppText variant={textVariant} color={textColor} style={textStyle}>{children}</AppText>
+      {typeof children === 'string' || typeof children === 'number' ? (
+        <AppText variant={textVariant} color={textColor} style={textStyle}>{String(children)}</AppText>
       ) : children}
     </View>
   );

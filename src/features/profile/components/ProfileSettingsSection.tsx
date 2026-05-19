@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { AppText, Card } from '@ds/components';
+import { StyleSheet, Switch, View } from 'react-native';
+import { AppText, Button, Card } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import type { UserProfile } from '../types';
@@ -9,9 +9,19 @@ import { ThemeModeSelector } from './ThemeModeSelector';
 
 type ProfileSettingsSectionProps = {
   profile: UserProfile;
+  privacyLoading?: boolean;
+  logoutLoading?: boolean;
+  onPrivacyChange?: (isPrivate: boolean) => void;
+  onLogout?: () => void;
 };
 
-export function ProfileSettingsSection({ profile }: ProfileSettingsSectionProps) {
+export function ProfileSettingsSection({
+  profile,
+  privacyLoading = false,
+  logoutLoading = false,
+  onPrivacyChange,
+  onLogout,
+}: ProfileSettingsSectionProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
 
@@ -32,10 +42,29 @@ export function ProfileSettingsSection({ profile }: ProfileSettingsSectionProps)
         <ProfileSettingRow label="Email" value={profile.email ?? 'Not provided'} />
         <ProfileSettingRow label="Username" value={`@${profile.username}`} />
         <ProfileSettingRow label="Display name" value={profile.displayName} />
-        <ProfileSettingRow
-          label="Privacy"
-          value="Friend-only profile details"
-          helperText="Full stats, badges, and activity stay hidden from non-friends."
+        <View style={styles.privacyRow}>
+          <View style={styles.privacyText}>
+            <ProfileSettingRow
+              label="Privacy"
+              value={profile.isPrivate ? 'Private profile' : 'Public profile'}
+              helperText="Private profiles hide full stats, badges, and activity from non-friends."
+            />
+          </View>
+          <Switch
+            value={profile.isPrivate ?? false}
+            disabled={privacyLoading}
+            onValueChange={onPrivacyChange}
+            testID="profile-privacy-switch"
+          />
+        </View>
+        <Button
+          title="Log out"
+          variant="secondary"
+          fullWidth
+          loading={logoutLoading}
+          disabled={logoutLoading}
+          onPress={onLogout}
+          testID="profile-logout-button"
         />
       </View>
     </Card>
@@ -61,6 +90,14 @@ function createStyles(theme: AppTheme) {
     divider: {
       height: 1,
       backgroundColor: theme.colors.border.subtle,
+    },
+    privacyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing[12],
+    },
+    privacyText: {
+      flex: 1,
     },
   });
 }

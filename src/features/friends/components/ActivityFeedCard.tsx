@@ -3,9 +3,10 @@ import { StyleSheet } from 'react-native';
 import { AppText, Card } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
+import { formatActivityLabel } from '../utils';
 
 export type ActivityFeedCardProps = {
-  activity: string;
+  activity: unknown;
   testID?: string;
 };
 
@@ -16,7 +17,7 @@ export function ActivityFeedCard({ activity, testID }: ActivityFeedCardProps) {
   return (
     <Card style={styles.card} testID={testID}>
       <AppText variant="body" style={styles.text}>
-        {activity}
+        {formatActivityLabel(activity)}
       </AppText>
     </Card>
   );

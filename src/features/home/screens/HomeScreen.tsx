@@ -29,7 +29,11 @@ type HomeRoute =
   | { name: 'friendProfile'; userId: string }
   | { name: 'userPreview'; userId: string };
 
-export function HomeScreen() {
+type HomeScreenProps = {
+  onSignedOut?: () => void;
+};
+
+export function HomeScreen({ onSignedOut }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeTabKey>('challenges');
   const [route, setRoute] = useState<HomeRoute>({ name: 'tabs' });
 
@@ -88,6 +92,7 @@ export function HomeScreen() {
       <FriendProfileScreen
         userId={route.userId}
         onBack={() => setRoute({ name: 'tabs' })}
+        onRemoved={() => setRoute({ name: 'tabs' })}
       />
     );
   }
@@ -97,6 +102,7 @@ export function HomeScreen() {
       <UserProfilePreviewScreen
         userId={route.userId}
         onBack={() => setRoute({ name: 'tabs' })}
+        onOpenFriendRequests={() => setRoute({ name: 'friendRequests' })}
       />
     );
   }
@@ -116,6 +122,7 @@ export function HomeScreen() {
               onOpenFriendRequests={() => setRoute({ name: 'friendRequests' })}
               onOpenAddFriend={() => setRoute({ name: 'addFriend' })}
               onOpenFriendProfile={(userId) => setRoute({ name: 'friendProfile', userId })}
+              onOpenUserPreview={(userId) => setRoute({ name: 'userPreview', userId })}
             />
           </View>
         );
@@ -136,7 +143,7 @@ export function HomeScreen() {
           </View>
         );
       case 'profile':
-        return <ProfileScreen />;
+        return <ProfileScreen onSignedOut={onSignedOut} />;
       default:
         return null;
     }

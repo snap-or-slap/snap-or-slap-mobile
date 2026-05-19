@@ -5,12 +5,15 @@ export function getRelationshipLabel(relationship: RelationshipType): string {
   switch (relationship) {
     case 'friend':
       return 'Friend';
+    case 'none':
     case 'non_friend':
       return 'Not Friend';
     case 'squadmate':
       return 'Squadmate';
+    case 'pending_sent':
     case 'pending_outgoing':
-      return 'Requested';
+      return 'Request Sent';
+    case 'pending_received':
     case 'pending_incoming':
       return 'Wants to connect';
     case 'self':
@@ -30,12 +33,15 @@ export function getRelationshipBadgeVariant(
   switch (relationship) {
     case 'friend':
       return 'success';
+    case 'none':
     case 'non_friend':
       return 'neutral';
     case 'squadmate':
       return 'info';
+    case 'pending_sent':
     case 'pending_outgoing':
       return 'warning';
+    case 'pending_received':
     case 'pending_incoming':
       return 'brand';
     case 'self':
@@ -63,14 +69,17 @@ export function canViewChallengeScope(relationship: RelationshipType): boolean {
 export function getAddFriendLabel(relationship: RelationshipType): string {
   switch (relationship) {
     case 'friend':
-      return 'Friend';
+      return 'Friends';
+    case 'pending_sent':
     case 'pending_outgoing':
-      return 'Requested';
+      return 'Request Sent';
+    case 'pending_received':
     case 'pending_incoming':
       return 'Accept';
+    case 'none':
     case 'non_friend':
     case 'squadmate':
-      return 'Add friend';
+      return 'Add Friend';
     case 'self':
       return 'You';
     default:
@@ -82,6 +91,7 @@ export function getAddFriendLabel(relationship: RelationshipType): string {
 export function isAddFriendDisabled(relationship: RelationshipType): boolean {
   return (
     relationship === 'friend' ||
+    relationship === 'pending_sent' ||
     relationship === 'pending_outgoing' ||
     relationship === 'self'
   );

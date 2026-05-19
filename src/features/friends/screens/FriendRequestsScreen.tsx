@@ -16,7 +16,6 @@ import {
   getIncomingRequests,
   getOutgoingRequests,
   respondFriendRequest,
-  unsendFriendRequest,
 } from '../services';
 
 type FriendRequestsScreenProps = {
@@ -89,15 +88,6 @@ export function FriendRequestsScreen({
       setIncoming((prev) => prev.filter((r) => r.id !== requestId));
     } catch {
       // no-op
-    }
-  };
-
-  const handleUnsend = async (requestId: string) => {
-    try {
-      await unsendFriendRequest(requestId);
-      setOutgoing((prev) => prev.filter((r) => r.id !== requestId));
-    } catch {
-      // no-op; TODO: show error toast when available
     }
   };
 
@@ -174,9 +164,6 @@ export function FriendRequestsScreen({
                 onDecline={
                   activeTab === 'incoming' ? () => handleDecline(req.id) : undefined
                 }
-                onUnsend={
-                  activeTab === 'outgoing' ? () => handleUnsend(req.id) : undefined
-                }
                 onPress={() =>
                   onOpenUserPreview?.(req.user.id, activeTab)
                 }
@@ -201,8 +188,7 @@ function RequestTipsCard({ theme }: { theme: AppTheme }) {
         Request Tips
       </AppText>
       <AppText variant="caption" style={styles.text}>
-        - Requests expire after 30 days if not accepted.{'\n'}
-        - You can send a new invite later if needed.
+        Waiting for them to accept.
       </AppText>
     </Card>
   );

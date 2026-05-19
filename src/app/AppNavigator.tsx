@@ -14,7 +14,7 @@ export const AppNavigator = () => {
   const [setupStage, setSetupStage] = useState<SetupStage>('checking');
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || setupStage !== 'checking') return;
 
     let mounted = true;
 
@@ -41,7 +41,7 @@ export const AppNavigator = () => {
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, setupStage]);
 
   if (!onboardingDone) {
     return (
@@ -56,8 +56,8 @@ export const AppNavigator = () => {
   if (!isAuthenticated) {
     return (
       <AuthNavigator
-        onAuthSuccess={() => {
-          setSetupStage('checking');
+        onAuthSuccess={(nextStage) => {
+          setSetupStage(nextStage ?? 'checking');
           setIsAuthenticated(true);
         }}
       />
@@ -67,7 +67,6 @@ export const AppNavigator = () => {
   if (setupStage === 'profile') {
     return (
       <CompleteProfileScreen
-        initialDisplayName="SnapOrSlap User"
         onBack={() => {
           setIsAuthenticated(false);
           setSetupStage('checking');
@@ -96,5 +95,12 @@ export const AppNavigator = () => {
     );
   }
 
-  return <HomeScreen />;
+  return (
+    <HomeScreen
+      onSignedOut={() => {
+        setIsAuthenticated(false);
+        setSetupStage('checking');
+      }}
+    />
+  );
 };

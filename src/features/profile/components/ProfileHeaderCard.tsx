@@ -25,6 +25,16 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
         <AppText variant="body" style={styles.username}>
           @{profile.username}
         </AppText>
+        {profile.email ? (
+          <AppText variant="caption" style={styles.meta}>
+            {profile.email}
+          </AppText>
+        ) : null}
+        {profile.bio ? (
+          <AppText variant="body" style={styles.bio}>
+            {profile.bio}
+          </AppText>
+        ) : null}
       </View>
     </Card>
   );
@@ -48,6 +58,16 @@ function createStyles(theme: AppTheme) {
     username: {
       color: theme.colors.text.secondary,
       textAlign: 'center',
+    },
+    meta: {
+      color: theme.colors.text.tertiary,
+      textAlign: 'center',
+    },
+    bio: {
+      color: theme.colors.text.primary,
+      lineHeight: 22,
+      textAlign: 'center',
+      marginTop: theme.spacing[4],
     },
   });
 }

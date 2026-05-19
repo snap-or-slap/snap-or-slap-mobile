@@ -3,8 +3,10 @@ import { View, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, P
 import { AppText, Button, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, EyeIcon, EyeSlashIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
+import { ApiError } from '@services/api';
 import { AuthTextField } from '../components/AuthTextField';
 import { AuthAnimatedContainer } from '../components/AuthAnimatedContainer';
+import { authService } from '../services';
 
 interface LoginScreenProps {
   onBack?: () => void;
@@ -21,19 +23,26 @@ export function LoginScreen({ onBack, onLoginSuccess, onNavigateRegister }: Logi
   const [error, setError] = useState<string | undefined>();
 
   const handleLogin = async () => {
+    if (isLoading) return;
+
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
     setError(undefined);
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await authService.login({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      onLoginSuccess?.();
+    } catch (err) {
+      setError(getLoginErrorMessage(err));
+    } finally {
       setIsLoading(false);
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
-    }, 1000);
+    }
   };
 
   return (
@@ -131,6 +140,26 @@ export function LoginScreen({ onBack, onLoginSuccess, onNavigateRegister }: Logi
       </KeyboardAvoidingView>
     </Screen>
   );
+}
+
+function getLoginErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const message = err.message.toLowerCase();
+
+    if (err.status === 401 || message.includes('invalid')) {
+      return 'Email or password is incorrect.';
+    }
+
+    if (err.status === 403 || message.includes('disabled') || message.includes('inactive')) {
+      return 'This account is disabled. Contact support if you think this is a mistake.';
+    }
+  }
+
+  if (err instanceof TypeError) {
+    return 'Could not reach the server. Check your connection and try again.';
+  }
+
+  return 'Could not log in. Please try again.';
 }
 
 const styles = StyleSheet.create({

@@ -8,7 +8,14 @@ import { motion } from '@ds/utils';
 import { AppHeader, IconButton } from '@shared/components';
 import { FriendSearchBar, FriendSearchResultCard, FriendEmptyState } from '../components';
 import type { FriendUser } from '../types';
-import { searchUsers, sendFriendRequest } from '../services';
+import {
+  addOutgoingRequest,
+  getOutgoingRequests,
+  getUserProfile,
+  searchUsers,
+  sendFriendRequest,
+} from '../services';
+import { ApiError, session } from '@services/api';
 
 type AddFriendScreenProps = {
   onBack?: () => void;
@@ -44,8 +51,14 @@ export function AddFriendScreen({ onBack, onOpenUserPreview }: AddFriendScreenPr
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await searchUsers(text.trim());
-        setResults(res);
+        const [res, outgoing] = await Promise.all([
+          searchUsers(text.trim()),
+          getOutgoingRequests(),
+        ]);
+        const outgoingIds = new Set(outgoing.map((request) => request.user.id));
+        setResults(res.map((user) =>
+          outgoingIds.has(user.id) ? { ...user, relationship: 'pending_sent' } : user,
+        ));
         setHasSearched(true);
         listFadeAnim.setValue(0);
         Animated.timing(listFadeAnim, {
@@ -71,17 +84,51 @@ export function AddFriendScreen({ onBack, onOpenUserPreview }: AddFriendScreenPr
   };
 
   const handleAddFriend = async (userId: string) => {
+    const target = results.find((user) => user.id === userId);
+    if (!target) return;
+
     try {
-      await sendFriendRequest(userId);
+      const response = await sendFriendRequest(userId);
+      const requestId = (response.request as { id?: unknown })?.id;
+      await addOutgoingRequest(await session.getCurrentUserId(), {
+        requestId: typeof requestId === 'string' ? requestId : undefined,
+        receiverId: target.id,
+        username: target.username,
+        displayName: target.displayName,
+        avatarUrl: target.avatarUrl ?? null,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      });
       setSentIds((prev) => new Set(prev).add(userId));
       // Optimistically update results to show "Requested"
       setResults((prev) =>
         prev.map((u) =>
-          u.id === userId ? { ...u, relationship: 'pending_outgoing' as const } : u,
+          u.id === userId ? { ...u, relationship: 'pending_sent' as const } : u,
         ),
       );
-    } catch {
-      // no-op; could show error toast
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        const profile = await getUserProfile(userId).catch(() => undefined);
+        if (profile?.relationship === 'pending_sent') {
+          await addOutgoingRequest(await session.getCurrentUserId(), {
+            receiverId: profile.id,
+            username: profile.username,
+            displayName: profile.displayName,
+            avatarUrl: profile.avatarUrl ?? null,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          });
+          setSentIds((prev) => new Set(prev).add(userId));
+          setResults((prev) =>
+            prev.map((u) =>
+              u.id === userId ? { ...u, relationship: 'pending_sent' as const } : u,
+            ),
+          );
+          return;
+        }
+      }
+
+      setError('Could not send friend request. Please try again.');
     }
   };
 

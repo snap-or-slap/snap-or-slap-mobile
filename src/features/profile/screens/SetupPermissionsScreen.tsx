@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as Notifications from 'expo-notifications';
 
 import { AppText, Badge, Button, Card, Screen } from '@ds/components';
 import {
@@ -15,8 +14,6 @@ import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { IconButton } from '@shared/components';
 import { markPermissionsSetupCompleted } from '../services';
-
-declare const require: undefined | ((moduleName: string) => unknown);
 
 type PermissionItem = {
   key: 'notifications' | 'camera' | 'photos';
@@ -72,7 +69,7 @@ export function SetupPermissionsScreen({ onBack, onComplete }: SetupPermissionsS
     {
       key: 'notifications',
       title: 'Notifications',
-      description: 'Get Slap reminders, challenge invites, and important updates',
+      description: 'Requires a development build for remote push notifications. You can continue without enabling this.',
       state: states.notifications,
       icon: <NotificationBingIcon size={28} color={theme.colors.icon.tertiary} variant="bold" />,
     },

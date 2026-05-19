@@ -1,8 +1,11 @@
 export type RelationshipType =
   | 'self'
   | 'friend'
-  | 'non_friend'
+  | 'none'
   | 'squadmate'
+  | 'pending_received'
+  | 'pending_sent'
+  | 'non_friend'
   | 'pending_incoming'
   | 'pending_outgoing';
 
@@ -33,6 +36,7 @@ export type UserProfilePreview = {
   displayName: string;
   avatarUrl?: string;
   relationship: RelationshipType;
+  requestId?: string;
   currentStreak?: number;
   challengesJoined?: number;
   completionRate?: number;
@@ -54,3 +58,13 @@ export type UserProfilePreview = {
 };
 
 export type FriendRespondAction = 'accept' | 'decline';
+
+export type OutgoingFriendRequest = {
+  requestId?: string;
+  receiverId: string;
+  username: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  status: 'pending';
+  createdAt?: string;
+};

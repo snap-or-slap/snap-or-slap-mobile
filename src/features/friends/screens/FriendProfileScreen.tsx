@@ -22,9 +22,10 @@ import { formatStreak, formatCompletionRate } from '../utils';
 type FriendProfileScreenProps = {
   userId: string;
   onBack?: () => void;
+  onRemoved?: () => void;
 };
 
-export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps) {
+export function FriendProfileScreen({ userId, onBack, onRemoved }: FriendProfileScreenProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
 
@@ -62,8 +63,9 @@ export function FriendProfileScreen({ userId, onBack }: FriendProfileScreenProps
     setRemoveError(null);
     try {
       await removeFriend(profile.id);
-      setProfile({ ...profile, relationship: 'non_friend' });
       setConfirmingRemove(false);
+      onRemoved?.();
+      onBack?.();
     } catch {
       setRemoveError('Could not remove friend. Please try again later.');
     } finally {

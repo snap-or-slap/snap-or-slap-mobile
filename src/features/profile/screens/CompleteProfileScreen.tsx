@@ -1,13 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, StyleSheet, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { AppText, Button, Card, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, CameraIcon, EditIcon, InfoCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { IconButton } from '@shared/components';
+import { session } from '@services/api';
 import {
   markProfileSetupCompleted,
-  updateCurrentUserProfile,
+  profileService,
 } from '../services';
 
 type CompleteProfileScreenProps = {
@@ -34,8 +36,45 @@ export function CompleteProfileScreen({
 
   const trimmedName = displayName.trim();
 
-  const handlePickPhoto = () => {
-    setInfo('Photo picker requires expo-image-picker. You can continue without a photo.');
+  useEffect(() => {
+    let mounted = true;
+
+    session.getCurrentUser().then((user) => {
+      if (!mounted || displayName.trim()) return;
+
+      setDisplayName(user?.displayName?.trim() || user?.username?.trim() || '');
+      setSelectedPhotoUri(user?.avatarUrl ?? undefined);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [displayName]);
+
+  const handlePickPhoto = async () => {
+    setInfo(undefined);
+
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setInfo('Photo access was not granted. You can continue without a photo.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setSelectedPhotoUri(result.assets[0]?.uri);
+        setInfo('Photo preview saved locally. Backend avatar upload is not available yet.');
+      }
+    } catch {
+      setInfo('Could not open your photo library. You can continue without a photo.');
+    }
   };
 
   const completeProfile = async (skipPhoto = false) => {
@@ -48,15 +87,20 @@ export function CompleteProfileScreen({
     setIsSubmitting(true);
 
     try {
-      await updateCurrentUserProfile({
+      const updatedUser = await profileService.updateMe({
         displayName: trimmedName,
-        // TODO: Replace local avatar URI with uploaded media URL when avatar upload exists.
-        avatarUrl: skipPhoto ? undefined : selectedPhotoUri,
+      });
+      // TODO: Send selectedPhotoUri when the backend adds a real avatar upload/update endpoint.
+      await session.setCurrentUser({
+        ...updatedUser,
+        avatarUrl: skipPhoto ? updatedUser.avatarUrl : (selectedPhotoUri ?? updatedUser.avatarUrl),
       });
       await markProfileSetupCompleted();
       onComplete();
-    } catch {
-      setError('Could not save your profile. Please try again.');
+    } catch (err) {
+      setError(err instanceof TypeError
+        ? 'Could not reach the server. Check your connection and try again.'
+        : 'Could not save your profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

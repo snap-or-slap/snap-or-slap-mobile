@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { AppText, Button, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, FingerScanIcon, TickCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
+import { ApiError } from '@services/api';
 import { AuthTextField } from '../components/AuthTextField';
 import { AuthAnimatedContainer } from '../components/AuthAnimatedContainer';
+import { authService } from '../services';
 
 interface RegisterScreenProps {
   onBack?: () => void;
@@ -20,26 +22,91 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [usernameError, setUsernameError] = useState<string | undefined>();
+  const [formError, setFormError] = useState<string | undefined>();
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | undefined>();
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const isLengthValid = username.length >= 4 && username.length <= 20;
   const isCharValid = /^[a-z0-9_]*$/.test(username) && username.length > 0;
-  const isUnique = username.length > 0; // Simulated
+  const isUnique = usernameAvailable === true;
   const progressWidth = Math.min((username.length / 4) * 100, 100);
 
+  useEffect(() => {
+    const normalized = username.trim().toLowerCase();
+    setUsernameAvailable(undefined);
+    setUsernameError(undefined);
+
+    if (!isLengthValid || !isCharValid) {
+      setCheckingUsername(false);
+      return;
+    }
+
+    setCheckingUsername(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const result = await authService.checkUsername(normalized);
+        setUsernameAvailable(result.available);
+        setUsernameError(result.available ? undefined : 'Username is already taken.');
+      } catch {
+        setUsernameAvailable(undefined);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [isCharValid, isLengthValid, username]);
+
   const handleRegister = async () => {
+    if (isLoading) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim().toLowerCase();
+    setEmailError(undefined);
+    setUsernameError(undefined);
+    setPasswordError(undefined);
+    setFormError(undefined);
+
+    if (!normalizedEmail || !password || !confirmPassword || !normalizedUsername) {
+      setFormError('Please fill in all fields.');
+      return;
+    }
+
+    if (!isLengthValid || !isCharValid) {
+      setUsernameError('Username must be 4-20 lowercase letters, numbers, or underscores.');
+      return;
+    }
+
+    if (usernameAvailable === false) {
+      setUsernameError('Username is already taken.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setPasswordError('Password does not match');
       return;
     }
-    setPasswordError(undefined);
+
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await authService.register({
+        email: normalizedEmail,
+        password,
+        username: normalizedUsername,
+      });
+      onRegisterSuccess?.();
+    } catch (err) {
+      const nextErrors = getRegisterErrors(err);
+      setEmailError(nextErrors.email);
+      setUsernameError(nextErrors.username);
+      setPasswordError(nextErrors.password);
+      setFormError(nextErrors.form);
+    } finally {
       setIsLoading(false);
-      if (onRegisterSuccess) {
-        onRegisterSuccess();
-      }
-    }, 1000);
+    }
   };
 
   const CheckItem = ({ text, checked }: { text: string; checked: boolean }) => (
@@ -83,9 +150,14 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 label="Email"
                 placeholder="example@email.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  setEmailError(undefined);
+                  setFormError(undefined);
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                error={emailError}
               />
               <AppText variant="caption" color="secondary" style={styles.subtextBelow}>Must be at least 8 characters</AppText>
 
@@ -93,7 +165,11 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 label="Password"
                 placeholder="********"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(value) => {
+                  setPassword(value);
+                  setPasswordError(undefined);
+                  setFormError(undefined);
+                }}
                 secureTextEntry
               />
 
@@ -101,7 +177,11 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 label="Comfirm Password"
                 placeholder="Placeholder Text"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(value) => {
+                  setConfirmPassword(value);
+                  setPasswordError(undefined);
+                  setFormError(undefined);
+                }}
                 secureTextEntry
                 error={passwordError}
               />
@@ -110,8 +190,12 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 label="User Name"
                 placeholder="huangfu-1204"
                 value={username}
-                onChangeText={setUsername}
+                onChangeText={(value) => {
+                  setUsername(value.toLowerCase());
+                  setFormError(undefined);
+                }}
                 autoCapitalize="none"
+                error={usernameError}
               />
               
               <View style={styles.validationSection}>
@@ -125,8 +209,14 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
 
                 <CheckItem text="Must be 4-20 characters" checked={isLengthValid} />
                 <CheckItem text="Only lowercase letters, numbers, and underscores" checked={isCharValid} />
-                <CheckItem text="Is unique" checked={isUnique} />
+                <CheckItem text={checkingUsername ? 'Checking availability' : 'Is unique'} checked={isUnique} />
               </View>
+
+              {formError ? (
+                <AppText variant="caption" style={{ color: theme.colors.text.error, marginBottom: 16, textAlign: 'center' }}>
+                  {formError}
+                </AppText>
+              ) : null}
 
               <View style={styles.termsContainer}>
                 <AppText variant="caption" color="secondary" style={styles.termsText}>
@@ -144,7 +234,7 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 fullWidth
                 onPress={handleRegister}
                 loading={isLoading}
-                disabled={isLoading}
+                disabled={isLoading || checkingUsername}
                 style={styles.submitButton}
               />
 
@@ -172,6 +262,45 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
       </KeyboardAvoidingView>
     </Screen>
   );
+}
+
+function getRegisterErrors(err: unknown): {
+  email?: string;
+  username?: string;
+  password?: string;
+  form?: string;
+} {
+  if (err instanceof ApiError) {
+    const message = err.message.toLowerCase();
+
+    if (err.status === 409 || message.includes('already') || message.includes('taken') || message.includes('exists')) {
+      if (message.includes('email')) return { email: 'Email is already registered.' };
+      if (message.includes('username')) return { username: 'Username is already taken.' };
+      return { form: 'Email or username is already in use.' };
+    }
+
+    if (Array.isArray(err.details)) {
+      return err.details.reduce((errors, detail) => {
+        if (!detail || typeof detail !== 'object') return errors;
+        const item = detail as { field?: unknown; path?: unknown; message?: unknown };
+        const field = String(item.field ?? item.path ?? '');
+        const detailMessage = typeof item.message === 'string' ? item.message : 'Please check this field.';
+
+        if (field.includes('email')) errors.email = detailMessage;
+        else if (field.includes('username')) errors.username = detailMessage;
+        else if (field.includes('password')) errors.password = detailMessage;
+        else errors.form = detailMessage;
+
+        return errors;
+      }, {} as { email?: string; username?: string; password?: string; form?: string });
+    }
+  }
+
+  if (err instanceof TypeError) {
+    return { form: 'Could not reach the server. Check your connection and try again.' };
+  }
+
+  return { form: 'Could not create your account. Please try again.' };
 }
 
 const styles = StyleSheet.create({

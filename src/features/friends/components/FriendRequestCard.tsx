@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppText, Card, Button } from '@ds/components';
+import { AppText, Badge, Card, Button } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { Avatar } from '@shared/components';
@@ -12,7 +12,6 @@ export type FriendRequestCardProps = {
   mode: 'incoming' | 'outgoing';
   onAccept?: () => void;
   onDecline?: () => void;
-  onUnsend?: () => void;
   onPress?: () => void;
   testID?: string;
 };
@@ -25,7 +24,6 @@ export function FriendRequestCard({
   mode,
   onAccept,
   onDecline,
-  onUnsend,
   onPress,
   testID,
 }: FriendRequestCardProps) {
@@ -75,13 +73,14 @@ export function FriendRequestCard({
             />
           </>
         ) : (
-          <Button
-            title="Unsend"
-            variant="secondary"
-            size="sm"
-            onPress={onUnsend}
-            testID={testID ? `${testID}-unsend` : undefined}
-          />
+          <View style={styles.outgoingStatus}>
+            <Badge variant="warning" size="sm" testID={testID ? `${testID}-sent` : undefined}>
+              Request sent
+            </Badge>
+            <AppText variant="caption" style={styles.waitingText}>
+              Waiting
+            </AppText>
+          </View>
         )}
       </View>
     </Card>
@@ -112,6 +111,13 @@ function createStyles(theme: AppTheme) {
     actions: {
       flexDirection: 'column',
       gap: 6,
+    },
+    outgoingStatus: {
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    waitingText: {
+      color: theme.colors.text.tertiary,
     },
   });
 }

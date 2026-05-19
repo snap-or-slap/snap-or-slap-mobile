@@ -10,7 +10,6 @@ import { Screen, AppText, Badge } from '@ds/components';
 import { UserAddIcon, SearchNormalIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
-import { motion } from '@ds/utils';
 import { AppHeader, IconButton } from '@shared/components';
 import {
   FriendListItem,
@@ -22,6 +21,7 @@ import type { FriendUser, FriendRequest } from '../types';
 import {
   getFriends,
   getIncomingRequests,
+  getOutgoingRequests,
   respondFriendRequest,
 } from '../services';
 
@@ -29,12 +29,14 @@ type FriendsHubScreenProps = {
   onOpenFriendRequests?: () => void;
   onOpenAddFriend?: () => void;
   onOpenFriendProfile?: (userId: string) => void;
+  onOpenUserPreview?: (userId: string) => void;
 };
 
 export function FriendsHubScreen({
   onOpenFriendRequests,
   onOpenAddFriend,
   onOpenFriendProfile,
+  onOpenUserPreview,
 }: FriendsHubScreenProps) {
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -42,6 +44,7 @@ export function FriendsHubScreen({
   // ── Data state ──────────────────────────────────────────────────
   const [friends, setFriends] = useState<FriendUser[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   // ── Search state ─────────────────────────────────────────────────
@@ -54,9 +57,14 @@ export function FriendsHubScreen({
   useEffect(() => {
     async function loadData() {
       try {
-        const [f, req] = await Promise.all([getFriends(), getIncomingRequests()]);
+        const [f, req, out] = await Promise.all([
+          getFriends(),
+          getIncomingRequests(),
+          getOutgoingRequests(),
+        ]);
         setFriends(f);
         setIncomingRequests(req);
+        setOutgoingRequests(out);
       } catch (err) {
         // Silently fall through to empty state
       } finally {
@@ -195,7 +203,7 @@ export function FriendsHubScreen({
               Friend Requests
             </AppText>
             <AppText variant="caption" style={styles.noRequestsCaption}>
-              No pending requests · View all
+              No pending requests
             </AppText>
           </Pressable>
         ) : null}
@@ -291,6 +299,32 @@ function createStyles(theme: AppTheme) {
     },
     list: {
       gap: 8,
+    },
+    sentList: {
+      gap: 8,
+    },
+    sentRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing[12],
+      backgroundColor: theme.colors.bg['surface-elevated'],
+      borderRadius: theme.radius.lg,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    sentText: {
+      flex: 1,
+      gap: 2,
+    },
+    sentName: {
+      color: theme.colors.text.primary,
+      fontWeight: '700',
+    },
+    emptyInlineText: {
+      color: theme.colors.text.tertiary,
+      textAlign: 'center',
+      paddingVertical: theme.spacing[8],
     },
     noRequestsRow: {
       backgroundColor: theme.colors.bg['surface-elevated'],

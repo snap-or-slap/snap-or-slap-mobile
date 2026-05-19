@@ -14,4 +14,5 @@ export type UserProfile = {
   friendsCount?: number;
   badgesCount?: number;
   badges?: Array<{ id: string; label: string }>;
+  recentActivities?: string[];
 };

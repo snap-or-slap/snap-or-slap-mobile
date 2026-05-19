@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LoginScreen, RegisterScreen } from '../features/auth';
 
 interface AuthNavigatorProps {
-  onAuthSuccess: () => void;
+  onAuthSuccess: (nextStage?: 'profile' | 'permissions' | 'done') => void;
 }
 
 export const AuthNavigator = ({ onAuthSuccess }: AuthNavigatorProps) => {
@@ -14,8 +14,7 @@ export const AuthNavigator = ({ onAuthSuccess }: AuthNavigatorProps) => {
         onBack={() => setCurrentScreen('login')}
         onNavigateLogin={() => setCurrentScreen('login')}
         onRegisterSuccess={() => {
-          // Typically registration logs you in or takes you to login
-          onAuthSuccess(); 
+          onAuthSuccess('profile');
         }}
       />
     );
@@ -24,7 +23,7 @@ export const AuthNavigator = ({ onAuthSuccess }: AuthNavigatorProps) => {
   return (
     <LoginScreen 
       onNavigateRegister={() => setCurrentScreen('register')}
-      onLoginSuccess={() => onAuthSuccess()}
+      onLoginSuccess={() => onAuthSuccess('done')}
     />
   );
 };
