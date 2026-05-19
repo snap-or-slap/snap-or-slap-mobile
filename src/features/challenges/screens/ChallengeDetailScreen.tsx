@@ -993,6 +993,8 @@ function EvidenceImage({
   variant?: 'thumbnail' | 'large';
 }) {
   const renderableUrl = getRenderableEvidenceUrl(evidenceUrl);
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   if (!renderableUrl) {
     return null;
@@ -1187,7 +1189,6 @@ function createStyles(theme: AppTheme) {
       borderRadius: theme.radius.lg,
       backgroundColor: theme.colors.bg['page-subtle'],
     },
-
     proofImage: {
       width: '100%',
       height: 220,
