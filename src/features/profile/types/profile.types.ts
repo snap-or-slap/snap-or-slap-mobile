@@ -6,6 +6,8 @@ export type UserProfile = {
   displayName: string;
   email?: string;
   avatarUrl?: string;
+  bio?: string;
+  isPrivate?: boolean;
   currentStreak?: number;
   challengesJoined?: number;
   completionRate?: number;

@@ -1,1 +1,1 @@
-export const ENDPOINTS = { LOGIN: '/auth/login' };
+export { apiRoutes as ENDPOINTS, apiRoutes } from './apiRoutes';

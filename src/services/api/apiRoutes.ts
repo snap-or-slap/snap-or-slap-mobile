@@ -1,0 +1,57 @@
+export const apiRoutes = {
+  auth: {
+    login: '/auth/login',
+    register: '/auth/register',
+    checkUsername: '/auth/check-username',
+    refresh: '/auth/refresh',
+    signout: '/auth/signout',
+    changePassword: '/auth/change-password',
+  },
+  users: {
+    me: '/users/me',
+    myProfile: '/users/me/profile',
+    userProfile: (userId: string) => `/users/${userId}/profile`,
+    search: '/users/search',
+    settings: '/users/me/settings',
+    stats: '/users/me/stats',
+    activities: '/users/me/activities',
+    badgesCheck: '/users/me/badges/check',
+    challengeHistory: '/users/me/challenges/history',
+  },
+  friends: {
+    list: '/friends',
+    pendingRequests: '/friends/requests/pending',
+    request: '/friends/request',
+    respond: (requestId: string) => `/friends/request/${requestId}/respond`,
+    unfriend: (friendUserId: string) => `/friends/${friendUserId}`,
+  },
+  challenges: {
+    list: '/challenges',
+    public: '/challenges/public',
+    detail: (id: string) => `/challenges/${id}`,
+    invite: (id: string) => `/challenges/${id}/invite`,
+    join: (id: string) => `/challenges/${id}/join`,
+    decline: (id: string) => `/challenges/${id}/decline`,
+    ready: (id: string) => `/challenges/${id}/ready`,
+    leave: (id: string) => `/challenges/${id}/leave`,
+    cancel: (id: string) => `/challenges/${id}/cancel`,
+    stats: (id: string) => `/challenges/${id}/stats`,
+    history: (id: string) => `/challenges/${id}/history`,
+    recreate: (id: string) => `/challenges/${id}/recreate`,
+    milestoneCheck: (id: string) => `/challenges/${id}/milestone-check`,
+    checkins: (id: string) => `/challenges/${id}/checkins`,
+    todayCheckins: (id: string) => `/challenges/${id}/checkins/today`,
+    nudge: (id: string, memberId: string) => `/challenges/${id}/nudge/${memberId}`,
+  },
+  notifications: {
+    list: '/notifications',
+    read: '/notifications/read',
+    delete: (id: string) => `/notifications/${id}`,
+    sync: '/sync',
+  },
+  widget: {
+    summary: '/widget/summary',
+  },
+} as const;
+
+export const ENDPOINTS = apiRoutes;

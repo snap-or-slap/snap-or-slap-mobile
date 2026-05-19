@@ -1,49 +1,32 @@
+import {
+  apiClient,
+  apiRoutes,
+  mapKeysToCamel,
+  mapProfileDto,
+  mapUserDto,
+  type FrontendUser,
+} from '@services/api';
+
 import type { UserProfile } from '../types';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock data — replace with real API calls when backend is ready
-// ─────────────────────────────────────────────────────────────────────────────
-const MOCK_PROFILE: UserProfile = {
-  id: 'me',
-  username: 'snapstarter',
-  displayName: 'SnapOrSlap User',
-  email: 'user@snaporslap.app',
-  currentStreak: 12,
-  challengesJoined: 24,
-  completionRate: 87,
-  friendsCount: 24,
-  badgesCount: 3,
-  badges: [
-    { id: 'newcomer', label: 'Newcomer' },
-    { id: 'early-riser', label: 'Early Riser' },
-    { id: 'team-player', label: 'Team Player' },
-  ],
+export type UpdateMePayload = {
+  displayName?: string;
+  bio?: string;
+  isPrivate?: boolean;
+  avatarUrl?: never;
 };
 
-/**
- * GET /api/users/me?user_id=<me>
- * TODO: Uncomment and wire real API when endpoint is available.
- */
-export async function getMyProfile(): Promise<UserProfile> {
-  // const res = await fetch('/api/users/me?user_id=me');
-  // if (res.ok) return res.json();
-  return Promise.resolve(MOCK_PROFILE);
-}
+export type ProfileActivitiesParams = {
+  page?: number;
+  limit?: number;
+  type?: string;
+};
 
-/**
- * PATCH /api/users/me?user_id=<me>
- * TODO: Wire when backend supports profile updates.
- */
-export async function updateProfile(patch: Partial<UserProfile>): Promise<UserProfile> {
-  // const res = await fetch('/api/users/me?user_id=me', {
-  //   method: 'PATCH',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(patch),
-  // });
-  // if (!res.ok) throw new Error('Failed to update profile');
-  // return res.json();
-  return Promise.resolve({ ...MOCK_PROFILE, ...patch });
-}
+export type ChallengeHistoryParams = {
+  result?: 'success' | 'game_over' | 'cancelled';
+  page?: number;
+  limit?: number;
+};
 
 export type UpdateCurrentUserProfilePayload = {
   displayName: string;
@@ -51,37 +34,143 @@ export type UpdateCurrentUserProfilePayload = {
   avatarUrl?: string;
 };
 
-/**
- * PATCH /api/users/me?user_id=<me>
- * Body: { displayName, bio?, avatarUrl? }
- *
- * The app currently has no real auth session or API base URL configured, so this
- * delegates to the existing mock-backed updater until backend integration lands.
- */
+type UserWrappedResponse = {
+  user: unknown;
+  message?: string;
+};
+
+function toUserProfile(user: FrontendUser): UserProfile {
+  return {
+    id: user.id,
+    username: user.username ?? '',
+    displayName: user.displayName ?? user.username ?? '',
+    email: user.email ?? undefined,
+    avatarUrl: user.avatarUrl ?? undefined,
+  };
+}
+
+export async function getMe(): Promise<FrontendUser> {
+  const response = await apiClient.get<UserWrappedResponse>(apiRoutes.users.me, {
+    withCurrentUser: true,
+  });
+  return mapUserDto(response.user as never);
+}
+
+export async function updateMe(payload: UpdateMePayload): Promise<FrontendUser> {
+  const { displayName, bio, isPrivate } = payload;
+  const response = await apiClient.patch<UserWrappedResponse>(
+    apiRoutes.users.me,
+    { displayName, bio, isPrivate },
+    { withCurrentUser: true },
+  );
+  return mapUserDto(response.user as never);
+}
+
+export async function deleteAccount(): Promise<void> {
+  await apiClient.delete(apiRoutes.users.me, { withCurrentUser: true });
+}
+
+export async function getProfileOverview<T = unknown>(): Promise<T> {
+  const response = await apiClient.get(apiRoutes.users.myProfile, {
+    withCurrentUser: true,
+  });
+  return mapProfileDto<T>(response);
+}
+
+export async function getUserProfile<T = unknown>(targetUserId: string): Promise<T> {
+  const response = await apiClient.get(apiRoutes.users.userProfile(targetUserId), {
+    withCurrentUser: true,
+  });
+  return mapProfileDto<T>(response);
+}
+
+export async function searchUsers<T = FrontendUser[]>(query: string): Promise<T> {
+  const response = await apiClient.get<{ users: unknown[] }>(apiRoutes.users.search, {
+    query: { q: query },
+    withCurrentUser: true,
+  });
+  return response.users.map((user) => mapUserDto(user as never)) as T;
+}
+
+export async function updateSettings(isPrivate: boolean): Promise<{ user: FrontendUser; message?: string }> {
+  const response = await apiClient.put<UserWrappedResponse>(
+    apiRoutes.users.settings,
+    { isPrivate },
+    { withCurrentUser: true },
+  );
+  return {
+    user: mapUserDto(response.user as never),
+    message: response.message,
+  };
+}
+
+export async function getStats<T = unknown>(): Promise<T> {
+  const response = await apiClient.get(apiRoutes.users.stats, {
+    withCurrentUser: true,
+  });
+  return mapKeysToCamel<T>(response);
+}
+
+export async function getActivities<T = unknown>(params: ProfileActivitiesParams = {}): Promise<T> {
+  const response = await apiClient.get(apiRoutes.users.activities, {
+    query: params,
+    withCurrentUser: true,
+  });
+  return mapKeysToCamel<T>(response);
+}
+
+export async function checkBadges<T = unknown>(): Promise<T> {
+  const response = await apiClient.post(apiRoutes.users.badgesCheck, undefined, {
+    withCurrentUser: true,
+  });
+  return mapKeysToCamel<T>(response);
+}
+
+export async function getChallengeHistoryList<T = unknown>(
+  params: ChallengeHistoryParams = {},
+): Promise<T> {
+  const response = await apiClient.get(apiRoutes.users.challengeHistory, {
+    query: params,
+    withCurrentUser: true,
+  });
+  return mapKeysToCamel<T>(response);
+}
+
+export async function getMyProfile(): Promise<UserProfile> {
+  return toUserProfile(await getMe());
+}
+
+export async function updateProfile(patch: Partial<UserProfile>): Promise<UserProfile> {
+  const updated = await updateMe({
+    displayName: patch.displayName,
+    bio: patch.bio,
+    isPrivate: undefined,
+  });
+  return toUserProfile(updated);
+}
+
 export async function updateCurrentUserProfile(
-  payload: UpdateCurrentUserProfilePayload
+  payload: UpdateCurrentUserProfilePayload,
 ): Promise<UserProfile> {
   return updateProfile({
     displayName: payload.displayName,
     bio: payload.bio,
-    avatarUrl: payload.avatarUrl,
-  } as Partial<UserProfile>);
-}
-
-/**
- * DELETE /api/users/me?user_id=<me>
- * TODO: Uncomment and wire when endpoint is available.
- */
-export async function deleteAccount(): Promise<void> {
-  // const res = await fetch('/api/users/me?user_id=me', { method: 'DELETE' });
-  // if (!res.ok) throw new Error('Failed to delete account');
-  console.warn('[profileService] deleteAccount: backend endpoint not yet available');
-  return Promise.resolve();
+  });
 }
 
 export const profileService = {
+  getMe,
+  updateMe,
+  deleteAccount,
+  getProfileOverview,
+  getUserProfile,
+  searchUsers,
+  updateSettings,
+  getStats,
+  getActivities,
+  checkBadges,
+  getChallengeHistoryList,
   getMyProfile,
   updateProfile,
   updateCurrentUserProfile,
-  deleteAccount,
 };
