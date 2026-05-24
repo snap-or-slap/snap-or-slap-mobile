@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "MyApp",
+    "name": "Snap Or Slap",
     "slug": "MyApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/snap-or-slap-logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo.png",
+      "image": "./assets/images/snap-or-slap-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/snap-or-slap-logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -25,7 +25,7 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/images/logo.png"
+      "favicon": "./assets/images/snap-or-slap-logo.png"
     },
     "extra": {
       "eas": {

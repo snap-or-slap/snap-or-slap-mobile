@@ -3,11 +3,11 @@ import { Platform } from 'react-native';
 import { normalizeApiError } from './apiError';
 import { session } from './session';
 
-declare const process:
-  | {
-      env?: Record<string, string | undefined>;
-    }
-  | undefined;
+declare const process: {
+  env: {
+    EXPO_PUBLIC_API_BASE_URL?: string;
+  };
+};
 
 export const LOCAL_BACKEND_URLS = {
   androidEmulator: 'http://10.0.2.2:3000/api',
@@ -23,13 +23,10 @@ export type RequestOptions = {
   body?: unknown;
   headers?: Record<string, string>;
   withCurrentUser?: boolean;
-
-  /**
-   * Optional flag for upload requests.
-   * In most cases, FormData is auto-detected, so this is only a safety flag.
-   */
   isMultipart?: boolean;
 };
+
+const ENV_API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 const DEFAULT_API_BASE_URL =
   Platform.OS === 'android'
@@ -42,11 +39,16 @@ function normalizeBaseUrl(baseUrl: string): string {
 }
 
 export function getApiBaseUrl(): string {
-  return normalizeBaseUrl(
-    process?.env?.EXPO_PUBLIC_API_BASE_URL ??
-      process?.env?.API_BASE_URL ??
+  const apiBaseUrl = ENV_API_BASE_URL;
+
+  if (!apiBaseUrl) {
+    console.warn(
+      '[API] EXPO_PUBLIC_API_BASE_URL is missing. Falling back to local URL:',
       DEFAULT_API_BASE_URL,
-  );
+    );
+  }
+
+  return normalizeBaseUrl(apiBaseUrl || DEFAULT_API_BASE_URL);
 }
 
 function normalizePath(path: string): string {

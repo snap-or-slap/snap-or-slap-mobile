@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { AppText, Button, Screen } from '@ds/components';
-import { ArrowCircleLeftIcon, FingerScanIcon, TickCircleIcon } from '@ds/icons';
+import {
+  ArrowCircleLeftIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  TickCircleIcon,
+} from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import { ApiError } from '@services/api';
 import { AuthTextField } from '../components/AuthTextField';
@@ -19,6 +24,8 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | undefined>();
@@ -47,14 +54,14 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
     const timeoutId = setTimeout(async () => {
       try {
         const result = await authService.checkUsername(normalized);
-        setUsernameAvailable(result.available);
+        (result.available);
         setUsernameError(result.available ? undefined : 'Username is already taken.');
       } catch {
         setUsernameAvailable(undefined);
       } finally {
         setCheckingUsername(false);
       }
-    }, 350);
+    }, 350);setUsernameAvailable
 
     return () => clearTimeout(timeoutId);
   }, [isCharValid, isLengthValid, username]);
@@ -112,8 +119,8 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
   const CheckItem = ({ text, checked }: { text: string; checked: boolean }) => (
     <View style={styles.checkItem}>
       <View style={[
-        styles.checkBox, 
-        { 
+        styles.checkBox,
+        {
           backgroundColor: checked ? theme.colors.text.brand : 'transparent',
           borderColor: checked ? theme.colors.text.brand : theme.colors.border.default,
           borderWidth: checked ? 0 : 1
@@ -127,10 +134,34 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
     </View>
   );
 
+  const PasswordVisibilityToggle = ({
+    visible,
+    onPress,
+    label,
+  }: {
+    visible: boolean;
+    onPress: () => void;
+    label: string;
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.passwordToggle}
+      hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+      accessibilityRole="button"
+      accessibilityLabel={visible ? `Hide ${label}` : `Show ${label}`}
+    >
+      {visible ? (
+        <EyeSlashIcon size={20} color={theme.colors.text.secondary} />
+      ) : (
+        <EyeIcon size={20} color={theme.colors.text.secondary} />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <Screen style={styles.container} safeArea="top">
-      <KeyboardAvoidingView 
-        style={styles.keyboardView} 
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -170,25 +201,39 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                   setPasswordError(undefined);
                   setFormError(undefined);
                 }}
-                secureTextEntry
+                secureTextEntry={!isPasswordVisible}
+                rightIcon={
+                  <PasswordVisibilityToggle
+                    visible={isPasswordVisible}
+                    onPress={() => setIsPasswordVisible((prev) => !prev)}
+                    label="password"
+                  />
+                }
               />
 
               <AuthTextField
-                label="Comfirm Password"
-                placeholder="Placeholder Text"
+                label="Confirm Password"
+                placeholder="********"
                 value={confirmPassword}
                 onChangeText={(value) => {
                   setConfirmPassword(value);
                   setPasswordError(undefined);
                   setFormError(undefined);
                 }}
-                secureTextEntry
+                secureTextEntry={!isConfirmPasswordVisible}
                 error={passwordError}
+                rightIcon={
+                  <PasswordVisibilityToggle
+                    visible={isConfirmPasswordVisible}
+                    onPress={() => setIsConfirmPasswordVisible((prev) => !prev)}
+                    label="confirm password"
+                  />
+                }
               />
 
               <AuthTextField
                 label="User Name"
-                placeholder="huangfu-1204"
+                placeholder="huangfu_1204"
                 value={username}
                 onChangeText={(value) => {
                   setUsername(value.toLowerCase());
@@ -197,12 +242,12 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 autoCapitalize="none"
                 error={usernameError}
               />
-              
+
               <View style={styles.validationSection}>
                 <AppText variant="caption" color="secondary" style={styles.usernameSubtext}>
                   Friends will use this to find you
                 </AppText>
-                
+
                 <View style={[styles.progressBarContainer, { backgroundColor: theme.colors.border.subtle }]}>
                   <View style={[styles.progressBarFill, { backgroundColor: theme.colors.bg.success, width: `${progressWidth}%` }]} />
                 </View>
@@ -245,7 +290,7 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
                 </AppText>
                 <View style={[styles.dividerLine, { backgroundColor: theme.colors.border.default }]} />
               </View> */}
-              
+
               {onNavigateLogin && (
                 <View style={styles.footerContainer}>
                   <AppText variant="body" color="secondary">Already have an account? </AppText>
@@ -366,6 +411,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  passwordToggle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   termsContainer: {
     alignItems: 'center',
