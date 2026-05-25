@@ -88,12 +88,21 @@ jest.mock('@services/api', () => {
   };
 });
 
-const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
-const mockedProfileService = profileService as jest.Mocked<typeof profileService>;
-const mockedSession = session as jest.Mocked<Pick<typeof session, 'getCurrentUserId'>>;
-const mockedReconcileOutgoingRequests = reconcileOutgoingRequests as jest.Mock;
-const mockedAddOutgoingRequest = addOutgoingRequest as jest.Mock;
-const mockedRemoveOutgoingRequest = removeOutgoingRequest as jest.Mock;
+const mockedApiClient = apiClient as unknown as jest.Mocked<
+  Pick<typeof apiClient, 'get' | 'post' | 'put' | 'delete'>
+>;
+
+const mockedProfileService = profileService as unknown as jest.Mocked<
+  Pick<typeof profileService, 'searchUsers' | 'getUserProfile'>
+>;
+
+const mockedSession = session as unknown as jest.Mocked<
+  Pick<typeof session, 'getCurrentUserId'>
+>;
+
+const mockedReconcileOutgoingRequests = reconcileOutgoingRequests as unknown as jest.Mock;
+const mockedAddOutgoingRequest = addOutgoingRequest as unknown as jest.Mock;
+const mockedRemoveOutgoingRequest = removeOutgoingRequest as unknown as jest.Mock;
 
 describe('friends.service', () => {
   beforeEach(() => {

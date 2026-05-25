@@ -23,7 +23,9 @@ jest.mock('@services/api', () => {
   };
 });
 
-const mockedApiClient = apiClient as jest.Mocked<Pick<typeof apiClient, 'get' | 'post'>>;
+const mockApiClient = apiClient as unknown as jest.Mocked<
+  Pick<typeof apiClient, 'get' | 'post'>
+>;
 
 let appendedParts: Array<[string, unknown]>;
 
@@ -31,7 +33,9 @@ describe('checkin.service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Date, 'now').mockReturnValue(1770000000000);
+
     appendedParts = [];
+
     jest.spyOn(FormData.prototype, 'append').mockImplementation((name, value) => {
       appendedParts.push([name, value]);
     });
@@ -42,42 +46,62 @@ describe('checkin.service', () => {
   });
 
   it('lists check-ins and reads current cycle status', async () => {
-    mockedApiClient.get.mockResolvedValue({ checkins: [] });
+    mockApiClient.get.mockResolvedValue({ checkins: [] });
 
-    await listCheckins('challenge-1', { member_id: 'member-1', page: 2, limit: 5 });
-    expect(mockedApiClient.get).toHaveBeenLastCalledWith('/challenges/challenge-1/checkins', {
-      query: { member_id: 'member-1', page: 2, limit: 5 },
+    await listCheckins('challenge-1', {
+      member_id: 'member-1',
+      page: 2,
+      limit: 5,
+    });
+
+    expect(mockApiClient.get).toHaveBeenLastCalledWith('/challenges/challenge-1/checkins', {
+      query: {
+        member_id: 'member-1',
+        page: 2,
+        limit: 5,
+      },
     });
 
     await getTodayStatus('challenge-1');
-    expect(mockedApiClient.get).toHaveBeenLastCalledWith('/challenges/challenge-1/checkins/today');
+
+    expect(mockApiClient.get).toHaveBeenLastCalledWith(
+      '/challenges/challenge-1/checkins/today',
+    );
   });
 
   it('nudges a pending member and reads nudge history', async () => {
-    mockedApiClient.post.mockResolvedValue({ message: 'Nudged' });
-    mockedApiClient.get.mockResolvedValue({ nudges: [] });
+    mockApiClient.post.mockResolvedValue({ message: 'Nudged' });
+    mockApiClient.get.mockResolvedValue({ nudges: [] });
 
     await nudgeMember('challenge-1', 'member-1');
-    expect(mockedApiClient.post).toHaveBeenCalledWith(
+
+    expect(mockApiClient.post).toHaveBeenCalledWith(
       '/challenges/challenge-1/nudge/member-1',
       undefined,
       { withCurrentUser: true },
     );
 
     await getNudgeHistory('challenge-1', 'member-1');
-    expect(mockedApiClient.get).toHaveBeenCalledWith('/challenges/challenge-1/nudge/member-1');
+
+    expect(mockApiClient.get).toHaveBeenCalledWith(
+      '/challenges/challenge-1/nudge/member-1',
+    );
   });
 
   it('submits URL check-ins for the current user or an explicit user', async () => {
-    mockedApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
+    mockApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
 
     await submitCheckIn('challenge-1', {
       evidenceUrl: 'https://example.com/proof.jpg',
       caption: 'Done',
     });
-    expect(mockedApiClient.post).toHaveBeenLastCalledWith(
+
+    expect(mockApiClient.post).toHaveBeenLastCalledWith(
       '/challenges/challenge-1/checkins',
-      { evidenceUrl: 'https://example.com/proof.jpg', caption: 'Done' },
+      {
+        evidenceUrl: 'https://example.com/proof.jpg',
+        caption: 'Done',
+      },
       { withCurrentUser: true },
     );
 
@@ -85,9 +109,12 @@ describe('checkin.service', () => {
       evidenceUrl: 'https://example.com/proof.jpg',
       userId: 'user 1',
     });
-    expect(mockedApiClient.post).toHaveBeenLastCalledWith(
+
+    expect(mockApiClient.post).toHaveBeenLastCalledWith(
       '/challenges/challenge-1/checkins?user_id=user%201',
-      { evidenceUrl: 'https://example.com/proof.jpg' },
+      {
+        evidenceUrl: 'https://example.com/proof.jpg',
+      },
       { withCurrentUser: false },
     );
   });
@@ -99,7 +126,7 @@ describe('checkin.service', () => {
     ['file:///proof.jpeg', 'image/jpeg', 'checkin-1770000000000.jpg'],
     ['file:///proof.unknown', 'image/jpeg', 'checkin-1770000000000.jpg'],
   ])('builds multipart proof data for %s', async (photoUri, mimeType, name) => {
-    mockedApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
+    mockApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
 
     await submitCheckinWithPhoto('challenge-1', {
       photoUri,
@@ -107,10 +134,15 @@ describe('checkin.service', () => {
       userId: 'member-1',
     });
 
-    const [route, body, options] = mockedApiClient.post.mock.calls[0];
+    const [route, body, options] = mockApiClient.post.mock.calls[0];
+
     expect(route).toBe('/challenges/challenge-1/checkins?user_id=member-1');
-    expect(options).toEqual({ withCurrentUser: false, isMultipart: true });
+    expect(options).toEqual({
+      withCurrentUser: false,
+      isMultipart: true,
+    });
     expect(body).toBeInstanceOf(FormData);
+
     expect(appendedParts).toEqual([
       ['proof', { uri: photoUri, name, type: mimeType }],
       ['caption', 'Proof caption'],
@@ -118,16 +150,21 @@ describe('checkin.service', () => {
   });
 
   it('omits blank photo captions and uses current-user auth by default', async () => {
-    mockedApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
+    mockApiClient.post.mockResolvedValue({ checkin: { id: 'checkin-1' } });
 
     await submitCheckinWithPhoto('challenge-1', {
       photoUri: 'file:///proof.jpg',
       caption: '   ',
     });
 
-    const [, body, options] = mockedApiClient.post.mock.calls[0];
-    expect(options).toEqual({ withCurrentUser: true, isMultipart: true });
+    const [, body, options] = mockApiClient.post.mock.calls[0];
+
+    expect(options).toEqual({
+      withCurrentUser: true,
+      isMultipart: true,
+    });
     expect(body).toBeInstanceOf(FormData);
+
     expect(appendedParts).toEqual([
       [
         'proof',

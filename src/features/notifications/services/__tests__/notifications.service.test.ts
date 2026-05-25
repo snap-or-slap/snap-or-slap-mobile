@@ -22,8 +22,8 @@ jest.mock('@services/api', () => {
   };
 });
 
-const mockedApiClient = apiClient as jest.Mocked<Pick<typeof apiClient, 'get' | 'put' | 'delete'>>;
-const mockedMapKeysToCamel = mapKeysToCamel as jest.Mock;
+const mockedApiClient = apiClient as unknown as jest.Mocked<Pick<typeof apiClient, 'get' | 'put' | 'delete'>>;
+const mockedMapKeysToCamel = mapKeysToCamel as unknown as jest.Mock;
 
 describe('notifications.service', () => {
   beforeEach(() => {

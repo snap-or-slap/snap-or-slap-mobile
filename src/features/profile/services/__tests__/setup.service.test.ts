@@ -20,8 +20,8 @@ jest.mock('@services/storage/storage.service', () => ({
   },
 }));
 
-const mockedSession = session as jest.Mocked<Pick<typeof session, 'getCurrentUser'>>;
-const mockedStorage = storage as jest.Mocked<Pick<typeof storage, 'getItem' | 'setItem'>>;
+const mockedSession = session as unknown as jest.Mocked<Pick<typeof session, 'getCurrentUser'>>;
+const mockedStorage = storage as unknown as jest.Mocked<Pick<typeof storage, 'getItem' | 'setItem'>>;
 
 describe('setup.service', () => {
   beforeEach(() => {

@@ -14,7 +14,7 @@ jest.mock('@services/api', () => {
   };
 });
 
-const mockedApiClient = apiClient as jest.Mocked<Pick<typeof apiClient, 'get'>>;
+const mockedApiClient = apiClient as unknown as jest.Mocked<Pick<typeof apiClient, 'get'>>;
 
 describe('widget.service', () => {
   beforeEach(() => {

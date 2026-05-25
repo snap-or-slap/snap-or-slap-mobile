@@ -254,7 +254,7 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
 
                 <CheckItem text="Must be 4-20 characters" checked={isLengthValid} />
                 <CheckItem text="Only lowercase letters, numbers, and underscores" checked={isCharValid} />
-                <CheckItem text={checkingUsername ? 'Checking availability' : 'Is unique'} checked={isUnique} />
+                <CheckItem text='Is unique' checked={isUnique} />
               </View>
 
               {formError ? (
