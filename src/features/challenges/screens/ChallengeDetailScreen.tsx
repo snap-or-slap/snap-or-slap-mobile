@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View, Image } from 'react-native';
-import { AppText, Button, Card, Screen } from '@ds/components';
+import { AppText, Badge, Button, Card, Screen } from '@ds/components';
 import { ArrowCircleLeftIcon, ClockIcon, CupIcon, MedalStarIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
@@ -47,6 +47,21 @@ type StatsResponse = {
 
 type CheckinsResponse = {
   checkins?: BackendRecord[];
+};
+
+type FeedbackTone = 'success' | 'error' | 'warning' | 'info';
+
+type InlineFeedbackMessage = {
+  type: FeedbackTone;
+  message: string;
+};
+
+type SlapButtonState = {
+  shouldShow: boolean;
+  title: string;
+  disabled: boolean;
+  loading: boolean;
+  variant: 'primary' | 'secondary' | 'ghost';
 };
 
 type DetailMember = {
@@ -104,6 +119,20 @@ function boolValue(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
 
+function booleanLikeValue(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes'].includes(normalized)) return true;
+    if (['false', '0', 'no'].includes(normalized)) return false;
+  }
+  return undefined;
+}
+
 function formatDate(value: unknown): string {
   const raw = stringValue(value);
   if (!raw) return 'TBD';
@@ -147,15 +176,20 @@ function statusLabel(status: LoadedDetail['status']): string {
 
 function isCheckedIn(raw: BackendRecord): boolean {
   const status = String(raw.status ?? '').toLowerCase();
-  if (status === 'checked_in' || status === 'done') return true;
-  if (status === 'pending') return false;
-  return Boolean(
+  if (status === 'checked_in' || status === 'done' || status === 'completed') return true;
+  if (status === 'pending' || status === 'not_checked_in') return false;
+
+  const explicitValue = booleanLikeValue(
     raw.checkedIn ??
     raw.checked_in ??
     raw.hasCheckedIn ??
-    raw.has_checked_in ??
-    raw.checkinId ??
-    raw.checkin_id,
+    raw.has_checked_in,
+  );
+  if (explicitValue !== undefined) return explicitValue;
+
+  return Boolean(
+    stringValue(raw.checkedInAt ?? raw.checked_in_at) ??
+    stringValue(raw.checkinId ?? raw.checkin_id),
   );
 }
 
@@ -165,15 +199,16 @@ function mapMember(
   currentCycleCheckins: CheckinItem[],
 ): DetailMember {
   const user = (raw.user ?? {}) as BackendRecord;
+  const memberId = stringValue(raw.id ?? raw.memberId ?? raw.member_id);
   const userId = stringValue(raw.userId ?? raw.user_id ?? user.id);
   const today = todayMembers.find((entry) => {
     const todayUserId = stringValue(entry.userId ?? entry.user_id);
     const todayMemberId = stringValue(entry.memberId ?? entry.member_id ?? entry.id);
-    return (userId && todayUserId === userId) || todayMemberId === stringValue(raw.id);
+    return Boolean(userId && todayUserId === userId) || Boolean(memberId && todayMemberId === memberId);
   });
 
   return {
-    id: String(raw.id ?? raw.memberId ?? raw.member_id ?? userId ?? ''),
+    id: String(memberId ?? userId ?? ''),
     userId,
     displayName:
       stringValue(raw.displayName ?? raw.display_name ?? user.displayName ?? user.display_name) ??
@@ -193,13 +228,14 @@ function mapCheckin(raw: BackendRecord): CheckinItem {
   const user = (raw.user ?? raw.member ?? {}) as BackendRecord;
   return {
     id: String(raw.id ?? raw.checkinId ?? raw.checkin_id ?? ''),
-    userId: stringValue(raw.userId ?? raw.user_id),
+    userId: stringValue(raw.userId ?? raw.user_id ?? user.id),
     cycleNumber: numberValue(raw.cycleNumber ?? raw.cycle_number),
     caption: stringValue(raw.caption),
     evidenceUrl: stringValue(raw.evidenceUrl ?? raw.evidence_url),
-    createdAt: stringValue(raw.createdAt ?? raw.created_at),
+    createdAt: stringValue(raw.createdAt ?? raw.created_at ?? raw.checkedInAt ?? raw.checked_in_at),
     memberName:
       stringValue(raw.memberName ?? raw.member_name) ??
+      stringValue(raw.displayName ?? raw.display_name ?? raw.username) ??
       stringValue(user.displayName ?? user.display_name ?? user.username),
   };
 }
@@ -293,6 +329,90 @@ function getErrorMessage(error: unknown): string {
   return 'Could not load challenge.';
 }
 
+function getMemberStatus(member: DetailMember, isActive: boolean): {
+  label: string;
+  tone: FeedbackTone | 'neutral';
+} {
+  const status = String(member.status ?? '').toLowerCase();
+
+  if (isActive) {
+    if (member.checkedInToday === true) return { label: 'DONE', tone: 'success' };
+    if (member.checkedInToday === false) return { label: 'PENDING', tone: 'warning' };
+    return { label: 'UNKNOWN', tone: 'info' };
+  }
+
+  if (status === 'accepted') {
+    if (member.isReady === true) return { label: 'READY', tone: 'success' };
+    if (member.isReady === false) return { label: 'NOT READY', tone: 'warning' };
+    return { label: 'ACCEPTED', tone: 'info' };
+  }
+
+  if (status === 'pending') return { label: 'INVITED', tone: 'warning' };
+  if (status === 'declined') return { label: 'DECLINED', tone: 'neutral' };
+  return { label: status ? status.toUpperCase() : 'MEMBER', tone: 'neutral' };
+}
+
+function getBadgeVariant(tone: FeedbackTone | 'neutral'): 'neutral' | 'success' | 'warning' | 'danger' | 'info' {
+  if (tone === 'error') return 'danger';
+  if (tone === 'neutral') return 'neutral';
+  return tone;
+}
+
+function StatusPill({
+  label,
+  tone,
+  testID,
+}: {
+  label: string;
+  tone: FeedbackTone | 'neutral';
+  testID?: string;
+}) {
+  return (
+    <Badge variant={getBadgeVariant(tone)} size="sm" testID={testID}>
+      {label}
+    </Badge>
+  );
+}
+
+function InlineFeedback({
+  feedback,
+  testID,
+}: {
+  feedback?: InlineFeedbackMessage | null;
+  testID?: string;
+}) {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
+  if (!feedback) return null;
+
+  return (
+    <View
+      style={[
+        styles.inlineFeedback,
+        feedback.type === 'success' && styles.inlineFeedbackSuccess,
+        feedback.type === 'error' && styles.inlineFeedbackError,
+        feedback.type === 'warning' && styles.inlineFeedbackWarning,
+        feedback.type === 'info' && styles.inlineFeedbackInfo,
+      ]}
+      testID={testID}
+    >
+      <AppText
+        variant="caption"
+        style={[
+          styles.inlineFeedbackText,
+          feedback.type === 'success' && styles.successText,
+          feedback.type === 'error' && styles.errorText,
+          feedback.type === 'warning' && styles.warningText,
+          feedback.type === 'info' && styles.infoText,
+        ]}
+      >
+        {feedback.message}
+      </AppText>
+    </View>
+  );
+}
+
 export function ChallengeDetailScreen({
   challengeId,
   onBack,
@@ -312,6 +432,10 @@ export function ChallengeDetailScreen({
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [inviteFeedback, setInviteFeedback] = useState<InlineFeedbackMessage | null>(null);
+  const [slapLoadingMemberId, setSlapLoadingMemberId] = useState<string | null>(null);
+  const [slappedMemberIds, setSlappedMemberIds] = useState<Record<string, boolean>>({});
+  const [slapErrorByMemberId, setSlapErrorByMemberId] = useState<Record<string, string | undefined>>({});
 
   const loadChallenge = useCallback(async () => {
     if (!challengeId) {
@@ -356,6 +480,13 @@ export function ChallengeDetailScreen({
     void loadChallenge();
   }, [loadChallenge]);
 
+  useEffect(() => {
+    setInviteFeedback(null);
+    setSlapLoadingMemberId(null);
+    setSlappedMemberIds({});
+    setSlapErrorByMemberId({});
+  }, [challengeId]);
+
   const isHistory =
     challenge?.status === 'success' ||
     challenge?.status === 'game-over' ||
@@ -394,6 +525,112 @@ export function ChallengeDetailScreen({
     [challenge?.members, currentUserId],
   );
   const shouldShowCheckIn = Boolean(isActive && isAcceptedMember && currentUserToday?.checkedInToday === false);
+  const acceptedMembers = useMemo(
+    () =>
+      challenge?.members.filter((member) => String(member.status ?? '').toLowerCase() === 'accepted') ?? [],
+    [challenge?.members],
+  );
+  const checkedInMembersCount = useMemo(
+    () => acceptedMembers.filter((member) => member.checkedInToday === true).length,
+    [acceptedMembers],
+  );
+  const teamProgressText = isActive
+    ? `${checkedInMembersCount}/${acceptedMembers.length} checked in`
+    : `${nonDeclinedMembers.length}/${challenge?.maxMembers ?? 0} members`;
+  const todayActionTitle = isActive
+    ? shouldShowCheckIn
+      ? 'Your proof is due'
+      : currentUserToday?.checkedInToday
+        ? 'You are done for this cycle'
+        : 'Check-in is not available'
+    : isFormation
+      ? 'Get the squad ready'
+      : 'Challenge result';
+  const todayActionHelper = isActive
+    ? shouldShowCheckIn
+      ? 'Take a proof photo before reset to keep your streak alive.'
+      : currentUserToday?.checkedInToday
+        ? 'Your proof is submitted. Help the squad by reminding pending members.'
+        : isAcceptedMember
+          ? 'Your check-in status is unavailable for this cycle.'
+          : 'Only accepted members can check in.'
+    : isFormation
+      ? isPendingInvite
+        ? 'Accept the invite to join this challenge.'
+        : isAcceptedMember
+          ? 'Set your ready state and invite friends before the challenge starts.'
+          : 'Waiting for accepted members to get ready.'
+      : challenge?.status === 'success'
+        ? 'The squad completed this challenge.'
+        : challenge?.status === 'game-over'
+        ? 'The squad ran out of hearts.'
+        : 'This challenge is no longer active.';
+  const getSlapButtonState = useCallback(
+    (member: DetailMember): SlapButtonState => {
+      const isCurrentUser = Boolean(currentUserId && member.userId === currentUserId);
+      const isAccepted = String(member.status ?? '').toLowerCase() === 'accepted';
+      const loading = slapLoadingMemberId === member.id;
+
+      if (!isActive || !isAccepted || isCurrentUser) {
+        return {
+          shouldShow: false,
+          title: 'Slap',
+          disabled: true,
+          loading: false,
+          variant: 'secondary',
+        };
+      }
+
+      if (loading) {
+        return {
+          shouldShow: true,
+          title: 'Sending...',
+          disabled: true,
+          loading: true,
+          variant: 'secondary',
+        };
+      }
+
+      if (member.checkedInToday === true) {
+        return {
+          shouldShow: true,
+          title: 'Done',
+          disabled: true,
+          loading: false,
+          variant: 'ghost',
+        };
+      }
+
+      if (slappedMemberIds[member.id]) {
+        return {
+          shouldShow: true,
+          title: 'Sent',
+          disabled: true,
+          loading: false,
+          variant: 'ghost',
+        };
+      }
+
+      if (member.checkedInToday === false) {
+        return {
+          shouldShow: true,
+          title: 'Slap',
+          disabled: false,
+          loading: false,
+          variant: 'secondary',
+        };
+      }
+
+      return {
+        shouldShow: true,
+        title: 'N/A',
+        disabled: true,
+        loading: false,
+        variant: 'ghost',
+      };
+    },
+    [currentUserId, isActive, slapLoadingMemberId, slappedMemberIds],
+  );
 
   const existingUserIds = useMemo(
     () => new Set(challenge?.members.map((member) => member.userId).filter(Boolean) ?? []),
@@ -430,11 +667,13 @@ export function ChallengeDetailScreen({
   const openInviteModal = () => {
     setSelectedInviteIds([]);
     setInviteSearch('');
+    setInviteFeedback(null);
     setInviteModalVisible(true);
   };
 
   const toggleInviteSelection = (friendId: string) => {
     if (existingUserIds.has(friendId)) return;
+    setInviteFeedback(null);
     setSelectedInviteIds((current) => {
       if (current.includes(friendId)) {
         return current.filter((id) => id !== friendId);
@@ -444,37 +683,61 @@ export function ChallengeDetailScreen({
     });
   };
 
-  const submitInvites = () => {
+  const submitInvites = async () => {
     if (!challenge) return;
     if (selectedInviteIds.length === 0) {
-      setActionMessage('Select at least one friend to invite.');
+      setInviteFeedback({ type: 'error', message: 'Select at least one friend to invite.' });
       return;
     }
     if (selectedInviteIds.length > remainingSlots) {
-      setActionMessage(`Only ${remainingSlots} slot${remainingSlots === 1 ? '' : 's'} remaining.`);
+      setInviteFeedback({
+        type: 'warning',
+        message: `Only ${remainingSlots} slot${remainingSlots === 1 ? '' : 's'} remaining.`,
+      });
       return;
     }
 
     setIsMutating(true);
     setActionMessage(null);
-    challengesService
-      .inviteUsers(challenge.id, selectedInviteIds)
-      .then(() => {
-        setActionMessage(`${selectedInviteIds.length} invite${selectedInviteIds.length === 1 ? '' : 's'} sent.`);
-        setInviteModalVisible(false);
-        setSelectedInviteIds([]);
-        setInviteSearch('');
-        return loadChallenge();
-      })
-      .catch((inviteError) => setActionMessage(getErrorMessage(inviteError)))
-      .finally(() => setIsMutating(false));
+    setInviteFeedback(null);
+
+    try {
+      await challengesService.inviteUsers(challenge.id, selectedInviteIds);
+      setActionMessage(`${selectedInviteIds.length} invite${selectedInviteIds.length === 1 ? '' : 's'} sent.`);
+      setInviteModalVisible(false);
+      setSelectedInviteIds([]);
+      setInviteSearch('');
+      await loadChallenge();
+    } catch (inviteError) {
+      setInviteFeedback({ type: 'error', message: getErrorMessage(inviteError) });
+    } finally {
+      setIsMutating(false);
+    }
   };
 
-  const nudgeMember = (member: DetailMember) => {
-    void runMutation(
-      () => checkinService.nudgeMember(challenge!.id, member.userId ?? member.id),
-      'Reminder sent.',
-    );
+  const nudgeMember = async (member: DetailMember) => {
+    if (!challenge) return;
+
+    setSlapErrorByMemberId((current) => ({
+      ...current,
+      [member.id]: undefined,
+    }));
+    setSlapLoadingMemberId(member.id);
+
+    try {
+      await checkinService.nudgeMember(challenge.id, member.userId ?? member.id);
+      setSlappedMemberIds((current) => ({
+        ...current,
+        [member.id]: true,
+      }));
+    } catch (nudgeError) {
+      setSlapErrorByMemberId((current) => ({
+        ...current,
+        [member.id]: getErrorMessage(nudgeError),
+      }));
+    } finally {
+      setSlapLoadingMemberId(null);
+    }
   };
 
   const confirmDestructive = (title: string, message: string, action: () => Promise<unknown>) => {
@@ -586,19 +849,54 @@ export function ChallengeDetailScreen({
           </Card>
         ) : null}
 
-        {isFormation ? (
-          <Card style={styles.card}>
-            <AppText variant="subtitle" style={styles.sectionTitle}>
-              Waiting for members
-            </AppText>
-            <AppText variant="body" style={styles.bodyText}>
-              This challenge will start once members are accepted and ready.
-            </AppText>
-            <View style={styles.actionRow}>
+        <Card style={styles.primaryActionCard} testID="challenge-primary-action-card">
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeaderText}>
+              <AppText variant="caption" style={styles.sectionEyebrow}>
+                What you need to do now
+              </AppText>
+              <AppText variant="subtitle" style={styles.sectionTitle}>
+                {todayActionTitle}
+              </AppText>
+            </View>
+            <StatusPill
+              label={isActive ? (currentUserToday?.checkedInToday ? 'DONE' : 'DUE') : challenge.statusLabel.toUpperCase()}
+              tone={isActive ? (currentUserToday?.checkedInToday ? 'success' : 'warning') : isHistory ? 'info' : 'neutral'}
+            />
+          </View>
+
+          <AppText variant="body" style={styles.bodyText}>
+            {todayActionHelper}
+          </AppText>
+
+          {isActive ? (
+            <>
+              <InlineFeedback
+                feedback={{
+                  type: 'info',
+                  message: 'Slap is only a reminder; it does not reduce hearts.',
+                }}
+              />
+              {shouldShowCheckIn ? (
+                <Button
+                  title="My Check-in"
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  onPress={() => onCheckIn?.(challenge.id)}
+                  accessibilityLabel="Open camera to submit my check-in proof"
+                  testID="my-check-in-button"
+                />
+              ) : null}
+            </>
+          ) : null}
+
+          {isFormation ? (
+            <View style={styles.actionStack}>
               {isPendingInvite ? (
-                <>
+                <View style={styles.actionRow}>
                   <Button
-                    title="Accept"
+                    title="Accept Invite"
                     variant="primary"
                     size="sm"
                     loading={isMutating}
@@ -611,238 +909,269 @@ export function ChallengeDetailScreen({
                     disabled={isMutating}
                     onPress={() => void runMutation(() => challengesService.declineInvite(challenge.id), 'Invite declined.')}
                   />
-                </>
+                </View>
               ) : null}
+
               {isAcceptedMember ? (
                 <Button
                   title={myReady ? 'Set not ready' : 'Set ready'}
                   variant="primary"
-                  size="sm"
+                  size="md"
+                  fullWidth
                   loading={isMutating}
                   onPress={() => void runMutation(() => challengesService.setReady(challenge.id, !myReady))}
                 />
               ) : null}
+
               {canInviteMore ? (
                 <Button
-                  title="Invite More"
+                  title="Invite Friends"
                   variant="secondary"
-                  size="sm"
+                  size="md"
+                  fullWidth
                   disabled={isMutating}
                   onPress={openInviteModal}
                   testID="invite-friends-button"
                 />
-              ) : null}
-              {isAcceptedMember && !isHost ? (
-                <Button
-                  title="Leave"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isMutating}
-                  onPress={() =>
-                    confirmDestructive('Leave', 'Leave this formation challenge?', () =>
-                      challengesService.leaveChallenge(challenge.id),
-                    )
-                  }
+              ) : (
+                <InlineFeedback
+                  feedback={{
+                    type: 'info',
+                    message: remainingSlots === 0 ? 'This challenge is full.' : 'Invite is not available right now.',
+                  }}
                 />
-              ) : null}
-              {isHost ? (
-                <Button
-                  title="Delete"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isMutating}
-                  onPress={() =>
-                    confirmDestructive('Delete', 'Delete this formation challenge?', () =>
-                      challengesService.deleteOrCancelChallenge(challenge.id),
-                    )
-                  }
-                />
-              ) : null}
+              )}
             </View>
-          </Card>
-        ) : null}
+          ) : null}
 
-        {isHistory ? (
-          <Card style={styles.card}>
-            {challenge.status === 'success' ? (
-              <View style={styles.resultRow}>
+          {isHistory ? (
+            <View style={styles.resultRow}>
+              {challenge.status === 'success' ? (
                 <CupIcon size={28} color={theme.colors.text.success} variant="bold" />
-                <View style={styles.resultText}>
-                  <AppText variant="subtitle" style={[styles.sectionTitle, { color: theme.colors.text.success }]}>
-                    Challenge Completed!
-                  </AppText>
-                  <AppText variant="caption" style={styles.bodyText}>
-                    Great job keeping the squad accountable.
-                  </AppText>
-                </View>
-              </View>
-            ) : null}
-            {challenge.status === 'game-over' ? (
-              <View style={styles.resultRow}>
+              ) : challenge.status === 'game-over' ? (
                 <MedalStarIcon size={28} color={theme.colors.text.error} variant="outline" />
-                <View style={styles.resultText}>
-                  <AppText variant="subtitle" style={[styles.sectionTitle, { color: theme.colors.text.error }]}>
-                    Game Over
-                  </AppText>
-                  <AppText variant="caption" style={styles.bodyText}>
-                    The squad ran out of hearts. Better luck next time!
-                  </AppText>
-                </View>
-              </View>
-            ) : null}
-            {challenge.status === 'cancelled' ? (
-              <AppText variant="body" style={styles.bodyText}>
-                This challenge was cancelled before completion.
-              </AppText>
-            ) : null}
-          </Card>
-        ) : null}
-
-        {isActive ? (
-          <Card style={styles.card}>
-            <AppText variant="subtitle" style={styles.sectionTitle}>
-              Current step
-            </AppText>
-            <View style={styles.currentStepGrid}>
-              <View style={styles.currentStepMetric}>
-                <AppText variant="caption" style={styles.memberMeta}>
-                  Cycle
-                </AppText>
-                <AppText variant="subtitle" style={styles.memberName}>
-                  {challenge.currentCycleText ?? 'Current'}
-                </AppText>
-              </View>
-              <View style={styles.currentStepMetric}>
-                <AppText variant="caption" style={styles.memberMeta}>
-                  Reset
-                </AppText>
-                <AppText variant="subtitle" style={styles.memberName}>
-                  {challenge.timeUntilResetText ?? challenge.resetTimeText}
+              ) : null}
+              <View style={styles.resultText}>
+                <AppText variant="caption" style={styles.bodyText}>
+                  {challenge.status === 'success'
+                    ? 'Great job keeping the squad accountable.'
+                    : challenge.status === 'game-over'
+                      ? 'Better luck next time.'
+                      : 'This challenge was cancelled before completion.'}
                 </AppText>
               </View>
             </View>
-            <AppText variant="body" style={styles.bodyText}>
-              Complete today's proof before reset. Slap is only a reminder and does not change check-in state or hearts.
-            </AppText>
-            {shouldShowCheckIn ? (
-              <Button
-                title="My Check-in"
-                variant="primary"
-                size="md"
-                onPress={() => onCheckIn?.(challenge.id)}
-                testID="my-check-in-button"
-              />
-            ) : (
-              <AppText variant="caption" style={styles.bodyText}>
-                {currentUserToday?.checkedInToday ? 'You are done for this cycle.' : 'Check-in is not available.'}
-              </AppText>
-            )}
-          </Card>
-        ) : null}
+          ) : null}
+        </Card>
 
         <Card style={styles.card}>
-          <AppText variant="subtitle" style={styles.sectionTitle}>
-            Members
-          </AppText>
-
-          <View style={styles.membersList}>
-            {challenge.members.map((member) => (
-              <View key={member.id} style={styles.memberRow}>
-                <Avatar name={member.displayName} avatarUrl={member.avatarUrl} size={44} />
-
-                <View style={styles.memberText}>
-                  <AppText variant="subtitle" style={styles.memberName}>
-                    {member.displayName}
-                  </AppText>
-
-                  <AppText variant="caption" style={styles.memberMeta}>
-                    @{member.username} · {member.role === 'host' ? 'Host' : 'Member'}
-                    {member.status ? ` · ${member.status}` : ''}
-                    {member.isReady != null ? ` · ${member.isReady ? 'Ready' : 'Not ready'}` : ''}
-                    {isActive && member.checkedInToday != null
-                      ? ` · ${member.checkedInToday ? 'DONE' : 'PENDING'}`
-                      : ''}
-                  </AppText>
-
-                  {isActive && member.checkedInToday && member.currentCheckin?.caption ? (
-                    <AppText variant="caption" style={styles.bodyText}>
-                      {member.currentCheckin.caption}
-                    </AppText>
-                  ) : null}
-
-                  {isActive && member.checkedInToday && member.currentCheckin?.evidenceUrl ? (
-                    <Image
-                      source={{
-                        uri: getRenderableEvidenceUrl(member.currentCheckin.evidenceUrl),
-                      }}
-                      style={styles.proofThumbnail}
-                      resizeMode="cover"
-                    />
-                  ) : null}
-                </View>
-
-                {isActive && member.status === 'accepted' && member.userId !== currentUserId ? (
-                  <View style={styles.slapAction}>
-                    <Button
-                      title="Slap"
-                      variant="secondary"
-                      size="sm"
-                      disabled={isMutating || member.checkedInToday !== false}
-                      onPress={() => nudgeMember(member)}
-                      testID={`slap-${member.id}`}
-                    />
-
-                    <AppText variant="caption" style={styles.slapHelper}>
-                      {member.checkedInToday === true
-                        ? 'Checked in'
-                        : member.checkedInToday === false
-                          ? 'Send reminder'
-                          : 'Status unavailable'}
-                    </AppText>
-                  </View>
-                ) : null}
-              </View>
-            ))}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeaderText}>
+              <AppText variant="subtitle" style={styles.sectionTitle}>
+                Team progress
+              </AppText>
+              <AppText variant="caption" style={styles.bodyText}>
+                {teamProgressText}
+              </AppText>
+            </View>
+            <StatusPill label={isActive ? 'TODAY' : isFormation ? 'FORMATION' : 'FINAL'} tone="info" />
+          </View>
+          <View style={styles.currentStepGrid}>
+            <View style={styles.currentStepMetric}>
+              <AppText variant="caption" style={styles.memberMeta}>
+                Cycle
+              </AppText>
+              <AppText variant="subtitle" style={styles.memberName}>
+                {challenge.currentCycleText ?? (isFormation ? 'Not started' : 'Final')}
+              </AppText>
+            </View>
+            <View style={styles.currentStepMetric}>
+              <AppText variant="caption" style={styles.memberMeta}>
+                Reset
+              </AppText>
+              <AppText variant="subtitle" style={styles.memberName}>
+                {isActive ? challenge.timeUntilResetText ?? challenge.resetTimeText : challenge.resetTimeText}
+              </AppText>
+            </View>
+            <View style={styles.currentStepMetric}>
+              <AppText variant="caption" style={styles.memberMeta}>
+                Members
+              </AppText>
+              <AppText variant="subtitle" style={styles.memberName}>
+                {teamProgressText}
+              </AppText>
+            </View>
+          </View>
+          <View style={styles.legendRow}>
+            <StatusPill label="DONE" tone="success" />
+            <StatusPill label="PENDING" tone="warning" />
+            <StatusPill label="UNKNOWN" tone="info" />
           </View>
         </Card>
 
-        {isActive ? (
+        <Card style={styles.card} testID="challenge-members-card">
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeaderText}>
+              <AppText variant="subtitle" style={styles.sectionTitle}>
+                Members
+              </AppText>
+              <AppText variant="caption" style={styles.bodyText}>
+                You can only slap members who have not checked in for the current cycle.
+              </AppText>
+            </View>
+          </View>
+
+          <View style={styles.membersList}>
+            {challenge.members.map((member) => {
+              const memberStatus = getMemberStatus(member, isActive);
+              const slapButtonState = getSlapButtonState(member);
+              const slapError = slapErrorByMemberId[member.id];
+
+              return (
+                <View key={member.id} style={styles.memberItem}>
+                  <View style={styles.memberRow}>
+                    <Avatar name={member.displayName} avatarUrl={member.avatarUrl} size={44} />
+
+                    <View style={styles.memberText}>
+                      <View style={styles.memberTitleRow}>
+                        <AppText variant="subtitle" style={styles.memberName}>
+                          {member.displayName}
+                        </AppText>
+                        <StatusPill
+                          label={memberStatus.label}
+                          tone={memberStatus.tone}
+                          testID={`member-status-${member.id}`}
+                        />
+                      </View>
+
+                      <AppText variant="caption" style={styles.memberMeta}>
+                        @{member.username} · {member.role === 'host' ? 'Host' : 'Member'}
+                        {member.status ? ` · ${member.status}` : ''}
+                      </AppText>
+
+                      {isFormation && member.isReady != null ? (
+                        <AppText variant="caption" style={styles.bodyText}>
+                          {member.isReady ? 'Ready for launch.' : 'Not ready yet.'}
+                        </AppText>
+                      ) : null}
+
+                      {isActive && member.checkedInToday && member.currentCheckin?.caption ? (
+                        <AppText variant="caption" style={styles.bodyText}>
+                          {member.currentCheckin.caption}
+                        </AppText>
+                      ) : null}
+
+                      {isActive && member.checkedInToday && member.currentCheckin?.evidenceUrl ? (
+                        <EvidenceImage
+                          evidenceUrl={member.currentCheckin.evidenceUrl}
+                          variant="thumbnail"
+                          testID={`member-proof-${member.id}`}
+                        />
+                      ) : null}
+                    </View>
+
+                    {slapButtonState.shouldShow ? (
+                      <View style={styles.slapAction}>
+                        <Button
+                          title={slapButtonState.title}
+                          variant={slapButtonState.variant}
+                          size="sm"
+                          disabled={slapButtonState.disabled}
+                          loading={slapButtonState.loading}
+                          onPress={() => void nudgeMember(member)}
+                          testID={`slap-${member.id}`}
+                        />
+                      </View>
+                    ) : null}
+                  </View>
+
+                  {slapError ? (
+                    <AppText
+                      variant="caption"
+                      style={styles.slapError}
+                      testID={`slap-error-${member.id}`}
+                    >
+                      {slapError}
+                    </AppText>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        </Card>
+
+        {isActive || isFormation ? (
           <Card style={styles.card}>
             <AppText variant="subtitle" style={styles.sectionTitle}>
-              History and stats
+              Manage challenge
             </AppText>
 
-            {challenge.statsText ? (
+            {isActive && challenge.statsText ? (
               <AppText variant="caption" style={styles.bodyText}>
                 {challenge.statsText}
               </AppText>
             ) : null}
 
-            <View style={styles.actionRow}>
-              <Button
-                title={showGallery ? 'Hide Gallery' : 'View Gallery'}
-                variant="secondary"
-                size="sm"
-                onPress={() => setShowGallery((value) => !value)}
-              />
+            {isActive ? (
+              <View style={styles.actionRow}>
+                <Button
+                  title={showGallery ? 'Hide Gallery' : 'View Gallery'}
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => setShowGallery((value) => !value)}
+                />
 
-              <Button title="View Previous Steps" variant="ghost" size="sm" disabled />
+                <Button title="View Previous Steps" variant="ghost" size="sm" disabled />
 
-              <Button title="View History" variant="ghost" size="sm" disabled />
-            </View>
+                <Button title="View History" variant="ghost" size="sm" disabled />
+              </View>
+            ) : null}
 
-            {isHost ? (
-              <Button
-                title="Cancel challenge"
-                variant="ghost"
-                size="sm"
-                disabled={isMutating}
-                onPress={() =>
-                  confirmDestructive('Cancel', 'Cancel this active challenge?', () =>
-                    challengesService.cancelChallenge(challenge.id),
-                  )
-                }
-              />
+            {isFormation ? (
+              <View style={styles.actionRow}>
+                {isAcceptedMember && !isHost ? (
+                  <Button
+                    title="Leave"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isMutating}
+                    onPress={() =>
+                      confirmDestructive('Leave', 'Leave this formation challenge?', () =>
+                        challengesService.leaveChallenge(challenge.id),
+                      )
+                    }
+                  />
+                ) : null}
+                {isHost ? (
+                  <Button
+                    title="Delete"
+                    variant="danger"
+                    size="sm"
+                    disabled={isMutating}
+                    onPress={() =>
+                      confirmDestructive('Delete', 'Delete this formation challenge?', () =>
+                        challengesService.deleteOrCancelChallenge(challenge.id),
+                      )
+                    }
+                  />
+                ) : null}
+              </View>
+            ) : null}
+
+            {isActive && isHost ? (
+              <View style={styles.destructiveSection}>
+                <Button
+                  title="Cancel challenge"
+                  variant="danger"
+                  size="sm"
+                  disabled={isMutating}
+                  onPress={() =>
+                    confirmDestructive('Cancel', 'Cancel this active challenge?', () =>
+                      challengesService.cancelChallenge(challenge.id),
+                    )
+                  }
+                />
+              </View>
             ) : null}
           </Card>
         ) : null}
@@ -870,12 +1199,9 @@ export function ChallengeDetailScreen({
                     </AppText>
 
                     {checkin.evidenceUrl ? (
-                      <Image
-                        source={{
-                          uri: getRenderableEvidenceUrl(checkin.evidenceUrl),
-                        }}
-                        style={styles.proofImage}
-                        resizeMode="cover"
+                      <EvidenceImage
+                        evidenceUrl={checkin.evidenceUrl}
+                        testID={`checkin-proof-${checkin.id}`}
                       />
                     ) : null}
                   </View>
@@ -902,6 +1228,11 @@ export function ChallengeDetailScreen({
                 <AppText variant="caption" style={styles.bodyText}>
                   {remainingSlots} slot{remainingSlots === 1 ? '' : 's'} remaining
                 </AppText>
+                {remainingSlots === 0 ? (
+                  <InlineFeedback
+                    feedback={{ type: 'warning', message: 'No invite slots are available.' }}
+                  />
+                ) : null}
               </View>
               <Button
                 title="Close"
@@ -957,14 +1288,16 @@ export function ChallengeDetailScreen({
               )}
             </ScrollView>
 
+            <InlineFeedback feedback={inviteFeedback} testID="invite-feedback" />
+
             <Button
               title={`Invite Selected (${selectedInviteIds.length})`}
               variant="primary"
               size="md"
               fullWidth
-              disabled={isMutating || selectedInviteIds.length === 0}
+              disabled={isMutating || remainingSlots === 0}
               loading={isMutating}
-              onPress={submitInvites}
+              onPress={() => void submitInvites()}
             />
           </View>
         </View>
@@ -978,19 +1311,47 @@ function getRenderableEvidenceUrl(evidenceUrl?: string | null): string | undefin
     return undefined;
   }
 
-  const uploadBaseUrl = getApiBaseUrl().replace(/\/api\/?$/, '');
+  const apiBaseUrl = getApiBaseUrl();
+  const uploadBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
+  const trimmedUrl = evidenceUrl.trim();
 
-  return evidenceUrl
-    .replace(/^http:\/\/localhost:3000/i, uploadBaseUrl)
-    .replace(/^http:\/\/127\.0\.0\.1:3000/i, uploadBaseUrl);
+  if (!trimmedUrl) {
+    return undefined;
+  }
+
+  if (trimmedUrl.startsWith('/')) {
+    return `${uploadBaseUrl}${trimmedUrl}`;
+  }
+
+  if (!/^https?:\/\//i.test(trimmedUrl) && !/^file:\/\//i.test(trimmedUrl)) {
+    return `${uploadBaseUrl}/${trimmedUrl.replace(/^\/+/, '')}`;
+  }
+
+  try {
+    const parsedUrl = new URL(trimmedUrl);
+
+    const isLocalHost =
+      parsedUrl.hostname === 'localhost' ||
+      parsedUrl.hostname === '127.0.0.1' ||
+      parsedUrl.hostname === '0.0.0.0';
+
+    if (isLocalHost) {
+      return `${uploadBaseUrl}${parsedUrl.pathname}${parsedUrl.search}`;
+    }
+    return trimmedUrl;
+  } catch {
+    return `${uploadBaseUrl}/${trimmedUrl.replace(/^\/+/, '')}`;
+  }
 }
 
 function EvidenceImage({
   evidenceUrl,
   variant = 'large',
+  testID,
 }: {
   evidenceUrl?: string | null;
   variant?: 'thumbnail' | 'large';
+  testID?: string;
 }) {
   const renderableUrl = getRenderableEvidenceUrl(evidenceUrl);
   const theme = useTheme();
@@ -1005,6 +1366,7 @@ function EvidenceImage({
       source={{ uri: renderableUrl }}
       style={variant === 'thumbnail' ? styles.proofThumbnail : styles.proofImage}
       resizeMode="cover"
+      testID={testID}
     />
   );
 }
@@ -1041,8 +1403,34 @@ function createStyles(theme: AppTheme) {
       padding: 16,
       gap: 14,
     },
+    primaryActionCard: {
+      padding: 18,
+      gap: 14,
+      borderWidth: 1,
+      // borderColor: theme.colors.border.brand,
+      backgroundColor: theme.colors.bg['brand-subtle'],
+      borderRadius: theme.components.card.common.radius
+    },
     messageCard: {
       padding: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border.success,
+      backgroundColor: theme.colors.bg['success-subtle'],
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    sectionHeaderText: {
+      flex: 1,
+      gap: 4,
+    },
+    sectionEyebrow: {
+      color: theme.colors.text.brand,
+      fontWeight: '800',
+      textTransform: 'uppercase',
     },
     sectionTitle: {
       color: theme.colors.text.primary,
@@ -1064,14 +1452,27 @@ function createStyles(theme: AppTheme) {
     membersList: {
       gap: 12,
     },
+    memberItem: {
+      gap: 12,
+      paddingVertical: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.border.subtle,
+    },
     memberRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: 12,
     },
     memberText: {
       flex: 1,
       gap: 2,
+    },
+    memberTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      flexWrap: 'wrap',
     },
     memberName: {
       color: theme.colors.text.primary,
@@ -1104,19 +1505,29 @@ function createStyles(theme: AppTheme) {
       flexWrap: 'wrap',
       gap: 10,
     },
+    actionStack: {
+      gap: 10,
+    },
     actionButton: {
       flex: 1,
     },
     currentStepGrid: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 12,
     },
     currentStepMetric: {
       flex: 1,
+      minWidth: 96,
       borderRadius: 14,
       padding: 12,
       backgroundColor: theme.colors.bg['brand-subtle'],
       gap: 4,
+    },
+    legendRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
     },
     feedItem: {
       gap: 4,
@@ -1128,13 +1539,59 @@ function createStyles(theme: AppTheme) {
       color: theme.colors.text.brand,
     },
     slapAction: {
-      alignItems: 'center',
-      gap: 4,
-      minWidth: 88,
+      alignItems: 'flex-end',
+      minWidth: 82,
     },
-    slapHelper: {
-      color: theme.colors.text.secondary,
-      textAlign: 'center',
+    slapError: {
+      alignSelf: 'flex-end',
+      maxWidth: 180,
+      color: theme.colors.text.error,
+      textAlign: 'right',
+      lineHeight: 18,
+    },
+    inlineFeedback: {
+      width: '100%',
+      borderRadius: 12,
+      borderWidth: 1,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+    },
+    inlineFeedbackSuccess: {
+      borderColor: theme.colors.border.success,
+      backgroundColor: theme.colors.bg['success-subtle'],
+    },
+    inlineFeedbackError: {
+      borderColor: theme.colors.border.error,
+      backgroundColor: theme.colors.bg['error-subtle'],
+    },
+    inlineFeedbackWarning: {
+      borderColor: theme.colors.border.warning,
+      backgroundColor: theme.colors.bg['warning-subtle'],
+    },
+    inlineFeedbackInfo: {
+      borderColor: theme.colors.border.info,
+      backgroundColor: theme.colors.bg['info-subtle'],
+    },
+    inlineFeedbackText: {
+      lineHeight: 18,
+    },
+    successText: {
+      color: theme.colors.text.success,
+    },
+    errorText: {
+      color: theme.colors.text.error,
+    },
+    warningText: {
+      color: theme.colors.text.warning,
+    },
+    infoText: {
+      color: theme.colors.text.info,
+    },
+    destructiveSection: {
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.border.subtle,
+      alignItems: 'flex-start',
     },
     modalBackdrop: {
       flex: 1,

@@ -28,7 +28,7 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
             size="sm"
             style={styles.badge}
           >
-            Friend
+            You
           </Badge>
         </View>
       </View>

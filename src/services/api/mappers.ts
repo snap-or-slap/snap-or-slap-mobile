@@ -83,6 +83,8 @@ const snakeToCamelMap: Record<string, string> = {
   current_streak: 'currentStreak',
   best_streak: 'bestStreak',
   total_checkins: 'totalCheckins',
+  evidence_url: 'evidenceUrl',
+  checked_in_at: 'checkedInAt',
   challenges_joined: 'challengesJoined',
   challenges_completed: 'challengesCompleted',
   completion_rate: 'completionRate',

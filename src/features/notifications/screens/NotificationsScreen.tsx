@@ -38,6 +38,13 @@ type NotificationItem = {
   action?: string;
 };
 
+type NotificationActionState = {
+  loadingAction?: 'accept' | 'decline' | 'delete' | 'open';
+  error?: string;
+};
+
+const FILTERS: NotificationCategory[] = ['all', 'challenge', 'social', 'system'];
+
 function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
 }
@@ -49,8 +56,10 @@ function boolValue(value: unknown): boolean {
 function formatDate(value: unknown): string | undefined {
   const raw = stringValue(value);
   if (!raw) return undefined;
+
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return raw;
+
   return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -61,6 +70,7 @@ function formatDate(value: unknown): string | undefined {
 
 function extractChallengeId(raw: BackendNotification): string | undefined {
   const payload = (raw.payload ?? raw.data ?? raw.metadata ?? {}) as BackendNotification;
+
   return stringValue(
     raw.challengeId ??
       raw.challenge_id ??
@@ -79,6 +89,7 @@ function mapNotification(raw: BackendNotification): NotificationItem {
   const challengeTitle = stringValue(
     metadataValue(raw, 'challengeTitle') ?? metadataValue(raw, 'challenge_title'),
   );
+
   return {
     id: String(raw.id ?? raw.notificationId ?? raw.notification_id ?? ''),
     title:
@@ -110,6 +121,41 @@ function getErrorMessage(error: unknown): string {
   return 'Could not load notifications.';
 }
 
+function getFilterLabel(category: NotificationCategory): string {
+  switch (category) {
+    case 'all':
+      return 'All';
+    case 'challenge':
+      return 'Challenges';
+    case 'social':
+      return 'Social';
+    case 'system':
+      return 'System';
+    default:
+      return category;
+  }
+}
+
+function getCategoryLabel(notification: NotificationItem): string {
+  if (notification.category === 'challenge') return 'Challenge';
+  if (notification.category === 'social') return 'Social';
+  if (notification.category === 'system') return 'System';
+  return 'Update';
+}
+
+function isChallengeInviteNotification(notification: NotificationItem): boolean {
+  return (
+    notification.type === 'challenge_invite' &&
+    notification.category === 'challenge' &&
+    !notification.action &&
+    Boolean(notification.challengeId)
+  );
+}
+
+function isReadOnlyInviteNotification(notification: NotificationItem): boolean {
+  return notification.type === 'challenge_invite' && !notification.challengeId;
+}
+
 export function NotificationsScreen({
   onBack,
   onOpenChallenge,
@@ -124,55 +170,114 @@ export function NotificationsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionStateById, setActionStateById] = useState<Record<string, NotificationActionState>>({});
 
-  const loadNotifications = useCallback(async (refreshing = false) => {
-    if (refreshing) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
-    setError(null);
+  const hasNotifications = notifications.length > 0;
 
-    try {
-      await notificationsService.syncOverlays().catch(() => undefined);
-      const response = await notificationsService.listNotifications<NotificationsResponse>({
-        limit: 50,
-        category: category === 'all' ? undefined : category,
-      });
-      setNotifications(
-        (response.notifications ?? []).map(mapNotification).filter((item) => item.id),
-      );
-      const nextUnreadCount = response.unreadCount ?? 0;
-      setUnreadCount(nextUnreadCount);
-      onUnreadCountChange?.(nextUnreadCount);
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-      setNotifications([]);
-      setUnreadCount(0);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [category, onUnreadCountChange]);
+  const visibleSummary = useMemo(() => {
+    const unreadVisible = notifications.filter((item) => !item.isRead).length;
+    const challengeVisible = notifications.filter((item) => item.category === 'challenge').length;
+
+    return {
+      unreadVisible,
+      challengeVisible,
+      totalVisible: notifications.length,
+    };
+  }, [notifications]);
+
+  const updateNotificationActionState = useCallback(
+    (notificationId: string, nextState: NotificationActionState) => {
+      setActionStateById((current) => ({
+        ...current,
+        [notificationId]: nextState,
+      }));
+    },
+    [],
+  );
+
+  const clearNotificationActionState = useCallback((notificationId: string) => {
+    setActionStateById((current) => {
+      const next = { ...current };
+      delete next[notificationId];
+      return next;
+    });
+  }, []);
+
+  const loadNotifications = useCallback(
+    async (refreshing = false) => {
+      if (refreshing) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      setError(null);
+
+      try {
+        await notificationsService.syncOverlays().catch(() => undefined);
+
+        const response = await notificationsService.listNotifications<NotificationsResponse>({
+          limit: 50,
+          category: category === 'all' ? undefined : category,
+        });
+
+        const nextNotifications = (response.notifications ?? [])
+          .map(mapNotification)
+          .filter((item) => item.id);
+
+        setNotifications(nextNotifications);
+
+        const nextUnreadCount = response.unreadCount ?? 0;
+        setUnreadCount(nextUnreadCount);
+        onUnreadCountChange?.(nextUnreadCount);
+      } catch (loadError) {
+        setError(getErrorMessage(loadError));
+        setNotifications([]);
+        setUnreadCount(0);
+        onUnreadCountChange?.(0);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [category, onUnreadCountChange],
+  );
 
   useEffect(() => {
     void loadNotifications();
   }, [loadNotifications]);
 
   const handleOpen = async (notification: NotificationItem) => {
-    if (!notification.isRead) {
-      await notificationsService.markRead([notification.id]).catch(() => undefined);
+    clearNotificationActionState(notification.id);
+    updateNotificationActionState(notification.id, { loadingAction: 'open' });
+
+    try {
+      if (!notification.isRead) {
+        await notificationsService.markRead([notification.id]).catch(() => undefined);
+      }
+
+      if (notification.challengeId) {
+        onOpenChallenge?.(notification.challengeId);
+        return;
+      }
+
+      await loadNotifications(true);
+    } catch (openError) {
+      updateNotificationActionState(notification.id, {
+        error: getErrorMessage(openError),
+      });
+    } finally {
+      updateNotificationActionState(notification.id, {});
     }
-    if (notification.challengeId) {
-      onOpenChallenge?.(notification.challengeId);
-      return;
-    }
-    await loadNotifications(true);
   };
 
   const handleMarkAllRead = async () => {
-    await notificationsService.markAllRead();
-    await loadNotifications(true);
+    try {
+      await notificationsService.markAllRead();
+      await loadNotifications(true);
+    } catch (markError) {
+      setError(getErrorMessage(markError));
+    }
   };
 
   const handleInviteAction = async (
@@ -180,6 +285,9 @@ export function NotificationsScreen({
     action: 'accept' | 'decline',
   ) => {
     if (!notification.challengeId) return;
+
+    clearNotificationActionState(notification.id);
+    updateNotificationActionState(notification.id, { loadingAction: action });
 
     try {
       if (action === 'accept') {
@@ -194,24 +302,50 @@ export function NotificationsScreen({
       await notificationsService.markRead([notification.id]).catch(() => undefined);
       await loadNotifications(true);
     } catch (inviteError) {
-      setError(getErrorMessage(inviteError));
+      updateNotificationActionState(notification.id, {
+        error: getErrorMessage(inviteError),
+      });
+    } finally {
+      setActionStateById((current) => {
+        const currentItem = current[notification.id];
+
+        if (currentItem?.error) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [notification.id]: {},
+        };
+      });
     }
   };
 
   const handleDelete = (notification: NotificationItem) => {
-    Alert.alert('Delete', 'Delete this notification?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          void notificationsService
-            .deleteNotification(notification.id)
-            .then(() => loadNotifications(true))
-            .catch((deleteError) => setError(getErrorMessage(deleteError)));
+    Alert.alert(
+      'Delete notification',
+      'This notification will be removed from your inbox.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            clearNotificationActionState(notification.id);
+            updateNotificationActionState(notification.id, { loadingAction: 'delete' });
+
+            void notificationsService
+              .deleteNotification(notification.id)
+              .then(() => loadNotifications(true))
+              .catch((deleteError) => {
+                updateNotificationActionState(notification.id, {
+                  error: getErrorMessage(deleteError),
+                });
+              });
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   return (
@@ -220,13 +354,23 @@ export function NotificationsScreen({
         <View style={styles.headerWrap}>
           <AppHeader
             title="Notifications"
-            subtitle={`${unreadCount} unread`}
+            subtitle={
+              unreadCount > 0
+                ? `${unreadCount} unread update${unreadCount > 1 ? 's' : ''}`
+                : 'You are all caught up'
+            }
             leftAction={
               onBack ? (
                 <IconButton
                   accessibilityLabel="Go back"
                   onPress={onBack}
-                  icon={<ArrowCircleLeftIcon size={26} color={theme.colors.text.brand} variant="outline" />}
+                  icon={
+                    <ArrowCircleLeftIcon
+                      size={26}
+                      color={theme.colors.text.brand}
+                      variant="outline"
+                    />
+                  }
                   testID="notifications-back-button"
                 />
               ) : undefined
@@ -234,25 +378,69 @@ export function NotificationsScreen({
           />
         </View>
 
-        <View style={styles.filterRow}>
-          {(['all', 'challenge', 'social', 'system'] as NotificationCategory[]).map((item) => (
-            <Button
-              key={item}
-              title={item === 'all' ? 'All' : item[0].toUpperCase() + item.slice(1)}
-              variant={category === item ? 'primary' : 'secondary'}
-              size="sm"
-              onPress={() => setCategory(item)}
-            />
-          ))}
+        {/* <View style={styles.summaryWrap}>
+          <Card style={styles.summaryCard}>
+            <View style={styles.summaryStats}>
+              <View style={styles.statPill}>
+                <AppText variant="subtitle" style={styles.statValue}>
+                  {visibleSummary.totalVisible}
+                </AppText>
+                <AppText variant="caption" style={styles.statLabel}>
+                  shown
+                </AppText>
+              </View>
+
+              <View style={styles.statPill}>
+                <AppText variant="subtitle" style={styles.statValue}>
+                  {visibleSummary.unreadVisible}
+                </AppText>
+                <AppText variant="caption" style={styles.statLabel}>
+                  unread
+                </AppText>
+              </View>
+            </View>
+          </Card>
+        </View> */}
+
+        <View style={styles.filterSection}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {FILTERS.map((item) => {
+              const isActive = category === item;
+
+              return (
+                <Button
+                  key={item}
+                  title={getFilterLabel(item)}
+                  variant={isActive ? 'primary' : 'secondary'}
+                  size="sm"
+                  onPress={() => setCategory(item)}
+                  testID={`notification-filter-${item}`}
+                />
+              );
+            })}
+          </ScrollView>
         </View>
 
-        <View style={styles.actionWrap}>
+        <View style={styles.toolbar}>
+          <View style={styles.toolbarText}>
+            <AppText variant="caption" style={styles.toolbarLabel}>
+              {hasNotifications
+                ? `${visibleSummary.totalVisible} notification${visibleSummary.totalVisible > 1 ? 's' : ''}`
+                : 'No notification in this view'}
+            </AppText>
+          </View>
+
           <Button
             title="Mark all read"
             variant="secondary"
             size="sm"
             disabled={unreadCount === 0}
             onPress={() => void handleMarkAllRead()}
+            testID="notifications-mark-all-read"
           />
         </View>
 
@@ -268,115 +456,194 @@ export function NotificationsScreen({
         >
           {isLoading && !isRefreshing ? (
             <Card style={styles.stateCard}>
-              <AppText variant="body" style={styles.bodyText}>
-                Loading notifications...
+              <AppText variant="subtitle" style={styles.stateTitle}>
+                Loading notifications
+              </AppText>
+              <AppText variant="body" style={styles.stateText}>
+                We are checking your latest challenge, social, and system updates.
               </AppText>
             </Card>
           ) : null}
 
           {error ? (
             <Card style={styles.stateCard}>
-              <AppText variant="subtitle" style={styles.title}>
+              <AppText variant="subtitle" style={styles.stateTitle}>
                 Could not load notifications
               </AppText>
-              <AppText variant="body" style={styles.bodyText}>
+              <AppText variant="body" style={styles.stateText}>
                 {error}
               </AppText>
-              <Button title="Retry" variant="primary" size="sm" onPress={() => void loadNotifications()} />
+              <Button
+                title="Retry"
+                variant="primary"
+                size="sm"
+                onPress={() => void loadNotifications()}
+                testID="notifications-retry-button"
+              />
             </Card>
           ) : null}
 
           {!isLoading && !error && notifications.length === 0 ? (
             <Card style={styles.stateCard}>
-              <AppText variant="subtitle" style={styles.title}>
-                No notifications
+              <AppText variant="subtitle" style={styles.stateTitle}>
+                No notifications yet
               </AppText>
-              <AppText variant="body" style={styles.bodyText}>
-                Challenge, social, and system updates will appear here.
+              <AppText variant="body" style={styles.stateText}>
+                Challenge invitations, friend activity, and system messages will appear here.
               </AppText>
             </Card>
           ) : null}
 
           {!error
             ? notifications.map((notification) => {
-                const isChallengeInvite =
-                  notification.type === 'challenge_invite' &&
-                  notification.category === 'challenge' &&
-                  !notification.action &&
-                  Boolean(notification.challengeId);
-                const isReadOnlyInvite =
-                  notification.type === 'challenge_invite' && !notification.challengeId;
+                const isChallengeInvite = isChallengeInviteNotification(notification);
+                const isReadOnlyInvite = isReadOnlyInviteNotification(notification);
+                const actionState = actionStateById[notification.id] ?? {};
+                const isActionLoading = Boolean(actionState.loadingAction);
 
                 return (
-                <Card
-                  key={notification.id}
-                  pressable={!isChallengeInvite}
-                  onPress={!isChallengeInvite ? () => void handleOpen(notification) : undefined}
-                  style={[
-                    styles.notificationCard,
-                    !notification.isRead && styles.unreadCard,
-                  ]}
-                >
-                  <View style={styles.notificationHeader}>
-                    <View style={styles.notificationText}>
-                      <AppText variant="subtitle" style={styles.title}>
-                        {notification.title}
-                      </AppText>
-                      <AppText variant="caption" style={styles.metaText}>
-                        {notification.category ?? 'update'}
-                        {notification.createdAt ? ` · ${notification.createdAt}` : ''}
-                      </AppText>
-                    </View>
-                    <Button
-                      title="Delete"
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => handleDelete(notification)}
-                    />
-                  </View>
-                  <AppText variant="body" style={styles.bodyText}>
-                    {notification.message}
-                  </AppText>
-                  {isReadOnlyInvite ? (
-                    <AppText variant="caption" style={styles.metaText}>
-                      TODO: backend should include challengeId in challenge invitation notification payload.
-                    </AppText>
-                  ) : null}
-                  {isChallengeInvite ? (
-                    <View style={styles.inviteActions}>
+                  <Card
+                    key={notification.id}
+                    pressable={!isChallengeInvite}
+                    onPress={!isChallengeInvite ? () => void handleOpen(notification) : undefined}
+                    style={[
+                      styles.notificationCard,
+                      !notification.isRead && styles.unreadCard,
+                    ]}
+                    testID={`notification-card-${notification.id}`}
+                  >
+                    <View style={styles.notificationTopRow}>
+                      <View style={styles.notificationIdentity}>
+                        <View
+                          style={[
+                            styles.unreadDot,
+                            notification.isRead && styles.readDot,
+                          ]}
+                        />
+                        <View style={styles.notificationText}>
+                          <View style={styles.titleRow}>
+                            <AppText variant="subtitle" style={styles.title}>
+                              {notification.title}
+                            </AppText>
+                          </View>
+
+                          <View style={styles.metaRow}>
+                            <View style={styles.categoryChip}>
+                              <AppText variant="caption" style={styles.categoryText}>
+                                {getCategoryLabel(notification)}
+                              </AppText>
+                            </View>
+
+                            {notification.createdAt ? (
+                              <AppText variant="caption" style={styles.metaText}>
+                                {notification.createdAt}
+                              </AppText>
+                            ) : null}
+
+                            {!notification.isRead ? (
+                              <AppText variant="caption" style={styles.unreadText}>
+                                New
+                              </AppText>
+                            ) : null}
+                          </View>
+                        </View>
+                      </View>
+
                       <Button
-                        title="Accept"
-                        variant="primary"
-                        size="sm"
-                        onPress={() => void handleInviteAction(notification, 'accept')}
-                      />
-                      <Button
-                        title="Decline"
-                        variant="secondary"
-                        size="sm"
-                        onPress={() => void handleInviteAction(notification, 'decline')}
-                      />
-                      <Button
-                        title="View Detail"
+                        title="Delete"
                         variant="ghost"
                         size="sm"
-                        onPress={() => {
-                          void notificationsService.markRead([notification.id]).catch(() => undefined);
-                          onOpenChallenge?.(notification.challengeId!);
-                        }}
+                        disabled={actionState.loadingAction === 'delete'}
+                        onPress={() => handleDelete(notification)}
+                        testID={`notification-delete-${notification.id}`}
                       />
                     </View>
-                  ) : notification.challengeId ? (
-                    <View style={styles.inviteActions}>
-                      <Button
-                        title="View Detail"
-                        variant="secondary"
-                        size="sm"
-                        onPress={() => void handleOpen(notification)}
-                      />
-                    </View>
-                  ) : null}
-                </Card>
+
+                    <AppText variant="body" style={styles.bodyText}>
+                      {notification.message}
+                    </AppText>
+
+                    {isReadOnlyInvite ? (
+                      <View style={styles.warningBox}>
+                        <AppText variant="caption" style={styles.warningText}>
+                          This invitation cannot be opened because the backend did not include a challenge ID.
+                        </AppText>
+                      </View>
+                    ) : null}
+
+                    {actionState.error ? (
+                      <View style={styles.inlineError}>
+                        <AppText variant="caption" style={styles.inlineErrorText}>
+                          {actionState.error}
+                        </AppText>
+                      </View>
+                    ) : null}
+
+                    {isChallengeInvite ? (
+                      <View style={styles.actionArea}>
+                        <AppText variant="caption" style={styles.actionHint}>
+                          Choose what to do with this invitation.
+                        </AppText>
+
+                        <View style={styles.inviteActions}>
+                          <Button
+                            title={
+                              actionState.loadingAction === 'accept'
+                                ? 'Accepting...'
+                                : 'Accept'
+                            }
+                            variant="primary"
+                            size="sm"
+                            disabled={isActionLoading}
+                            onPress={() => void handleInviteAction(notification, 'accept')}
+                            testID={`notification-accept-${notification.id}`}
+                          />
+
+                          <Button
+                            title={
+                              actionState.loadingAction === 'decline'
+                                ? 'Declining...'
+                                : 'Decline'
+                            }
+                            variant="secondary"
+                            size="sm"
+                            disabled={isActionLoading}
+                            onPress={() => void handleInviteAction(notification, 'decline')}
+                            testID={`notification-decline-${notification.id}`}
+                          />
+
+                          <Button
+                            title="View Detail"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isActionLoading}
+                            onPress={() => {
+                              void notificationsService
+                                .markRead([notification.id])
+                                .catch(() => undefined);
+                              onOpenChallenge?.(notification.challengeId!);
+                            }}
+                            testID={`notification-view-${notification.id}`}
+                          />
+                        </View>
+                      </View>
+                    ) : notification.challengeId ? (
+                      <View style={styles.actionArea}>
+                        <Button
+                          title={
+                            actionState.loadingAction === 'open'
+                              ? 'Opening...'
+                              : 'View Challenge'
+                          }
+                          variant="secondary"
+                          size="sm"
+                          disabled={isActionLoading}
+                          onPress={() => void handleOpen(notification)}
+                          testID={`notification-view-${notification.id}`}
+                        />
+                      </View>
+                    ) : null}
+                  </Card>
                 );
               })
             : null}
@@ -395,17 +662,77 @@ function createStyles(theme: AppTheme) {
       paddingHorizontal: theme.spacing[24],
       paddingTop: theme.spacing[16],
     },
-    filterRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing[8],
+    summaryWrap: {
       paddingHorizontal: theme.spacing[24],
+      marginTop: theme.spacing[8],
       marginBottom: theme.spacing[12],
     },
-    actionWrap: {
+    summaryCard: {
+      padding: theme.spacing[16],
+      gap: theme.spacing[16],
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: theme.colors.bg['page-subtle'],
+      borderColor: theme.colors.border.brand,
+    },
+    summaryMain: {
+      flex: 1,
+      gap: theme.spacing[4],
+      paddingRight: theme.spacing[12],
+    },
+    summaryTitle: {
+      color: theme.colors.text.primary,
+      fontWeight: '900',
+    },
+    summaryText: {
+      color: theme.colors.text.secondary,
+      lineHeight: 20,
+    },
+    summaryStats: {
+      flexDirection: 'row',
+      gap: theme.spacing[8],
+    },
+    statPill: {
+      minWidth: 64,
+      paddingVertical: theme.spacing[8],
+      paddingHorizontal: theme.spacing[12],
+      borderRadius: theme.radius.lg,
+      alignItems: 'center',
+      backgroundColor: theme.colors.bg['page-subtle'],
+      borderWidth: 1,
+      borderColor: theme.colors.border.brand,
+    },
+    statValue: {
+      color: theme.colors.text.brand,
+      fontWeight: '900',
+    },
+    statLabel: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '700',
+    },
+    filterSection: {
+      marginBottom: theme.spacing[12],
+    },
+    filterRow: {
+      gap: theme.spacing[8],
+      paddingHorizontal: theme.spacing[24],
+      paddingRight: theme.spacing[32],
+    },
+    toolbar: {
       paddingHorizontal: theme.spacing[24],
       marginBottom: theme.spacing[12],
-      alignItems: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing[12],
+    },
+    toolbarText: {
+      flex: 1,
+    },
+    toolbarLabel: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '700',
     },
     list: {
       paddingHorizontal: theme.spacing[24],
@@ -419,35 +746,123 @@ function createStyles(theme: AppTheme) {
     unreadCard: {
       borderColor: theme.colors.border.brand,
     },
-    notificationHeader: {
+    notificationTopRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: theme.spacing[12],
+    },
+    notificationIdentity: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: theme.spacing[12],
     },
+    unreadDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 999,
+      marginTop: theme.spacing[8],
+      backgroundColor: theme.colors.text.brand,
+    },
+    readDot: {
+      opacity: 0.2,
+    },
     notificationText: {
       flex: 1,
-      gap: theme.spacing[4],
+      gap: theme.spacing[8],
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing[8],
+    },
+    title: {
+      flex: 1,
+      color: theme.colors.text.primary,
+      fontWeight: '900',
+      lineHeight: 22,
+    },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing[8],
+    },
+    categoryChip: {
+      paddingHorizontal: theme.spacing[8],
+      paddingVertical: theme.spacing[4],
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bg['page-subtle'],
+      borderWidth: 1,
+      borderColor: theme.colors.border.brand,
+    },
+    categoryText: {
+      color: theme.colors.text.brand,
+      fontWeight: '800',
+    },
+    metaText: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '600',
+    },
+    unreadText: {
+      color: theme.colors.text.brand,
+      fontWeight: '900',
+    },
+    bodyText: {
+      color: theme.colors.text.secondary,
+      lineHeight: 21,
+    },
+    actionArea: {
+      gap: theme.spacing[8],
+      paddingTop: theme.spacing[4],
+    },
+    actionHint: {
+      color: theme.colors.text.tertiary,
+      fontWeight: '700',
+    },
+    inviteActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing[8],
+    },
+    warningBox: {
+      padding: theme.spacing[12],
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bg['page-subtle'],
+      borderWidth: 1,
+      borderColor: theme.colors.border.brand,
+    },
+    warningText: {
+      color: theme.colors.text.secondary,
+      lineHeight: 18,
+    },
+    inlineError: {
+      padding: theme.spacing[12],
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bg['page-subtle'],
+      borderWidth: 1,
+      borderColor: theme.colors.border.brand,
+    },
+    inlineErrorText: {
+      color: theme.colors.text.primary,
+      fontWeight: '700',
+      lineHeight: 18,
     },
     stateCard: {
       padding: theme.spacing[24],
       gap: theme.spacing[12],
       alignItems: 'center',
     },
-    title: {
+    stateTitle: {
       color: theme.colors.text.primary,
-      fontWeight: '800',
+      fontWeight: '900',
+      textAlign: 'center',
     },
-    bodyText: {
+    stateText: {
       color: theme.colors.text.secondary,
       lineHeight: 20,
-    },
-    metaText: {
-      color: theme.colors.text.tertiary,
-    },
-    inviteActions: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing[8],
+      textAlign: 'center',
     },
   });
 }

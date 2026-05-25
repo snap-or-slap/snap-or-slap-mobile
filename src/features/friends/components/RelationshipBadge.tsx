@@ -17,7 +17,7 @@ export function RelationshipBadge({ relationship, testID }: RelationshipBadgePro
   const variant = getRelationshipBadgeVariant(relationship);
 
   return (
-    <Badge variant={variant} size="sm" testID={testID}>
+    <Badge variant={variant} size="sm" testID={testID} style={{alignSelf: "center"}}>
       {label}
     </Badge>
   );

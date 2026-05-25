@@ -1,29 +1,40 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoginScreen, RegisterScreen } from '../features/auth';
 
-interface AuthNavigatorProps {
-  onAuthSuccess: (nextStage?: 'profile' | 'permissions' | 'done') => void;
-}
+type AuthScreen = 'login' | 'register';
 
-export const AuthNavigator = ({ onAuthSuccess }: AuthNavigatorProps) => {
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'register'>('login');
+type AuthNavigatorProps = {
+  initialScreen?: AuthScreen;
+  onAuthSuccess: (nextStage?: 'profile' | 'permissions' | 'done' | 'checking') => void;
+};
+
+export function AuthNavigator({
+  initialScreen = 'login',
+  onAuthSuccess,
+}: AuthNavigatorProps) {
+  const [currentScreen, setCurrentScreen] = useState<AuthScreen>(initialScreen);
+
+  useEffect(() => {
+    setCurrentScreen(initialScreen);
+  }, [initialScreen]);
 
   if (currentScreen === 'register') {
     return (
-      <RegisterScreen 
-        onBack={() => setCurrentScreen('login')}
-        onNavigateLogin={() => setCurrentScreen('login')}
+      <RegisterScreen
         onRegisterSuccess={() => {
           onAuthSuccess('profile');
         }}
+        onNavigateLogin={() => setCurrentScreen('login')}
       />
     );
   }
 
   return (
-    <LoginScreen 
+    <LoginScreen
+      onLoginSuccess={() => {
+        onAuthSuccess('done');
+      }}
       onNavigateRegister={() => setCurrentScreen('register')}
-      onLoginSuccess={() => onAuthSuccess('done')}
     />
   );
-};
+}

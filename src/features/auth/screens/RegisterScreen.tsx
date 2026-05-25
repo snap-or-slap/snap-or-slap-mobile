@@ -449,6 +449,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: "auto",
+    marginBottom: 48,
   },
 });

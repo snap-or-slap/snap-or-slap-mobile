@@ -1,15 +1,19 @@
-const memoryStorage = new Map<string, string>();
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/**
- * TODO: Replace this in-memory fallback with AsyncStorage once persistence is
- * available in the app dependencies.
- */
 export const storage = {
-  getItem: async (key: string): Promise<string | null> => memoryStorage.get(key) ?? null,
-  setItem: async (key: string, value: string): Promise<void> => {
-    memoryStorage.set(key, value);
+  async getItem(key: string): Promise<string | null> {
+    return AsyncStorage.getItem(key);
   },
-  removeItem: async (key: string): Promise<void> => {
-    memoryStorage.delete(key);
+
+  async setItem(key: string, value: string): Promise<void> {
+    await AsyncStorage.setItem(key, value);
+  },
+
+  async removeItem(key: string): Promise<void> {
+    await AsyncStorage.removeItem(key);
+  },
+
+  async clear(): Promise<void> {
+    await AsyncStorage.clear();
   },
 };

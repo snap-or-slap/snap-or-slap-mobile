@@ -5,13 +5,53 @@ import { AuthNavigator } from '../navigation/AuthNavigator';
 import { CompleteProfileScreen, SetupPermissionsScreen } from '../features/profile';
 import { getSetupFlags } from '../features/profile/services';
 import { AppText, Screen } from '../design-system/components';
+import { session } from '../services/api';
 
 type SetupStage = 'checking' | 'profile' | 'permissions' | 'done';
+type AuthInitialScreen = 'login' | 'register';
 
 export const AppNavigator = () => {
   const [onboardingDone, setOnboardingDone] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [setupStage, setSetupStage] = useState<SetupStage>('checking');
+  const [authInitialScreen, setAuthInitialScreen] = useState<AuthInitialScreen>('login');
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function bootstrap() {
+      try {
+        const currentSession = await session.getSession();
+
+        if (!mounted) return;
+
+        if (currentSession?.accessToken && currentSession?.user) {
+          setIsAuthenticated(true);
+          setOnboardingDone(true);
+          setSetupStage('checking');
+        } else {
+          setIsAuthenticated(false);
+          setSetupStage('checking');
+        }
+      } catch {
+        if (!mounted) return;
+
+        setIsAuthenticated(false);
+        setSetupStage('checking');
+      } finally {
+        if (mounted) {
+          setIsBootstrapping(false);
+        }
+      }
+    }
+
+    bootstrap();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || setupStage !== 'checking') return;
@@ -35,7 +75,9 @@ export const AppNavigator = () => {
         setSetupStage('done');
       })
       .catch(() => {
-        if (mounted) setSetupStage('profile');
+        if (mounted) {
+          setSetupStage('profile');
+        }
       });
 
     return () => {
@@ -43,12 +85,31 @@ export const AppNavigator = () => {
     };
   }, [isAuthenticated, setupStage]);
 
+  if (isBootstrapping) {
+    return (
+      <Screen padding="md" testID="app-bootstrapping-screen">
+        <AppText variant="body" color="secondary">
+          Loading...
+        </AppText>
+      </Screen>
+    );
+  }
+
   if (!onboardingDone) {
     return (
       <OnboardingScreen
-        onComplete={() => setOnboardingDone(true)}
-        onLogin={() => setOnboardingDone(true)}
-        onCreateAccount={() => setOnboardingDone(true)}
+        onComplete={() => {
+          setAuthInitialScreen('login');
+          setOnboardingDone(true);
+        }}
+        onLogin={() => {
+          setAuthInitialScreen('login');
+          setOnboardingDone(true);
+        }}
+        onCreateAccount={() => {
+          setAuthInitialScreen('register');
+          setOnboardingDone(true);
+        }}
       />
     );
   }
@@ -56,9 +117,11 @@ export const AppNavigator = () => {
   if (!isAuthenticated) {
     return (
       <AuthNavigator
+        initialScreen={authInitialScreen}
         onAuthSuccess={(nextStage) => {
           setSetupStage(nextStage ?? 'checking');
           setIsAuthenticated(true);
+          setOnboardingDone(true);
         }}
       />
     );
@@ -68,6 +131,7 @@ export const AppNavigator = () => {
     return (
       <CompleteProfileScreen
         onBack={() => {
+          session.clearSession();
           setIsAuthenticated(false);
           setSetupStage('checking');
         }}
