@@ -12,6 +12,10 @@ import { challengesService } from '../services/challenges.service';
 import { checkinService } from '../services/checkin.service';
 import { friendsService } from '@features/friends/services';
 import { ApiError, session, getApiBaseUrl } from '@services/api';
+import { useGetChallengeQuery, useGetChallengeStatsQuery, useAcceptInviteMutation, useDeclineInviteMutation, useSetReadyMutation, useLeaveChallengeMutation, useCancelChallengeMutation, useInviteUsersMutation } from '@store/api/challengeApi';
+import { useGetTodayStatusQuery, useListCheckinsQuery, useNudgeMemberMutation } from '@store/api/checkinApi';
+import { useGetFriendsQuery } from '@store/api/friendApi';
+import { useAppSelector } from '@store/hooks';
 import type { FriendUser } from '@features/friends/types';
 
 type ChallengeDetailScreenProps = {
@@ -419,66 +423,57 @@ export function ChallengeDetailScreen({
   onCheckIn,
 }: ChallengeDetailScreenProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const currentUserId = useAppSelector((state) => state.auth.user?.id ?? null);
 
-  const [challenge, setChallenge] = useState<LoadedDetail | null>(null);
-  const [friends, setFriends] = useState<FriendUser[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // ── RTK Query data fetching ─────────────────────────────────
+  const hasId = Boolean(challengeId);
+  const { data: detailData, isLoading: detailLoading, error: detailError, refetch: refetchDetail } =
+    useGetChallengeQuery(challengeId!, { skip: !hasId });
+  const { data: todayData } = useGetTodayStatusQuery(challengeId!, { skip: !hasId });
+  const { data: statsData } = useGetChallengeStatsQuery(challengeId!, { skip: !hasId });
+  const { data: checkinsData } = useListCheckinsQuery(
+    { challengeId: challengeId!, params: { limit: 30 } },
+    { skip: !hasId },
+  );
+  const { data: friendsData } = useGetFriendsQuery();
+
+  // ── RTK Query mutations ────────────────────────────────────
+  const [acceptInviteMut] = useAcceptInviteMutation();
+  const [declineInviteMut] = useDeclineInviteMutation();
+  const [setReadyMut] = useSetReadyMutation();
+  const [leaveMut] = useLeaveChallengeMutation();
+  const [cancelMut] = useCancelChallengeMutation();
+  const [inviteUsersMut] = useInviteUsersMutation();
+  const [nudgeMemberMut] = useNudgeMemberMutation();
+
+  // ── Derive composed state from RTK Query cache ─────────────
+  const challenge = useMemo<LoadedDetail | null>(() => {
+    if (!detailData) return null;
+    const detail = detailData as DetailResponse;
+    const todayStatus = todayData as TodayStatus | undefined;
+    const stats = statsData as StatsResponse | undefined;
+    const checkins = (checkinsData as CheckinsResponse | undefined)?.checkins ?? [];
+    return mapLoadedDetail(detail, todayStatus, stats, checkins);
+  }, [detailData, todayData, statsData, checkinsData]);
+
+  const friends = useMemo(() => (friendsData as FriendUser[] | undefined) ?? [], [friendsData]);
+  const isLoading = detailLoading;
+  const error = detailError ? getErrorMessage((detailError as { data?: unknown })?.data ?? detailError) : null;
+
+  // Alias refetchDetail as loadChallenge for backward compat with mutation callbacks
+  const loadChallenge = refetchDetail;
+
   const [isInviteModalVisible, setInviteModalVisible] = useState(false);
   const [inviteSearch, setInviteSearch] = useState('');
   const [selectedInviteIds, setSelectedInviteIds] = useState<string[]>([]);
   const [showGallery, setShowGallery] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [inviteFeedback, setInviteFeedback] = useState<InlineFeedbackMessage | null>(null);
   const [slapLoadingMemberId, setSlapLoadingMemberId] = useState<string | null>(null);
   const [slappedMemberIds, setSlappedMemberIds] = useState<Record<string, boolean>>({});
   const [slapErrorByMemberId, setSlapErrorByMemberId] = useState<Record<string, string | undefined>>({});
-
-  const loadChallenge = useCallback(async () => {
-    if (!challengeId) {
-      setError('Missing challenge id.');
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const [detailResult, todayResult, statsResult, checkinsResult, friendsResult] =
-        await Promise.allSettled([
-          challengesService.getChallenge<DetailResponse>(challengeId),
-          checkinService.getTodayStatus<TodayStatus>(challengeId),
-          challengesService.getChallengeStats<StatsResponse>(challengeId),
-          checkinService.listCheckins<CheckinsResponse>(challengeId, { limit: 30 }),
-          friendsService.listFriends({ limit: 50 }),
-        ]);
-      const userId = await session.getCurrentUserId().catch(() => null);
-
-      if (detailResult.status === 'rejected') {
-        throw detailResult.reason;
-      }
-
-      const todayStatus = todayResult.status === 'fulfilled' ? todayResult.value : undefined;
-      const stats = statsResult.status === 'fulfilled' ? statsResult.value : undefined;
-      const checkins = checkinsResult.status === 'fulfilled' ? checkinsResult.value.checkins ?? [] : [];
-      setChallenge(mapLoadedDetail(detailResult.value, todayStatus, stats, checkins));
-      setFriends(friendsResult.status === 'fulfilled' ? friendsResult.value.friends : []);
-      setCurrentUserId(userId);
-    } catch (loadError) {
-      setChallenge(null);
-      setError(getErrorMessage(loadError));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [challengeId]);
-
-  useEffect(() => {
-    void loadChallenge();
-  }, [loadChallenge]);
 
   useEffect(() => {
     setInviteFeedback(null);
@@ -702,12 +697,12 @@ export function ChallengeDetailScreen({
     setInviteFeedback(null);
 
     try {
-      await challengesService.inviteUsers(challenge.id, selectedInviteIds);
+      await inviteUsersMut({ challengeId: challenge.id, userIds: selectedInviteIds }).unwrap();
       setActionMessage(`${selectedInviteIds.length} invite${selectedInviteIds.length === 1 ? '' : 's'} sent.`);
       setInviteModalVisible(false);
       setSelectedInviteIds([]);
       setInviteSearch('');
-      await loadChallenge();
+      // RTK Query auto-refetches via tag invalidation
     } catch (inviteError) {
       setInviteFeedback({ type: 'error', message: getErrorMessage(inviteError) });
     } finally {
@@ -725,7 +720,7 @@ export function ChallengeDetailScreen({
     setSlapLoadingMemberId(member.id);
 
     try {
-      await checkinService.nudgeMember(challenge.id, member.userId ?? member.id);
+      await nudgeMemberMut({ challengeId: challenge.id, memberId: member.userId ?? member.id }).unwrap();
       setSlappedMemberIds((current) => ({
         ...current,
         [member.id]: true,

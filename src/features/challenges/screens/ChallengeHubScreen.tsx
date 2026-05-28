@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Animated, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
@@ -9,8 +9,8 @@ import type { ChallengeListItem, ChallengeStatus } from '../types/challenge.type
 import { ChallengeTabBar } from '../components/ChallengeTabBar';
 import { ChallengeCard } from '../components/ChallengeCard';
 import { ChallengeEmptyState } from '../components/ChallengeEmptyState';
-import { challengesService } from '../services/challenges.service';
-import { widgetService } from '@features/widget/services';
+import { useListChallengesQuery, useGetHistoryListQuery, useAcceptInviteMutation, useDeclineInviteMutation } from '@store/api/challengeApi';
+import { useGetWidgetSummaryQuery } from '@store/api/widgetApi';
 import { ApiError } from '@services/api';
 
 type ChallengeHubScreenProps = {
@@ -98,68 +98,86 @@ function mapChallengeListItem(raw: BackendChallenge): ChallengeListItem {
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null && 'error' in error) {
+    return String((error as { error: unknown }).error);
+  }
   return 'Could not load challenges.';
 }
+
+// ── Memoized list item renderer ──────────────────────────────────
+
+const MemoizedChallengeCard = React.memo(ChallengeCard);
+
+// ── Component ────────────────────────────────────────────────────
 
 export function ChallengeHubScreen({
   onCreateChallenge,
   onOpenChallenge,
 }: ChallengeHubScreenProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [segment, setSegment] = useState<ChallengeSegment>('active');
-  const [challenges, setChallenges] = useState<ChallengeListItem[]>([]);
-  const [currentStreak, setCurrentStreak] = useState<number | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  const loadData = useCallback(
-    async (refreshing = false) => {
-      if (refreshing) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-      setError(null);
+  // ── RTK Query hooks ──────────────────────────────────────────
+  const isHistorySegment = segment === 'history';
 
-      try {
-        const listPromise =
-          segment === 'history'
-            ? challengesService.getHistoryList<HistoryListResponse>({ limit: 50 })
-            : challengesService.listChallenges<ChallengeListResponse>({
-                status: segment,
-                limit: 50,
-              });
-
-        const [listResponse, widgetResponse] = await Promise.all([
-          listPromise,
-          widgetService.getSummary<WidgetSummaryResponse>(),
-        ]);
-
-        setChallenges((listResponse.challenges ?? []).map(mapChallengeListItem).filter((item) => item.id));
-        setCurrentStreak(widgetResponse.currentStreak);
-      } catch (loadError) {
-        setError(getErrorMessage(loadError));
-        setChallenges([]);
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [segment],
+  const {
+    data: challengeListData,
+    isLoading: isListLoading,
+    isFetching: isListFetching,
+    error: listError,
+    refetch: refetchList,
+  } = useListChallengesQuery(
+    { status: segment, limit: 50 },
+    { skip: isHistorySegment },
   );
 
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
+  const {
+    data: historyData,
+    isLoading: isHistoryLoading,
+    isFetching: isHistoryFetching,
+    error: historyError,
+    refetch: refetchHistory,
+  } = useGetHistoryListQuery(
+    { limit: 50 },
+    { skip: !isHistorySegment },
+  );
+
+  const {
+    data: widgetData,
+  } = useGetWidgetSummaryQuery();
+
+  const [acceptInvite] = useAcceptInviteMutation();
+  const [declineInvite] = useDeclineInviteMutation();
+
+  // ── Derived state ──────────────────────────────────────────
+  const rawData = isHistorySegment ? historyData : challengeListData;
+  const isLoading = isHistorySegment ? isHistoryLoading : isListLoading;
+  const isFetching = isHistorySegment ? isHistoryFetching : isListFetching;
+  const error = isHistorySegment ? historyError : listError;
+  const isRefreshing = isFetching && !isLoading;
+
+  const challenges = useMemo(() => {
+    const response = rawData as ChallengeListResponse | HistoryListResponse | undefined;
+    return (response?.challenges ?? []).map(mapChallengeListItem).filter((item) => item.id);
+  }, [rawData]);
+
+  const currentStreak = (widgetData as WidgetSummaryResponse | undefined)?.currentStreak;
+
+  // ── Handlers ───────────────────────────────────────────────
+  const handleRefresh = useCallback(() => {
+    if (isHistorySegment) {
+      refetchHistory();
+    } else {
+      refetchList();
+    }
+  }, [isHistorySegment, refetchHistory, refetchList]);
 
   const handleSegmentChange = useCallback(
     (newSegment: ChallengeSegment) => {
       if (newSegment === segment) return;
-      // Fade out → update → fade in
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 100,
@@ -180,59 +198,32 @@ export function ChallengeHubScreen({
     async (challengeId: string, action: 'accept' | 'decline') => {
       try {
         if (action === 'accept') {
-          await challengesService.acceptInvite(challengeId);
+          await acceptInvite(challengeId).unwrap();
           onOpenChallenge?.(challengeId);
         } else {
-          await challengesService.declineInvite(challengeId);
+          await declineInvite(challengeId).unwrap();
         }
-        await loadData(true);
-      } catch (actionError) {
-        setError(getErrorMessage(actionError));
+        // RTK Query automatically refetches due to tag invalidation
+      } catch {
+        // Error handled by RTK Query
       }
     },
-    [loadData, onOpenChallenge],
+    [acceptInvite, declineInvite, onOpenChallenge],
   );
 
-  const renderContent = () => {
-    if (isLoading && !isRefreshing) {
-      return (
-        <Card style={styles.stateCard}>
-          <AppText variant="body" style={styles.stateText}>
-            Loading challenges...
-          </AppText>
-        </Card>
-      );
-    }
-
-    if (error) {
-      return (
-        <ChallengeEmptyState
-          title="Could not load challenges"
-          description={error}
-          actionLabel="Retry"
-          onAction={() => void loadData()}
-          testID="challenge-error-state"
-        />
-      );
-    }
-
-    if (challenges.length === 0) {
-      return renderEmptyState();
-    }
-
-    return challenges.map((challenge) => {
+  // ── FlatList renderItem ────────────────────────────────────
+  const renderItem = useCallback(
+    ({ item: challenge }: { item: ChallengeListItem }) => {
       const mode =
         challenge.status === 'ACTIVE'
           ? 'active'
           : challenge.status === 'FORMATION' || challenge.status === 'INVITED'
           ? 'formation'
           : 'history';
-
       const isInvite = challenge.isInvite;
 
       return (
-        <ChallengeCard
-          key={challenge.id}
+        <MemoizedChallengeCard
           challenge={challenge}
           mode={mode}
           onPress={() => onOpenChallenge?.(challenge.id)}
@@ -253,8 +244,42 @@ export function ChallengeHubScreen({
           testID={`challenge-card-${challenge.id}`}
         />
       );
-    });
-  };
+    },
+    [onOpenChallenge, handleInviteAction],
+  );
+
+  const keyExtractor = useCallback((item: ChallengeListItem) => item.id, []);
+
+  // ── Render helpers ─────────────────────────────────────────
+  const renderListHeader = useCallback(() => {
+    if (isLoading && !isRefreshing) {
+      return (
+        <Card style={styles.stateCard}>
+          <AppText variant="body" style={styles.stateText}>
+            Loading challenges...
+          </AppText>
+        </Card>
+      );
+    }
+
+    if (error) {
+      return (
+        <ChallengeEmptyState
+          title="Could not load challenges"
+          description={getErrorMessage(error)}
+          actionLabel="Retry"
+          onAction={handleRefresh}
+          testID="challenge-error-state"
+        />
+      );
+    }
+
+    if (challenges.length === 0) {
+      return renderEmptyState();
+    }
+
+    return null;
+  }, [isLoading, isRefreshing, error, challenges.length, handleRefresh, styles]);
 
   const renderEmptyState = () => {
     switch (segment) {
@@ -287,6 +312,9 @@ export function ChallengeHubScreen({
     }
   };
 
+  // ── Show empty state in header when no challenges ──────────
+  const showListItems = !isLoading && !error && challenges.length > 0;
+
   return (
     <Screen testID="challenge-hub-screen">
       <View style={styles.root}>
@@ -317,7 +345,6 @@ export function ChallengeHubScreen({
           </Card>
         </View>
 
-        {/* ── Create Challenge CTA ── */}
         <View style={styles.ctaWrap}>
           <Button
             title="Create Challenge"
@@ -329,29 +356,29 @@ export function ChallengeHubScreen({
           />
         </View>
 
-        {/* ── Tab Bar ── */}
         <ChallengeTabBar
           activeSegment={segment}
           onSegmentChange={handleSegmentChange}
           testID="challenge-tab-bar"
         />
 
-        {/* ── Tab Content ── */}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={() => void loadData(true)} />
-          }
-        >
-          <Animated.View
-            style={[styles.cardList, { opacity: fadeAnim }]}
+        <Animated.View style={[styles.listWrapper, { opacity: fadeAnim }]}>
+          <FlatList
+            data={showListItems ? challenges : []}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            ListHeaderComponent={renderListHeader}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+            }
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            windowSize={5}
             testID="challenges-list"
-          >
-            {renderContent()}
-          </Animated.View>
-        </ScrollView>
+          />
+        </Animated.View>
       </View>
     </Screen>
   );
@@ -389,11 +416,12 @@ function createStyles(theme: AppTheme) {
       color: theme.colors.text.primary,
       fontWeight: '900',
     },
+    listWrapper: {
+      flex: 1,
+    },
     scrollContent: {
       paddingHorizontal: theme.spacing[24],
       paddingBottom: 120,
-    },
-    cardList: {
       gap: 16,
     },
     stateCard: {

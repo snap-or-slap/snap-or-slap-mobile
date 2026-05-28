@@ -11,6 +11,7 @@ import { useTheme } from '@ds/theme';
 import { ApiError } from '@services/api';
 import { AuthTextField } from '../components/AuthTextField';
 import { AuthAnimatedContainer } from '../components/AuthAnimatedContainer';
+import { useRegisterMutation } from '@store/api/authApi';
 import { authService } from '../services';
 
 interface RegisterScreenProps {
@@ -27,13 +28,14 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [username, setUsername] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [emailError, setEmailError] = useState<string | undefined>();
   const [usernameError, setUsernameError] = useState<string | undefined>();
   const [formError, setFormError] = useState<string | undefined>();
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | undefined>();
   const [checkingUsername, setCheckingUsername] = useState(false);
+
+  const [registerMutation, { isLoading }] = useRegisterMutation();
 
   const isLengthValid = username.length >= 4 && username.length <= 20;
   const isCharValid = /^[a-z0-9_]*$/.test(username) && username.length > 0;
@@ -96,23 +98,21 @@ export function RegisterScreen({ onBack, onRegisterSuccess, onNavigateLogin }: R
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      await authService.register({
+      await registerMutation({
         email: normalizedEmail,
         password,
         username: normalizedUsername,
-      });
+      }).unwrap();
       onRegisterSuccess?.();
     } catch (err) {
-      const nextErrors = getRegisterErrors(err);
+      // RTK Query wraps errors — extract the original error from .data
+      const originalError = (err as { data?: unknown })?.data ?? err;
+      const nextErrors = getRegisterErrors(originalError);
       setEmailError(nextErrors.email);
       setUsernameError(nextErrors.username);
       setPasswordError(nextErrors.password);
       setFormError(nextErrors.form);
-    } finally {
-      setIsLoading(false);
     }
   };
 

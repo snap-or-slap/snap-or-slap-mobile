@@ -6,7 +6,7 @@ import { useTheme } from '@ds/theme';
 import { ApiError } from '@services/api';
 import { AuthTextField } from '../components/AuthTextField';
 import { AuthAnimatedContainer } from '../components/AuthAnimatedContainer';
-import { authService } from '../services';
+import { useLoginMutation } from '@store/api/authApi';
 
 interface LoginScreenProps {
   onBack?: () => void;
@@ -19,8 +19,9 @@ export function LoginScreen({ onBack, onLoginSuccess, onNavigateRegister }: Logi
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async () => {
     if (isLoading) return;
@@ -30,18 +31,17 @@ export function LoginScreen({ onBack, onLoginSuccess, onNavigateRegister }: Logi
       return;
     }
     setError(undefined);
-    setIsLoading(true);
 
     try {
-      await authService.login({
+      await login({
         email: email.trim().toLowerCase(),
         password,
-      });
+      }).unwrap();
       onLoginSuccess?.();
     } catch (err) {
-      setError(getLoginErrorMessage(err));
-    } finally {
-      setIsLoading(false);
+      // RTK Query wraps errors — extract the original error from .data
+      const originalError = (err as { data?: unknown })?.data ?? err;
+      setError(getLoginErrorMessage(originalError));
     }
   };
 

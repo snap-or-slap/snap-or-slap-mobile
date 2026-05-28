@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -19,11 +19,11 @@ import {
 } from '../components';
 import type { FriendUser, FriendRequest } from '../types';
 import {
-  getFriends,
-  getIncomingRequests,
-  getOutgoingRequests,
-  respondFriendRequest,
-} from '../services';
+  useGetFriendsQuery,
+  useGetIncomingRequestsQuery,
+  useGetOutgoingRequestsQuery,
+  useRespondToFriendRequestMutation,
+} from '@store/api/friendApi';
 
 type FriendsHubScreenProps = {
   onOpenFriendRequests?: () => void;
@@ -39,54 +39,34 @@ export function FriendsHubScreen({
   onOpenUserPreview,
 }: FriendsHubScreenProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
-  // ── Data state ──────────────────────────────────────────────────
-  const [friends, setFriends] = useState<FriendUser[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  // ── RTK Query data fetching ─────────────────────────────────────
+  const { data: friendsRaw, isLoading: loading } = useGetFriendsQuery();
+  const { data: incomingRaw } = useGetIncomingRequestsQuery();
+  const { data: outgoingRaw } = useGetOutgoingRequestsQuery();
+  const [respondMut] = useRespondToFriendRequestMutation();
+
+  const friends = (friendsRaw ?? []) as FriendUser[];
+  const incomingRequests = (incomingRaw ?? []) as FriendRequest[];
 
   // ── Search state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   // ── Animation ────────────────────────────────────────────────────
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [f, req, out] = await Promise.all([
-          getFriends(),
-          getIncomingRequests(),
-          getOutgoingRequests(),
-        ]);
-        setFriends(f);
-        setIncomingRequests(req);
-        setOutgoingRequests(out);
-      } catch (err) {
-        // Silently fall through to empty state
-      } finally {
-        setLoading(false);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 220,
-          useNativeDriver: true,
-        }).start();
-      }
-    }
-    loadData();
-  }, []);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // ── Local search (filters friends list) ─────────────────────────
-  const filteredFriends = searchQuery.trim()
-    ? friends.filter(
-        (f) =>
-          f.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          f.username.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : friends;
+  const filteredFriends = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return friends;
+    return friends.filter(
+      (f) =>
+        f.displayName.toLowerCase().includes(q) ||
+        f.username.toLowerCase().includes(q),
+    );
+  }, [friends, searchQuery]);
 
   const handleClearSearch = () => {
     setSearchQuery('');
@@ -96,8 +76,8 @@ export function FriendsHubScreen({
   // ── Request actions ──────────────────────────────────────────────
   const handleAccept = async (requestId: string) => {
     try {
-      await respondFriendRequest(requestId, 'accept');
-      setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
+      await respondMut({ requestId, action: 'accept' }).unwrap();
+      // RTK Query auto-refetches via tag invalidation
     } catch {
       // no-op; keep UI intact
     }
@@ -105,8 +85,8 @@ export function FriendsHubScreen({
 
   const handleDecline = async (requestId: string) => {
     try {
-      await respondFriendRequest(requestId, 'decline');
-      setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
+      await respondMut({ requestId, action: 'decline' }).unwrap();
+      // RTK Query auto-refetches via tag invalidation
     } catch {
       // no-op
     }

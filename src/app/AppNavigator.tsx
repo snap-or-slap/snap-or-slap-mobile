@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { OnboardingScreen } from '../features/onboarding';
 import { HomeScreen } from '../features/home';
 import { AuthNavigator } from '../navigation/AuthNavigator';
@@ -6,55 +6,29 @@ import { CompleteProfileScreen, SetupPermissionsScreen } from '../features/profi
 import { getSetupFlags } from '../features/profile/services';
 import { AppText, Screen } from '../design-system/components';
 import { session } from '../services/api';
-
-type SetupStage = 'checking' | 'profile' | 'permissions' | 'done';
-type AuthInitialScreen = 'login' | 'register';
+import {
+  useAppSelector,
+  useAppDispatch,
+  restoreSession,
+  setSetupStage,
+  setAuthenticated,
+  setGuest,
+  completeOnboarding,
+} from '../store';
+import type { SetupStage } from '../store';
 
 export const AppNavigator = () => {
-  const [onboardingDone, setOnboardingDone] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [setupStage, setSetupStage] = useState<SetupStage>('checking');
-  const [authInitialScreen, setAuthInitialScreen] = useState<AuthInitialScreen>('login');
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const dispatch = useAppDispatch();
+  const { status, setupStage, onboardingDone } = useAppSelector((state) => state.auth);
 
+  // ── Bootstrap: restore session from AsyncStorage ────────────
   useEffect(() => {
-    let mounted = true;
+    dispatch(restoreSession());
+  }, [dispatch]);
 
-    async function bootstrap() {
-      try {
-        const currentSession = await session.getSession();
-
-        if (!mounted) return;
-
-        if (currentSession?.accessToken && currentSession?.user) {
-          setIsAuthenticated(true);
-          setOnboardingDone(true);
-          setSetupStage('checking');
-        } else {
-          setIsAuthenticated(false);
-          setSetupStage('checking');
-        }
-      } catch {
-        if (!mounted) return;
-
-        setIsAuthenticated(false);
-        setSetupStage('checking');
-      } finally {
-        if (mounted) {
-          setIsBootstrapping(false);
-        }
-      }
-    }
-
-    bootstrap();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
+  // ── After auth: check setup flags ──────────────────────────
   useEffect(() => {
-    if (!isAuthenticated || setupStage !== 'checking') return;
+    if (status !== 'authenticated' || setupStage !== 'checking') return;
 
     let mounted = true;
 
@@ -63,29 +37,30 @@ export const AppNavigator = () => {
         if (!mounted) return;
 
         if (!flags.profileSetupCompleted) {
-          setSetupStage('profile');
+          dispatch(setSetupStage('profile'));
           return;
         }
 
         if (!flags.permissionsSetupCompleted) {
-          setSetupStage('permissions');
+          dispatch(setSetupStage('permissions'));
           return;
         }
 
-        setSetupStage('done');
+        dispatch(setSetupStage('done'));
       })
       .catch(() => {
         if (mounted) {
-          setSetupStage('profile');
+          dispatch(setSetupStage('profile'));
         }
       });
 
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated, setupStage]);
+  }, [status, setupStage, dispatch]);
 
-  if (isBootstrapping) {
+  // ── Loading states ─────────────────────────────────────────
+  if (status === 'unknown') {
     return (
       <Screen padding="md" testID="app-bootstrapping-screen">
         <AppText variant="body" color="secondary">
@@ -95,47 +70,47 @@ export const AppNavigator = () => {
     );
   }
 
+  // ── Onboarding ─────────────────────────────────────────────
   if (!onboardingDone) {
     return (
       <OnboardingScreen
         onComplete={() => {
-          setAuthInitialScreen('login');
-          setOnboardingDone(true);
+          dispatch(completeOnboarding());
         }}
         onLogin={() => {
-          setAuthInitialScreen('login');
-          setOnboardingDone(true);
+          dispatch(completeOnboarding());
         }}
         onCreateAccount={() => {
-          setAuthInitialScreen('register');
-          setOnboardingDone(true);
+          dispatch(completeOnboarding());
         }}
       />
     );
   }
 
-  if (!isAuthenticated) {
+  // ── Auth ───────────────────────────────────────────────────
+  if (status === 'guest') {
     return (
       <AuthNavigator
-        initialScreen={authInitialScreen}
         onAuthSuccess={(nextStage) => {
-          setSetupStage(nextStage ?? 'checking');
-          setIsAuthenticated(true);
-          setOnboardingDone(true);
+          // Auth state is now set by the login/register mutations via onQueryStarted
+          // We only need to handle the setup stage if passed explicitly
+          if (nextStage) {
+            dispatch(setSetupStage(nextStage));
+          }
         }}
       />
     );
   }
 
+  // ── Setup stages ───────────────────────────────────────────
   if (setupStage === 'profile') {
     return (
       <CompleteProfileScreen
         onBack={() => {
           session.clearSession();
-          setIsAuthenticated(false);
-          setSetupStage('checking');
+          dispatch(setGuest());
         }}
-        onComplete={() => setSetupStage('permissions')}
+        onComplete={() => dispatch(setSetupStage('permissions'))}
       />
     );
   }
@@ -143,8 +118,8 @@ export const AppNavigator = () => {
   if (setupStage === 'permissions') {
     return (
       <SetupPermissionsScreen
-        onBack={() => setSetupStage('profile')}
-        onComplete={() => setSetupStage('done')}
+        onBack={() => dispatch(setSetupStage('profile'))}
+        onComplete={() => dispatch(setSetupStage('done'))}
       />
     );
   }
@@ -159,11 +134,11 @@ export const AppNavigator = () => {
     );
   }
 
+  // ── Main app ───────────────────────────────────────────────
   return (
     <HomeScreen
       onSignedOut={() => {
-        setIsAuthenticated(false);
-        setSetupStage('checking');
+        dispatch(setGuest());
       }}
     />
   );

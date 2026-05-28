@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, Screen } from '@ds/components';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { AppHeader } from '@shared/components';
-import { authService } from '@features/auth/services';
 import { session, type FrontendUser } from '@services/api';
 import {
   DangerZoneCard,
@@ -16,6 +15,8 @@ import {
 } from '../components';
 import { profileService } from '../services';
 import type { UserProfile } from '../types';
+import { useLogoutMutation } from '@store/api/authApi';
+import { useDeleteAccountMutation, useUpdateSettingsMutation } from '@store/api/userApi';
 
 type ProfileScreenProps = {
   onSignedOut?: () => void;
@@ -34,7 +35,10 @@ type ProfileActivitiesResponse = {
 
 export function ProfileScreen({ onSignedOut }: ProfileScreenProps) {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const [logout, { isLoading: logoutLoading }] = useLogoutMutation();
+  const [deleteAccountMut] = useDeleteAccountMutation();
+  const [updateSettingsMut] = useUpdateSettingsMutation();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +48,6 @@ export function ProfileScreen({ onSignedOut }: ProfileScreenProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteComplete, setDeleteComplete] = useState(false);
   const [privacyLoading, setPrivacyLoading] = useState(false);
-  const [logoutLoading, setLogoutLoading] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
@@ -72,8 +75,7 @@ export function ProfileScreen({ onSignedOut }: ProfileScreenProps) {
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      await profileService.deleteAccount();
-      await session.clearSession();
+      await deleteAccountMut().unwrap();
       setDeleteComplete(true);
       setConfirmDelete(false);
       onSignedOut?.();
@@ -104,9 +106,9 @@ export function ProfileScreen({ onSignedOut }: ProfileScreenProps) {
     setProfile({ ...profile, isPrivate });
 
     try {
-      const { user } = await profileService.updateSettings(isPrivate);
-      await session.setCurrentUser(user);
-      setProfile((current) => current ? mergeUserIntoProfile(current, user) : current);
+      const result = await updateSettingsMut(isPrivate).unwrap();
+      await session.setCurrentUser(result.user);
+      setProfile((current) => current ? mergeUserIntoProfile(current, result.user) : current);
     } catch {
       setProfile(previous);
       setSettingsError('Could not update privacy. Please try again.');
@@ -120,18 +122,12 @@ export function ProfileScreen({ onSignedOut }: ProfileScreenProps) {
   };
 
   const handleConfirmLogout = async () => {
-    setLogoutLoading(true);
     try {
       const refreshToken = await session.getRefreshToken();
-      if (refreshToken) {
-        await authService.signout(refreshToken);
-      } else {
-        await session.clearSession();
-      }
+      await logout(refreshToken ?? undefined).unwrap();
     } catch {
-      await session.clearSession();
+      // Logout mutation already dispatches setGuest even on failure
     } finally {
-      setLogoutLoading(false);
       setLogoutConfirmVisible(false);
       onSignedOut?.();
     }
