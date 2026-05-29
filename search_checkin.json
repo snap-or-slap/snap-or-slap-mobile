@@ -1,0 +1,1097 @@
+﻿[
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\app\\AppNavigator.tsx",
+        "LineNumber":  31,
+        "Line":  "    if (status !== \u0027authenticated\u0027 || setupStage !== \u0027checking\u0027) return;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\app\\AppNavigator.tsx",
+        "LineNumber":  127,
+        "Line":  "  if (setupStage === \u0027checking\u0027) {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\app\\AppNavigator.tsx",
+        "LineNumber":  129,
+        "Line":  "      \u003cScreen padding=\"md\" testID=\"setup-checking-screen\"\u003e"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\auth\\screens\\RegisterScreen.tsx",
+        "LineNumber":  36,
+        "Line":  "  const [checkingUsername, setCheckingUsername] = useState(false);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\auth\\screens\\RegisterScreen.tsx",
+        "LineNumber":  51,
+        "Line":  "      setCheckingUsername(false);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\auth\\screens\\RegisterScreen.tsx",
+        "LineNumber":  55,
+        "Line":  "    setCheckingUsername(true);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\auth\\screens\\RegisterScreen.tsx",
+        "LineNumber":  64,
+        "Line":  "        setCheckingUsername(false);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\auth\\screens\\RegisterScreen.tsx",
+        "LineNumber":  282,
+        "Line":  "                disabled={isLoading || checkingUsername}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  12,
+        "Line":  "import { checkinService } from \u0027../services/checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  16,
+        "Line":  "import { useGetTodayStatusQuery, useListCheckinsQuery, useNudgeMemberMutation } from \u0027@store/api/checkinApi\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  24,
+        "Line":  "  onCheckIn?: (challengeId: string) =\u003e void;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  48,
+        "Line":  "  totalCheckins?: number;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  52,
+        "Line":  "type CheckinsResponse = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  53,
+        "Line":  "  checkins?: BackendRecord[];"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  81,
+        "Line":  "  currentCheckin?: CheckinItem;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  84,
+        "Line":  "type CheckinItem = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  111,
+        "Line":  "  checkins: CheckinItem[];"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  196,
+        "Line":  "    stringValue(raw.checkinId ?? raw.checkin_id),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  203,
+        "Line":  "  currentCycleCheckins: CheckinItem[],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  227,
+        "Line":  "    currentCheckin: currentCycleCheckins.find((checkin) =\u003e checkin.userId === userId),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  231,
+        "Line":  "function mapCheckin(raw: BackendRecord): CheckinItem {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  234,
+        "Line":  "    id: String(raw.id ?? raw.checkinId ?? raw.checkin_id ?? \u0027\u0027),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  251,
+        "Line":  "  checkins: BackendRecord[] = [],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  256,
+        "Line":  "  const currentCycleCheckins = checkins"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  257,
+        "Line":  "    .map(mapCheckin)"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  260,
+        "Line":  "    mapMember(member, todayMembers, currentCycleCheckins),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  304,
+        "Line":  "        ? `${Math.round(stats.completionRate)}% completion · ${stats.totalCheckins ?? 0} check-ins`"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  309,
+        "Line":  "    checkins: checkins.map(mapCheckin).filter((item) =\u003e item.id),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  441,
+        "Line":  "  onCheckIn,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  453,
+        "Line":  "  const { data: checkinsData } = useListCheckinsQuery("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  474,
+        "Line":  "    const checkins = (checkinsData as CheckinsResponse | undefined)?.checkins ?? [];"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  475,
+        "Line":  "    return mapLoadedDetail(detail, todayStatus, stats, checkins);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  476,
+        "Line":  "  }, [detailData, todayData, statsData, checkinsData]);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  540,
+        "Line":  "  const shouldShowCheckIn = Boolean(isActive \u0026\u0026 isAcceptedMember \u0026\u0026 currentUserToday?.checkedInToday === false);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  554,
+        "Line":  "    ? shouldShowCheckIn"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  563,
+        "Line":  "    ? shouldShowCheckIn"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  893,
+        "Line":  "              {shouldShowCheckIn ? ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  899,
+        "Line":  "                  onPress={() =\u003e onCheckIn?.(challenge.id)}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1071,
+        "Line":  "                      {isActive \u0026\u0026 member.checkedInToday \u0026\u0026 member.currentCheckin?.caption ? ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1073,
+        "Line":  "                          {member.currentCheckin.caption}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1077,
+        "Line":  "                      {isActive \u0026\u0026 member.checkedInToday \u0026\u0026 member.currentCheckin?.evidenceUrl ? ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1079,
+        "Line":  "                          evidenceUrl={member.currentCheckin.evidenceUrl}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1198,
+        "Line":  "            {challenge.checkins.length === 0 ? ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1204,
+        "Line":  "                {challenge.checkins.map((checkin) =\u003e ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1205,
+        "Line":  "                  \u003cView key={checkin.id} style={styles.feedItem}\u003e"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1207,
+        "Line":  "                      {checkin.memberName ?? \u0027Member\u0027}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1211,
+        "Line":  "                      {checkin.caption || \u0027Checked in\u0027}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1214,
+        "Line":  "                    {checkin.evidenceUrl ? ("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1216,
+        "Line":  "                        evidenceUrl={checkin.evidenceUrl}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\ChallengeDetailScreen.tsx",
+        "LineNumber":  1217,
+        "Line":  "                        testID={`checkin-proof-${checkin.id}`}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  14,
+        "Line":  "import { checkinService } from \u0027../services/checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  17,
+        "Line":  "type CheckInCameraScreenProps = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  24,
+        "Line":  "export function CheckInCameraScreen({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  29,
+        "Line":  "}: CheckInCameraScreenProps) {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  109,
+        "Line":  "      await checkinService.submitCheckinWithPhoto(challengeId, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\index.ts",
+        "LineNumber":  5,
+        "Line":  "export * from \u0027./CheckInCameraScreen\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  7,
+        "Line":  "import { CheckInCameraScreen } from \u0027../CheckInCameraScreen\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  11,
+        "Line":  "jest.mock(\u0027../../services/checkin.service\u0027, () =\u003e ({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  12,
+        "Line":  "  checkinService: {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  13,
+        "Line":  "    submitCheckinWithPhoto: jest.fn(),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  28,
+        "Line":  "const { checkinService } = require(\u0027../../services/checkin.service\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  29,
+        "Line":  "const mockSubmitCheckin = checkinService.submitCheckinWithPhoto as jest.Mock;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  44,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission loading\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  48,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  54,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission denied\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  64,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  79,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  89,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  105,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  116,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} onBack={onBack} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  123,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission granted\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  130,
+        "Line":  "    mockSubmitCheckin.mockResolvedValue({ success: true });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  136,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  146,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} onBack={onBack} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  153,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  157,
+        "Line":  "    expect(mockSubmitCheckin).not.toHaveBeenCalled();"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  161,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  167,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  174,
+        "Line":  "describe(\u0027CheckInCameraScreen — Submit\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  186,
+        "Line":  "    mockSubmitCheckin.mockResolvedValue({ success: true });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  190,
+        "Line":  "    mockSubmitCheckin.mockResolvedValueOnce({ success: true });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  193,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  208,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  220,
+        "Line":  "    expect(mockSubmitCheckin).not.toHaveBeenCalled();"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  225,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  245,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  3,
+        "Line":  "export type SubmitCheckInPayload = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  9,
+        "Line":  "export type SubmitCheckInWithPhotoPayload = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  15,
+        "Line":  "export type SubmitCheckInResult = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  16,
+        "Line":  "  checkin: {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  25,
+        "Line":  "  totalCheckins?: number;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  33,
+        "Line":  "export type ListCheckinsParams = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  71,
+        "Line":  "    return `checkin-${Date.now()}.png`;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  75,
+        "Line":  "    return `checkin-${Date.now()}.webp`;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  78,
+        "Line":  "  return `checkin-${Date.now()}.jpg`;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  81,
+        "Line":  "export async function listCheckins\u003cT = unknown\u003e("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  83,
+        "Line":  "  params: ListCheckinsParams = {},"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  86,
+        "Line":  "    apiRoutes.challenges.checkins(challengeId),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  99,
+        "Line":  "    apiRoutes.challenges.todayCheckins(challengeId),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  131,
+        "Line":  "export async function submitCheckIn("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  133,
+        "Line":  "  payload: SubmitCheckInPayload,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  134,
+        "Line":  "): Promise\u003cSubmitCheckInResult\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  138,
+        "Line":  "    apiRoutes.challenges.checkins(challengeId),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  146,
+        "Line":  "  return mapKeysToCamel\u003cSubmitCheckInResult\u003e(response);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  149,
+        "Line":  "export async function submitCheckin("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  151,
+        "Line":  "  payload: SubmitCheckInPayload,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  152,
+        "Line":  "): Promise\u003cSubmitCheckInResult\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  153,
+        "Line":  "  return submitCheckIn(challengeId, payload);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  156,
+        "Line":  "export async function submitCheckinWithPhoto("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  158,
+        "Line":  "  payload: SubmitCheckInWithPhotoPayload,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  159,
+        "Line":  "): Promise\u003cSubmitCheckInResult\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  173,
+        "Line":  "    apiRoutes.challenges.checkins(challengeId),"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  190,
+        "Line":  "  return mapKeysToCamel\u003cSubmitCheckInResult\u003e(response);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  193,
+        "Line":  "export const checkinService = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  194,
+        "Line":  "  listCheckins,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  200,
+        "Line":  "  submitCheckIn,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  201,
+        "Line":  "  submitCheckin,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\checkin.service.ts",
+        "LineNumber":  204,
+        "Line":  "  submitCheckinWithPhoto,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\index.ts",
+        "LineNumber":  2,
+        "Line":  "export * from \u0027./checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\index.ts",
+        "LineNumber":  5,
+        "Line":  "import { checkinService } from \u0027./checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\index.ts",
+        "LineNumber":  9,
+        "Line":  "  ...checkinService,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  6,
+        "Line":  "  listCheckins,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  8,
+        "Line":  "  submitCheckIn,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  9,
+        "Line":  "  submitCheckin,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  10,
+        "Line":  "  submitCheckinWithPhoto,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  11,
+        "Line":  "} from \u0027../checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  32,
+        "Line":  "describe(\u0027checkin.service\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  49,
+        "Line":  "    mockApiClient.get.mockResolvedValue({ checkins: [] });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  51,
+        "Line":  "    await listCheckins(\u0027challenge-1\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  57,
+        "Line":  "    expect(mockApiClient.get).toHaveBeenLastCalledWith(\u0027/challenges/challenge-1/checkins\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  68,
+        "Line":  "      \u0027/challenges/challenge-1/checkins/today\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  92,
+        "Line":  "    mockApiClient.post.mockResolvedValue({ checkin: { id: \u0027checkin-1\u0027 } });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  94,
+        "Line":  "    await submitCheckIn(\u0027challenge-1\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  100,
+        "Line":  "      \u0027/challenges/challenge-1/checkins\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  108,
+        "Line":  "    await submitCheckin(\u0027challenge-1\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  114,
+        "Line":  "      \u0027/challenges/challenge-1/checkins?user_id=user%201\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  123,
+        "Line":  "    [\u0027file:///proof.PNG?cache=1\u0027, \u0027image/png\u0027, \u0027checkin-1770000000000.png\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  124,
+        "Line":  "    [\u0027file:///proof.webp\u0027, \u0027image/webp\u0027, \u0027checkin-1770000000000.webp\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  125,
+        "Line":  "    [\u0027file:///proof.jpg\u0027, \u0027image/jpeg\u0027, \u0027checkin-1770000000000.jpg\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  126,
+        "Line":  "    [\u0027file:///proof.jpeg\u0027, \u0027image/jpeg\u0027, \u0027checkin-1770000000000.jpg\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  127,
+        "Line":  "    [\u0027file:///proof.unknown\u0027, \u0027image/jpeg\u0027, \u0027checkin-1770000000000.jpg\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  129,
+        "Line":  "    mockApiClient.post.mockResolvedValue({ checkin: { id: \u0027checkin-1\u0027 } });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  131,
+        "Line":  "    await submitCheckinWithPhoto(\u0027challenge-1\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  139,
+        "Line":  "    expect(route).toBe(\u0027/challenges/challenge-1/checkins?user_id=member-1\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  153,
+        "Line":  "    mockApiClient.post.mockResolvedValue({ checkin: { id: \u0027checkin-1\u0027 } });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  155,
+        "Line":  "    await submitCheckinWithPhoto(\u0027challenge-1\u0027, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\services\\__tests__\\checkin.service.test.ts",
+        "LineNumber":  173,
+        "Line":  "          name: \u0027checkin-1770000000000.jpg\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  7,
+        "Line":  "import { checkinService } from \u0027../services/checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  72,
+        "Line":  "    totalCheckins: 1,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  107,
+        "Line":  "jest.mock(\u0027../services/checkin.service\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  120,
+        "Line":  "  const listCheckins = jest.fn(async () =\u003e ({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  121,
+        "Line":  "    checkins: ["
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  123,
+        "Line":  "        id: \u0027checkin-done\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  126,
+        "Line":  "        evidence_url: \u0027/uploads/checkins/challenge-1/cycle-1/user-done.jpg\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  138,
+        "Line":  "    listCheckins,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  140,
+        "Line":  "    checkinService: {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  142,
+        "Line":  "      listCheckins,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  257,
+        "Line":  "      expect(checkinService.nudgeMember).toHaveBeenCalledWith(\u0027challenge-1\u0027, \u0027user-pending\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  259,
+        "Line":  "    expect(checkinService.getTodayStatus).toHaveBeenCalledTimes(1);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  279,
+        "Line":  "      expect(checkinService.nudgeMember).toHaveBeenCalledWith(\u0027challenge-1\u0027, \u0027user-current\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  282,
+        "Line":  "    expect(checkinService.getTodayStatus).toHaveBeenCalledTimes(1);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  307,
+        "Line":  "    (checkinService.nudgeMember as jest.Mock).mockRejectedValueOnce("
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  327,
+        "Line":  "      uri: \u0027http://10.0.2.2:3000/uploads/checkins/challenge-1/cycle-1/user-done.jpg\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  332,
+        "Line":  "    const galleryImage = await screen.findByTestId(\u0027checkin-proof-checkin-done\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  334,
+        "Line":  "      uri: \u0027http://10.0.2.2:3000/uploads/checkins/challenge-1/cycle-1/user-done.jpg\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\friends\\services\\__tests__\\friends.service.test.ts",
+        "LineNumber":  316,
+        "Line":  "      latestActivities: [{ type: \u0027checkin_done\u0027 }],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\friends\\utils\\friendFormatters.ts",
+        "LineNumber":  51,
+        "Line":  "    case \u0027checkin_done\u0027:"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\friends\\utils\\__tests__\\friendFormatters.test.ts",
+        "LineNumber":  45,
+        "Line":  "    [\u0027checkin_done\u0027, \u0027Completed a check-in\u0027],"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  8,
+        "Line":  "  CheckInCameraScreen,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  28,
+        "Line":  "  | { name: \u0027checkInCamera\u0027; challengeId: string }"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  81,
+        "Line":  "        onCheckIn={(challengeId) =\u003e setRoute({ name: \u0027checkInCamera\u0027, challengeId })}"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  86,
+        "Line":  "  if (route.name === \u0027checkInCamera\u0027) {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  88,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\__tests__\\HomeScreen.test.tsx",
+        "LineNumber":  26,
+        "Line":  "    CheckInCameraScreen: () =\u003e"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\notifications\\screens\\NotificationsScreen.tsx",
+        "LineNumber":  463,
+        "Line":  "                We are checking your latest challenge, social, and system updates."
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\notifications\\screens\\__tests__\\NotificationsScreen.test.tsx",
+        "LineNumber":  301,
+        "Line":  "      type: \u0027checkin_reminder\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\profile\\screens\\ProfileScreen.tsx",
+        "LineNumber":  348,
+        "Line":  "    case \u0027checkin_done\u0027:"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\profile\\services\\__tests__\\profile.service.test.ts",
+        "LineNumber":  130,
+        "Line":  "    mockedApiClient.get.mockResolvedValue({ total_checkins: 5 });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\profile\\services\\__tests__\\profile.service.test.ts",
+        "LineNumber":  138,
+        "Line":  "    await getActivities({ page: 2, limit: 10, type: \u0027checkin\u0027 });"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\profile\\services\\__tests__\\profile.service.test.ts",
+        "LineNumber":  140,
+        "Line":  "      query: { page: 2, limit: 10, type: \u0027checkin\u0027 },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\navigation\\AuthNavigator.tsx",
+        "LineNumber":  8,
+        "Line":  "  onAuthSuccess: (nextStage?: \u0027profile\u0027 | \u0027permissions\u0027 | \u0027done\u0027 | \u0027checking\u0027) =\u003e void;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\services\\api\\apiRoutes.ts",
+        "LineNumber":  42,
+        "Line":  "    checkins: (id: string) =\u003e `/challenges/${id}/checkins`,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\services\\api\\apiRoutes.ts",
+        "LineNumber":  43,
+        "Line":  "    todayCheckins: (id: string) =\u003e `/challenges/${id}/checkins/today`,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\services\\api\\mappers.ts",
+        "LineNumber":  57,
+        "Line":  "export type FrontendCheckin = Record\u003cstring, unknown\u003e;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\services\\api\\mappers.ts",
+        "LineNumber":  85,
+        "Line":  "  total_checkins: \u0027totalCheckins\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\services\\api\\mappers.ts",
+        "LineNumber":  193,
+        "Line":  "export function mapCheckinDto\u003cT = FrontendCheckin\u003e(dto: unknown): T {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\index.ts",
+        "LineNumber":  9,
+        "Line":  "import \u0027./api/checkinApi\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\authApi.ts",
+        "LineNumber":  24,
+        "Line":  "          dispatch(setSetupStage(\u0027checking\u0027));"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\baseApi.ts",
+        "LineNumber":  10,
+        "Line":  "  \u0027Checkin\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\baseApi.ts",
+        "LineNumber":  11,
+        "Line":  "  \u0027TodayCheckin\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  3,
+        "Line":  "  listCheckins,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  6,
+        "Line":  "  submitCheckinWithPhoto,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  7,
+        "Line":  "  submitCheckIn,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  8,
+        "Line":  "} from \u0027../../features/challenges/services/checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  10,
+        "Line":  "  ListCheckinsParams,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  11,
+        "Line":  "  SubmitCheckInPayload,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  12,
+        "Line":  "  SubmitCheckInWithPhotoPayload,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  13,
+        "Line":  "  SubmitCheckInResult,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  14,
+        "Line":  "} from \u0027../../features/challenges/services/checkin.service\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  18,
+        "Line":  "export const checkinApi = baseApi.injectEndpoints({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  30,
+        "Line":  "        { type: \u0027TodayCheckin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  34,
+        "Line":  "    listCheckins: builder.query\u003cunknown, { challengeId: string; params?: ListCheckinsParams }\u003e({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  37,
+        "Line":  "          const data = await listCheckins(challengeId, params);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  44,
+        "Line":  "        { type: \u0027Checkin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  48,
+        "Line":  "    submitCheckin: builder.mutation\u003cSubmitCheckInResult, { challengeId: string; payload: SubmitCheckInPayload }\u003e({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  51,
+        "Line":  "          const data = await submitCheckIn(challengeId, payload);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  58,
+        "Line":  "        { type: \u0027TodayCheckin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  59,
+        "Line":  "        { type: \u0027Checkin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  67,
+        "Line":  "    submitCheckinWithPhoto: builder.mutation\u003cSubmitCheckInResult, { challengeId: string; payload: SubmitCheckInWithPhotoPayload }\u003e({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  70,
+        "Line":  "          const data = await submitCheckinWithPhoto(challengeId, payload);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  77,
+        "Line":  "        { type: \u0027TodayCheckin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  78,
+        "Line":  "        { type: \u0027Checkin\u0027, id: challengeId },"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  104,
+        "Line":  "  useListCheckinsQuery,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  105,
+        "Line":  "  useSubmitCheckinMutation,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  106,
+        "Line":  "  useSubmitCheckinWithPhotoMutation,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\api\\checkinApi.ts",
+        "LineNumber":  108,
+        "Line":  "} = checkinApi;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\slices\\authSlice.ts",
+        "LineNumber":  8,
+        "Line":  "export type SetupStage = \u0027checking\u0027 | \u0027profile\u0027 | \u0027permissions\u0027 | \u0027done\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\slices\\authSlice.ts",
+        "LineNumber":  22,
+        "Line":  "  setupStage: \u0027checking\u0027,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\store\\slices\\authSlice.ts",
+        "LineNumber":  63,
+        "Line":  "      state.setupStage = \u0027checking\u0027;"
+    }
+]

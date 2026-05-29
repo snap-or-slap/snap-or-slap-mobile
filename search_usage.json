@@ -1,0 +1,137 @@
+﻿[
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  16,
+        "Line":  "type CheckInCameraScreenProps = {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  23,
+        "Line":  "export function CheckInCameraScreen({"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  28,
+        "Line":  "}: CheckInCameraScreenProps) {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\index.ts",
+        "LineNumber":  5,
+        "Line":  "export * from \u0027./CheckInCameraScreen\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  7,
+        "Line":  "import { CheckInCameraScreen } from \u0027../CheckInCameraScreen\u0027;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  44,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission loading\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  48,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  54,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission denied\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  64,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  79,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  89,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  105,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  116,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} onBack={onBack} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  123,
+        "Line":  "describe(\u0027CheckInCameraScreen — Permission granted\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  136,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  146,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} onBack={onBack} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  153,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  161,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  167,
+        "Line":  "    renderWithProviders(\u003cCheckInCameraScreen {...DEFAULT_PROPS} /\u003e);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  174,
+        "Line":  "describe(\u0027CheckInCameraScreen — Submit\u0027, () =\u003e {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  193,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  208,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  225,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  245,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  8,
+        "Line":  "  CheckInCameraScreen,"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\screens\\HomeScreen.tsx",
+        "LineNumber":  88,
+        "Line":  "      \u003cCheckInCameraScreen"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\home\\__tests__\\HomeScreen.test.tsx",
+        "LineNumber":  26,
+        "Line":  "    CheckInCameraScreen: () =\u003e"
+    }
+]

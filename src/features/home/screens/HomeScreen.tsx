@@ -58,9 +58,18 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
     }
   }, [activeTab, refreshNotificationBadge, route.name]);
 
+  // Lazy mounting: keep track of which tabs have been visited so we don't render them until needed
+  const [visitedTabs, setVisitedTabs] = useState<Set<HomeTabKey>>(new Set([activeTab]));
+
   const handleTabPress = (tab: HomeTabKey) => {
     setRoute({ name: 'tabs' });
     setActiveTab(tab);
+    setVisitedTabs((prev) => {
+      if (prev.has(tab)) return prev;
+      const next = new Set(prev);
+      next.add(tab);
+      return next;
+    });
   };
 
   // ── Challenge sub-routes ─────────────────────────────────────────
@@ -89,15 +98,6 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
         challengeId={route.challengeId}
         onBack={() => setRoute({ name: 'challengeDetail', challengeId: route.challengeId })}
         onSubmitted={() => undefined}
-      />
-    );
-  }
-
-  if (route.name === 'notifications') {
-    return (
-      <NotificationsScreen
-        onBack={() => setRoute({ name: 'tabs' })}
-        onOpenChallenge={(challengeId) => setRoute({ name: 'challengeDetail', challengeId })}
       />
     );
   }
@@ -143,11 +143,11 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
   }
 
   // ── Main tabs ────────────────────────────────────────────────────
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'friends':
-        return (
-          <View style={styles.content}>
+  return (
+    <Screen style={styles.container} safeArea="none" testID="home-screen">
+      <View style={styles.content}>
+        {visitedTabs.has('friends') && (
+          <View style={[styles.content, { display: activeTab === 'friends' ? 'flex' : 'none' }]}>
             <View style={styles.compatNode} testID="friends-screen">
               <AppText variant="caption" style={styles.compatText}>
                 Friends
@@ -160,10 +160,10 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
               onOpenUserPreview={(userId) => setRoute({ name: 'userPreview', userId })}
             />
           </View>
-        );
-      case 'challenges':
-        return (
-          <View style={styles.content}>
+        )}
+        
+        {visitedTabs.has('challenges') && (
+          <View style={[styles.content, { display: activeTab === 'challenges' ? 'flex' : 'none' }]}>
             <View style={styles.compatNode} testID="challenges-screen">
               <AppText variant="caption" style={styles.compatText}>
                 Active Challenges
@@ -176,25 +176,22 @@ export function HomeScreen({ onSignedOut }: HomeScreenProps) {
               }
             />
           </View>
-        );
-      case 'notifications':
-        return (
-          <NotificationsScreen
-            onOpenChallenge={(challengeId) => setRoute({ name: 'challengeDetail', challengeId })}
-            onUnreadCountChange={setNotificationUnreadCount}
-          />
-        );
-      case 'profile':
-        return <ProfileScreen onSignedOut={onSignedOut} />;
-      default:
-        return null;
-    }
-  };
+        )}
 
-  return (
-    <Screen style={styles.container} safeArea="none" testID="home-screen">
-      <View style={styles.content}>
-        {renderContent()}
+        {visitedTabs.has('notifications') && (
+          <View style={[styles.content, { display: activeTab === 'notifications' ? 'flex' : 'none' }]}>
+            <NotificationsScreen
+              onOpenChallenge={(challengeId) => setRoute({ name: 'challengeDetail', challengeId })}
+              onUnreadCountChange={setNotificationUnreadCount}
+            />
+          </View>
+        )}
+
+        {visitedTabs.has('profile') && (
+          <View style={[styles.content, { display: activeTab === 'profile' ? 'flex' : 'none' }]}>
+            <ProfileScreen onSignedOut={onSignedOut} />
+          </View>
+        )}
       </View>
       <HomeBottomTabBar
         activeTab={activeTab}

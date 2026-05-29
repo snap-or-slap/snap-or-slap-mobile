@@ -271,10 +271,11 @@ function LogoutConfirmModal({
 }
 
 async function loadProfileOverview(): Promise<UserProfile> {
-  const overview = await profileService.getProfileOverview<ProfileOverviewResponse>();
-  const activitiesResponse = await profileService
-    .getActivities<ProfileActivitiesResponse>({ limit: 3 })
-    .catch(() => undefined);
+  const [overview, activitiesResponse] = await Promise.all([
+    profileService.getProfileOverview<ProfileOverviewResponse>(),
+    profileService.getActivities<ProfileActivitiesResponse>({ limit: 3 }).catch(() => undefined)
+  ]);
+
   const user = overview.user ?? await session.getCurrentUser();
   const stats = overview.stats ?? {};
   const badges = Array.isArray(overview.badges) ? overview.badges : [];

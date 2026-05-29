@@ -11,8 +11,7 @@ import { CloseIcon, InfoCircleIcon } from '@ds/icons';
 import { useTheme } from '@ds/theme';
 import type { AppTheme } from '@ds/theme';
 import { IconButton } from '@shared/components';
-import { checkinService } from '../services/checkin.service';
-import { ApiError } from '@services/api';
+import { useSubmitCheckinWithPhotoMutation } from '@store/api/checkinApi';
 
 type CheckInCameraScreenProps = {
   challengeId: string;
@@ -33,12 +32,12 @@ export function CheckInCameraScreen({
   const cameraRef = useRef<CameraView | null>(null);
 
   const [permission, requestPermission] = useCameraPermissions();
+  const [submitCheckinMutation, { isLoading: isSubmitting }] = useSubmitCheckinWithPhotoMutation();
 
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [caption, setCaption] = useState('');
   const [error, setError] = useState<string | undefined>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
 
   const hasPhoto = Boolean(photoUri);
@@ -102,32 +101,31 @@ export function CheckInCameraScreen({
       return;
     }
 
-    setIsSubmitting(true);
     setError(undefined);
 
     try {
-      await checkinService.submitCheckinWithPhoto(challengeId, {
-        userId: currentUserId,
-        photoUri,
-        caption: caption.trim() || undefined,
-      });
+      await submitCheckinMutation({
+        challengeId,
+        payload: {
+          userId: currentUserId,
+          photoUri,
+          caption: caption.trim() || undefined,
+        },
+      }).unwrap();
 
       onSubmitted?.();
       onBack();
-    } catch (submitError) {
-      if (submitError instanceof ApiError && submitError.status === 409) {
-        setError(submitError.message || 'You already checked in for this cycle.');
-      } else if (submitError instanceof ApiError) {
-        setError(
-          submitError.message || 'Could not submit your check-in. Please try again.'
-        );
-      } else if (submitError instanceof Error) {
-        setError(submitError.message || 'Could not submit your check-in.');
+    } catch (submitError: any) {
+      const status = submitError?.status;
+      const message = submitError?.data?.message || submitError?.message || submitError?.error;
+
+      if (status === 409) {
+        setError(message || 'You already checked in for this cycle.');
+      } else if (message) {
+        setError(message);
       } else {
         setError('Could not submit your check-in. Please try again.');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

@@ -123,6 +123,9 @@ async function request<T>(
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
     ...options.headers,
   };
 
@@ -133,12 +136,6 @@ async function request<T>(
       options.isMultipart === true || isFormDataBody(options.body);
 
     if (shouldSendMultipart) {
-      /**
-       * Important for React Native / Expo:
-       * Do NOT manually set Content-Type for FormData.
-       * fetch will add:
-       * multipart/form-data; boundary=...
-       */
       removeContentTypeHeader(headers);
       body = options.body as BodyInit;
     } else {
@@ -151,7 +148,10 @@ async function request<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(await buildUrl(path, options), {
+  const finalUrl = await buildUrl(path, options);
+  console.log(`[API Request] Method: ${method}, Path: ${path}, FinalURL: ${finalUrl}, HasToken: ${!!token}`);
+
+  const response = await fetch(finalUrl, {
     method,
     headers,
     body,
@@ -159,7 +159,10 @@ async function request<T>(
 
   const parsed = await parseResponse(response);
 
+  console.log(`[API Response] Status: ${response.status}`);
+
   if (!response.ok) {
+    console.error(`[API Error Response] Status: ${response.status}, Body: ${JSON.stringify(parsed)}`);
     throw normalizeApiError(response.status, parsed);
   }
 

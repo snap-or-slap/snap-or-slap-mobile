@@ -12,7 +12,7 @@ import { challengesService } from '../services/challenges.service';
 import { checkinService } from '../services/checkin.service';
 import { friendsService } from '@features/friends/services';
 import { ApiError, session, getApiBaseUrl } from '@services/api';
-import { useGetChallengeQuery, useGetChallengeStatsQuery, useAcceptInviteMutation, useDeclineInviteMutation, useSetReadyMutation, useLeaveChallengeMutation, useCancelChallengeMutation, useInviteUsersMutation } from '@store/api/challengeApi';
+import { useGetChallengeQuery, useGetChallengeStatsQuery, useAcceptInviteMutation, useDeclineInviteMutation, useSetReadyMutation, useLeaveChallengeMutation, useCancelChallengeMutation, useInviteUsersMutation, useCheckMilestoneMutation } from '@store/api/challengeApi';
 import { useGetTodayStatusQuery, useListCheckinsQuery, useNudgeMemberMutation } from '@store/api/checkinApi';
 import { useGetFriendsQuery } from '@store/api/friendApi';
 import { useAppSelector } from '@store/hooks';
@@ -464,6 +464,7 @@ export function ChallengeDetailScreen({
   const [cancelMut] = useCancelChallengeMutation();
   const [inviteUsersMut] = useInviteUsersMutation();
   const [nudgeMemberMut] = useNudgeMemberMutation();
+  const [checkMilestoneMut] = useCheckMilestoneMutation();
 
   // ── Derive composed state from RTK Query cache ─────────────
   const challenge = useMemo<LoadedDetail | null>(() => {
@@ -498,7 +499,15 @@ export function ChallengeDetailScreen({
     setSlapLoadingMemberId(null);
     setSlappedMemberIds({});
     setSlapErrorByMemberId({});
-  }, [challengeId]);
+    
+    // Attempt to trigger milestone check if we open the screen,
+    // to prompt the backend to update challenge state if it has ended.
+    if (challengeId) {
+      checkMilestoneMut(challengeId).catch(() => {
+        // Silently fail if milestone check fails, as it's a background sync
+      });
+    }
+  }, [challengeId, checkMilestoneMut]);
 
   const isHistory =
     challenge?.status === 'success' ||

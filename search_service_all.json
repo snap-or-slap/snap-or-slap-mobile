@@ -1,0 +1,37 @@
+﻿[
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\CheckInCameraScreen.tsx",
+        "LineNumber":  109,
+        "Line":  "      await checkinService.submitCheckinWithPhoto(challengeId, {"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\screens\\__tests__\\CheckInCameraScreen.test.tsx",
+        "LineNumber":  29,
+        "Line":  "const mockSubmitCheckin = checkinService.submitCheckinWithPhoto as jest.Mock;"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  257,
+        "Line":  "      expect(checkinService.nudgeMember).toHaveBeenCalledWith(\u0027challenge-1\u0027, \u0027user-pending\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  259,
+        "Line":  "    expect(checkinService.getTodayStatus).toHaveBeenCalledTimes(1);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  279,
+        "Line":  "      expect(checkinService.nudgeMember).toHaveBeenCalledWith(\u0027challenge-1\u0027, \u0027user-current\u0027);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  282,
+        "Line":  "    expect(checkinService.getTodayStatus).toHaveBeenCalledTimes(1);"
+    },
+    {
+        "Path":  "D:\\Code\\School\\mobile-app-development\\snap-or-slap-mobile\\src\\features\\challenges\\__tests__\\ChallengeDetailScreen.test.tsx",
+        "LineNumber":  307,
+        "Line":  "    (checkinService.nudgeMember as jest.Mock).mockRejectedValueOnce("
+    }
+]

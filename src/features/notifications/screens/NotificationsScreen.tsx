@@ -214,12 +214,13 @@ export function NotificationsScreen({
       setError(null);
 
       try {
-        await notificationsService.syncOverlays().catch(() => undefined);
-
-        const response = await notificationsService.listNotifications<NotificationsResponse>({
-          limit: 50,
-          category: category === 'all' ? undefined : category,
-        });
+        const [_, response] = await Promise.all([
+          notificationsService.syncOverlays().catch(() => undefined),
+          notificationsService.listNotifications<NotificationsResponse>({
+            limit: 50,
+            category: category === 'all' ? undefined : category,
+          })
+        ]);
 
         const nextNotifications = (response.notifications ?? [])
           .map(mapNotification)
