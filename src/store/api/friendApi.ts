@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import {
   getFriends,
   getIncomingRequests,
@@ -12,18 +12,6 @@ import {
 } from '../../features/friends/services/friends.service';
 import type { FriendRespondAction } from '../../features/friends/types';
 
-// ── Helper ───────────────────────────────────────────────────────
-
-function toError(error: unknown) {
-  return {
-    error: {
-      status: 'CUSTOM_ERROR' as const,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data: error,
-    },
-  };
-}
-
 // ── API ──────────────────────────────────────────────────────────
 
 export const friendApi = baseApi.injectEndpoints({
@@ -36,7 +24,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await getFriends();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Friend'],
@@ -48,7 +36,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await getIncomingRequests();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: [{ type: 'FriendRequest', id: 'incoming' }],
@@ -60,7 +48,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await getOutgoingRequests();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: [{ type: 'FriendRequest', id: 'outgoing' }],
@@ -72,7 +60,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await searchUsers(query);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       // No tags — ephemeral search results
@@ -84,7 +72,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await getUserProfile(userId);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, userId) => [{ type: 'UserProfile', id: userId }],
@@ -98,7 +86,7 @@ export const friendApi = baseApi.injectEndpoints({
           const data = await sendFriendRequest(receiverId);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['FriendRequest'],
@@ -110,7 +98,7 @@ export const friendApi = baseApi.injectEndpoints({
           await respondFriendRequest(requestId, action);
           return { data: undefined };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Friend', 'FriendRequest'],
@@ -122,7 +110,7 @@ export const friendApi = baseApi.injectEndpoints({
           await unfriend(friendUserId);
           return { data: undefined };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Friend'],
@@ -134,7 +122,7 @@ export const friendApi = baseApi.injectEndpoints({
           await removeFriend(friendUserId);
           return { data: undefined };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Friend', 'UserProfile'],

@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import {
   getProfileOverview,
   getMe,
@@ -10,18 +10,6 @@ import type { UpdateMePayload } from '../../features/profile/services/profile.se
 import type { FrontendUser } from '../../services/api/mappers';
 import { setGuest, updateUser } from '../slices/authSlice';
 
-// ── Helper ───────────────────────────────────────────────────────
-
-function toError(error: unknown) {
-  return {
-    error: {
-      status: 'CUSTOM_ERROR' as const,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data: error,
-    },
-  };
-}
-
 // ── API ──────────────────────────────────────────────────────────
 
 export const userApi = baseApi.injectEndpoints({
@@ -32,7 +20,7 @@ export const userApi = baseApi.injectEndpoints({
           const data = await getProfileOverview();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Profile'],
@@ -44,7 +32,7 @@ export const userApi = baseApi.injectEndpoints({
           const data = await getMe();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Profile'],
@@ -56,7 +44,7 @@ export const userApi = baseApi.injectEndpoints({
           const data = await updateMe(payload);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Profile'],
@@ -81,7 +69,7 @@ export const userApi = baseApi.injectEndpoints({
           const data = await updateSettings(isPrivate);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Profile'],
@@ -93,7 +81,7 @@ export const userApi = baseApi.injectEndpoints({
           await deleteAccount();
           return { data: undefined };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       async onQueryStarted(_, { dispatch, queryFulfilled }) {

@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import { authService } from '../../features/auth/services/auth.service';
 import { setAuthenticated, setGuest, setSetupStage } from '../slices/authSlice';
 import type { LoginPayload, RegisterPayload } from '../../features/auth/services/auth.service';
@@ -14,13 +14,7 @@ export const authApi = baseApi.injectEndpoints({
           const data = await authService.login(payload);
           return { data };
         } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR' as const,
-              error: error instanceof Error ? error.message : 'Login failed',
-              data: error,
-            },
-          };
+          return toApiError(error);
         }
       },
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
@@ -40,13 +34,7 @@ export const authApi = baseApi.injectEndpoints({
           const data = await authService.register(payload);
           return { data };
         } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR' as const,
-              error: error instanceof Error ? error.message : 'Registration failed',
-              data: error,
-            },
-          };
+          return toApiError(error);
         }
       },
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
@@ -66,13 +54,7 @@ export const authApi = baseApi.injectEndpoints({
           await authService.signout(refreshTokenValue);
           return { data: undefined };
         } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR' as const,
-              error: error instanceof Error ? error.message : 'Logout failed',
-              data: error,
-            },
-          };
+          return toApiError(error);
         }
       },
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
@@ -94,13 +76,7 @@ export const authApi = baseApi.injectEndpoints({
           const data = await authService.checkUsername(username);
           return { data };
         } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR' as const,
-              error: error instanceof Error ? error.message : 'Check failed',
-              data: error,
-            },
-          };
+          return toApiError(error);
         }
       },
     }),
