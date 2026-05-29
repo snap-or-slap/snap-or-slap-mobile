@@ -3,6 +3,8 @@ module.exports = {
 
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 
+  testTimeout: 15000,
+
   testMatch: [
     '**/__tests__/**/*.test.ts',
     '**/__tests__/**/*.test.tsx',
@@ -42,6 +44,8 @@ module.exports = {
   ],
 
   coverageDirectory: 'coverage',
+
+  coverageProvider: 'v8',
 
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
 

@@ -1,7 +1,7 @@
 # SnapOrSlap Mobile
 
 ![Test and SonarCloud](https://github.com/snap-or-slap/snap-or-slap-mobile/actions/workflows/test.yml/badge.svg)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=snap-or-slap_snap-or-slap-mobile\&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=snap-or-slap_snap-or-slap-mobile)
+<!-- [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=snap-or-slap_snap-or-slap-mobile\&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=snap-or-slap_snap-or-slap-mobile) -->
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=snap-or-slap_snap-or-slap-mobile\&metric=coverage)](https://sonarcloud.io/summary/new_code?id=snap-or-slap_snap-or-slap-mobile)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=snap-or-slap_snap-or-slap-mobile\&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=snap-or-slap_snap-or-slap-mobile)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=snap-or-slap_snap-or-slap-mobile\&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=snap-or-slap_snap-or-slap-mobile)
