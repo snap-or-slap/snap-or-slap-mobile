@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import {
   listChallenges,
   getChallenge,
@@ -25,18 +25,6 @@ import type {
   RecreateChallengePayload,
 } from '../../features/challenges/services/challenges.service';
 
-// ── Helper ───────────────────────────────────────────────────────
-
-function toError(error: unknown) {
-  return {
-    error: {
-      status: 'CUSTOM_ERROR' as const,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data: error,
-    },
-  };
-}
-
 // ── API ──────────────────────────────────────────────────────────
 
 export const challengeApi = baseApi.injectEndpoints({
@@ -49,7 +37,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await listChallenges(filters ?? {});
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Challenge'],
@@ -61,7 +49,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await getChallenge(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, id) => [{ type: 'ChallengeDetail', id }],
@@ -73,7 +61,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await getChallengeStats(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, id) => [{ type: 'ChallengeStats', id }],
@@ -85,7 +73,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await browsePublicChallenges(params ?? {});
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Challenge'],
@@ -97,7 +85,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await getHistoryList(params ?? {});
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Challenge'],
@@ -109,7 +97,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await getChallengeHistory(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, id) => [{ type: 'ChallengeDetail', id }],
@@ -123,7 +111,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await createChallenge(payload);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Challenge'],
@@ -135,7 +123,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await acceptInvite(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, id) => [
@@ -151,7 +139,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await declineInvite(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, id) => [
@@ -167,7 +155,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await setReady(id, isReady);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { id }) => [{ type: 'ChallengeDetail', id }],
@@ -179,7 +167,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await leaveChallenge(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, id) => [
@@ -194,7 +182,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await cancelChallenge(id, reason);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { id }) => [
@@ -209,7 +197,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await deleteOrCancelChallenge(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Challenge'],
@@ -221,7 +209,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await inviteUsers(challengeId, userIds);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { challengeId }) => [
@@ -235,7 +223,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await recreateChallenge(id, payload);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Challenge'],
@@ -247,7 +235,7 @@ export const challengeApi = baseApi.injectEndpoints({
           const data = await checkMilestone(id);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
     }),

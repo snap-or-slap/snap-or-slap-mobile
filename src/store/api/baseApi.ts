@@ -17,6 +17,24 @@ export const TAG_TYPES = [
   'Widget',
 ] as const;
 
+// ── Error Helpers ────────────────────────────────────────────────
+
+export function toApiError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  const status =
+    typeof (error as { status?: unknown })?.status === 'number'
+      ? (error as { status: number }).status
+      : 'CUSTOM_ERROR';
+
+  return {
+    error: {
+      status,
+      error: message,
+      data: { message },
+    },
+  };
+}
+
 // ── Base API ─────────────────────────────────────────────────────
 
 /**

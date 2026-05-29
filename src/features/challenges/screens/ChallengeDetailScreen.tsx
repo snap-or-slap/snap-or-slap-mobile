@@ -330,6 +330,24 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
   if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null) {
+    const record = error as { status?: unknown; error?: unknown; data?: unknown };
+    const data = record.data as { message?: unknown } | undefined;
+    const message =
+      typeof data?.message === 'string'
+        ? data.message
+        : typeof record.error === 'string'
+          ? record.error
+          : undefined;
+
+    if (record.status === 400 && message?.toLowerCase().includes('yourself')) return 'You cannot slap yourself.';
+    if (record.status === 400 && message?.toLowerCase().includes('already checked in')) return 'That member already checked in.';
+    if (record.status === 409 && message) return message;
+    if (record.status === 403) return 'You do not have access to this challenge.';
+    if (record.status === 429) return 'Already nudged this member today.';
+    if (record.status === 404) return 'Challenge not found.';
+    if (message) return message;
+  }
   return 'Could not load challenge.';
 }
 

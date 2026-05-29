@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import { getSummary } from '../../features/widget/services/widget.service';
 
 // ── API ──────────────────────────────────────────────────────────
@@ -11,13 +11,7 @@ export const widgetApi = baseApi.injectEndpoints({
           const data = await getSummary();
           return { data };
         } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR' as const,
-              error: error instanceof Error ? error.message : 'Unknown error',
-              data: error,
-            },
-          };
+          return toApiError(error);
         }
       },
       providesTags: ['Widget'],

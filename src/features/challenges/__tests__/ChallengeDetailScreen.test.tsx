@@ -6,10 +6,10 @@ import { ChallengeDetailScreen } from '../screens/ChallengeDetailScreen';
 import { challengesService } from '../services/challenges.service';
 import { checkinService } from '../services/checkin.service';
 import { session } from '@services/api';
+import { baseApi, setAuthenticated, store } from '@store/index';
 
-jest.mock('../services/challenges.service', () => ({
-  challengesService: {
-    getChallenge: jest.fn(async () => ({
+jest.mock('../services/challenges.service', () => {
+  const getChallenge = jest.fn(async () => ({
       challenge: {
         id: 'challenge-1',
         title: 'Morning Run',
@@ -64,27 +64,48 @@ jest.mock('../services/challenges.service', () => ({
         status: 'accepted',
         isReady: true,
       },
-    })),
-    getChallengeStats: jest.fn(async () => ({
-      elapsedCycles: 1,
-      durationDays: 7,
-      heartsLeft: 3,
-      totalCheckins: 1,
-      completionRate: 33,
-    })),
-    inviteUsers: jest.fn(),
-    acceptInvite: jest.fn(),
-    declineInvite: jest.fn(),
-    setReady: jest.fn(),
-    leaveChallenge: jest.fn(),
-    deleteOrCancelChallenge: jest.fn(),
-    cancelChallenge: jest.fn(),
-  },
-}));
+  }));
+  const getChallengeStats = jest.fn(async () => ({
+    elapsedCycles: 1,
+    durationDays: 7,
+    heartsLeft: 3,
+    totalCheckins: 1,
+    completionRate: 33,
+  }));
+  const inviteUsers = jest.fn();
+  const acceptInvite = jest.fn();
+  const declineInvite = jest.fn();
+  const setReady = jest.fn();
+  const leaveChallenge = jest.fn();
+  const deleteOrCancelChallenge = jest.fn();
+  const cancelChallenge = jest.fn();
 
-jest.mock('../services/checkin.service', () => ({
-  checkinService: {
-    getTodayStatus: jest.fn(async () => ({
+  return {
+    getChallenge,
+    getChallengeStats,
+    inviteUsers,
+    acceptInvite,
+    declineInvite,
+    setReady,
+    leaveChallenge,
+    deleteOrCancelChallenge,
+    cancelChallenge,
+    challengesService: {
+      getChallenge,
+      getChallengeStats,
+      inviteUsers,
+      acceptInvite,
+      declineInvite,
+      setReady,
+      leaveChallenge,
+      deleteOrCancelChallenge,
+      cancelChallenge,
+    },
+  };
+});
+
+jest.mock('../services/checkin.service', () => {
+  const getTodayStatus = jest.fn(async () => ({
       cycleNumber: 1,
       durationDays: 7,
       heartsLeft: 3,
@@ -95,24 +116,34 @@ jest.mock('../services/checkin.service', () => ({
         { userId: 'user-done', status: 'checked_in' },
         { userId: 'user-pending', status: 'pending' },
       ],
-    })),
-    listCheckins: jest.fn(async () => ({
-      checkins: [
-        {
-          id: 'checkin-done',
-          user_id: 'user-done',
-          cycle_number: 1,
-          evidence_url: '/uploads/checkins/challenge-1/cycle-1/user-done.jpg',
-          caption: 'Finished the run',
-          checked_in_at: '2026-05-20T06:10:00.000Z',
-          username: 'done',
-          display_name: 'Done Member',
-        },
-      ],
-    })),
-    nudgeMember: jest.fn(async () => ({ message: 'Nudge sent successfully' })),
-  },
-}));
+  }));
+  const listCheckins = jest.fn(async () => ({
+    checkins: [
+      {
+        id: 'checkin-done',
+        user_id: 'user-done',
+        cycle_number: 1,
+        evidence_url: '/uploads/checkins/challenge-1/cycle-1/user-done.jpg',
+        caption: 'Finished the run',
+        checked_in_at: '2026-05-20T06:10:00.000Z',
+        username: 'done',
+        display_name: 'Done Member',
+      },
+    ],
+  }));
+  const nudgeMember = jest.fn(async () => ({ message: 'Nudge sent successfully' }));
+
+  return {
+    getTodayStatus,
+    listCheckins,
+    nudgeMember,
+    checkinService: {
+      getTodayStatus,
+      listCheckins,
+      nudgeMember,
+    },
+  };
+});
 
 jest.mock('@features/friends/services', () => ({
   friendsService: {
@@ -141,8 +172,14 @@ jest.mock('@services/api', () => {
 
 describe('ChallengeDetailScreen slap actions', () => {
   beforeEach(() => {
+    store.dispatch(baseApi.util.resetApiState());
+    store.dispatch(setAuthenticated({ id: 'user-current' }));
     jest.clearAllMocks();
     (session.getCurrentUserId as jest.Mock).mockResolvedValue('user-current');
+  });
+
+  afterEach(() => {
+    store.dispatch(baseApi.util.resetApiState());
   });
 
   it('keeps Slap visible but disabled for DONE members', async () => {
@@ -228,6 +265,7 @@ describe('ChallengeDetailScreen slap actions', () => {
 
   it('does not mark a slapped pending host as done', async () => {
     (session.getCurrentUserId as jest.Mock).mockResolvedValue('user-pending');
+    store.dispatch(setAuthenticated({ id: 'user-pending' }));
 
     renderWithProviders(<ChallengeDetailScreen challengeId="challenge-1" />);
 

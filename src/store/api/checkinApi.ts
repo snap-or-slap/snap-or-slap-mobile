@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import {
   listCheckins,
   getTodayStatus,
@@ -13,18 +13,6 @@ import type {
   SubmitCheckInResult,
 } from '../../features/challenges/services/checkin.service';
 
-// ── Helper ───────────────────────────────────────────────────────
-
-function toError(error: unknown) {
-  return {
-    error: {
-      status: 'CUSTOM_ERROR' as const,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data: error,
-    },
-  };
-}
-
 // ── API ──────────────────────────────────────────────────────────
 
 export const checkinApi = baseApi.injectEndpoints({
@@ -35,7 +23,7 @@ export const checkinApi = baseApi.injectEndpoints({
           const data = await getTodayStatus(challengeId);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, challengeId) => [
@@ -49,7 +37,7 @@ export const checkinApi = baseApi.injectEndpoints({
           const data = await listCheckins(challengeId, params);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: (_result, _err, { challengeId }) => [
@@ -63,7 +51,7 @@ export const checkinApi = baseApi.injectEndpoints({
           const data = await submitCheckIn(challengeId, payload);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { challengeId }) => [
@@ -82,7 +70,7 @@ export const checkinApi = baseApi.injectEndpoints({
           const data = await submitCheckinWithPhoto(challengeId, payload);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { challengeId }) => [
@@ -101,7 +89,7 @@ export const checkinApi = baseApi.injectEndpoints({
           const data = await nudgeMember(challengeId, memberId);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: (_result, _err, { challengeId }) => [

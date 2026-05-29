@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi, toApiError } from './baseApi';
 import {
   listNotifications,
   markRead,
@@ -6,18 +6,6 @@ import {
   deleteNotification,
 } from '../../features/notifications/services/notifications.service';
 import type { ListNotificationsParams } from '../../features/notifications/services/notifications.service';
-
-// ── Helper ───────────────────────────────────────────────────────
-
-function toError(error: unknown) {
-  return {
-    error: {
-      status: 'CUSTOM_ERROR' as const,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data: error,
-    },
-  };
-}
 
 // ── API ──────────────────────────────────────────────────────────
 
@@ -29,7 +17,7 @@ export const notificationApi = baseApi.injectEndpoints({
           const data = await listNotifications(params ?? {});
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       providesTags: ['Notification'],
@@ -41,7 +29,7 @@ export const notificationApi = baseApi.injectEndpoints({
           const data = await markRead(notificationIds);
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Notification'],
@@ -53,7 +41,7 @@ export const notificationApi = baseApi.injectEndpoints({
           const data = await markAllRead();
           return { data };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Notification'],
@@ -65,7 +53,7 @@ export const notificationApi = baseApi.injectEndpoints({
           await deleteNotification(id);
           return { data: undefined };
         } catch (error) {
-          return toError(error);
+          return toApiError(error);
         }
       },
       invalidatesTags: ['Notification'],
