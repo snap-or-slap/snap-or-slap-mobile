@@ -14,14 +14,12 @@ describe('ActiveChallengeCard', () => {
       <ActiveChallengeCard
         challenge={{
           id: '1',
+          type: 'active',
           title: 'Daily Run',
-          status: 'ACTIVE',
-          heartsLeft: 2,
-          totalHearts: 3,
           resetTimeText: '8:00 AM',
           stepText: 'Step 1/5',
           heartsText: '2 hearts left',
-          riskStatus: 'safe',
+          riskStatus: 'on-track',
         }}
         testID="active-card"
       />
@@ -39,10 +37,8 @@ describe('ActiveChallengeCard', () => {
       <ActiveChallengeCard
         challenge={{
           id: '2',
+          type: 'active',
           title: 'Morning Yoga',
-          status: 'ACTIVE',
-          heartsLeft: 0,
-          totalHearts: 3,
           resetTimeText: '9:00 AM',
           stepText: 'Step 3/5',
           heartsText: 'No hearts left',
@@ -83,7 +79,7 @@ describe('JoinedMembersBar', () => {
 describe('ChallengeHearts (and HeartCountBadge)', () => {
   it('renders standard hearts badge', () => {
     renderWithTheme(
-      <ChallengeHearts label="3 hearts left" variant="standard" tone="brand" />
+      <ChallengeHearts label="3 hearts left" variant="filled" tone="brand" />
     );
     expect(screen.getByText('3 hearts left')).toBeTruthy();
   });
