@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
 import { ChallengeDetailScreen } from '../screens/ChallengeDetailScreen';
@@ -179,6 +179,7 @@ describe('ChallengeDetailScreen slap actions', () => {
   });
 
   afterEach(() => {
+    cleanup();
     store.dispatch(baseApi.util.resetApiState());
   });
 
