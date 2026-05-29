@@ -53,3 +53,7 @@ scripts/*.js
 
 # coverage
 /coverage
+
+# temporary search artifacts
+search_*.json
+search-*.json
